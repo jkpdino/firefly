@@ -1,0 +1,170 @@
+use blink_ast::{
+    Visibility,
+    Path, PathSegment,
+    ty::Ty,
+    value::Value,
+    stmt::{Stmt, CodeBlock},
+    func::{Func, FuncParam}
+};
+use crate::{
+    error::LexerError,
+    lexer::Token,
+};
+use blink_span::{
+    BytePos,
+    Span,
+    Spanned
+};
+
+grammar<'source>;
+
+extern {
+    type Location = BytePos;
+    type Error = LexerError;
+    enum Token<'source> {
+        "ident" => Token::Ident(<&'source str>),
+
+        "public" => Token::PublicKw,
+        "internal" => Token::InternalKw,
+        "fileprivate" => Token::FilePrivateKw,
+        "private" => Token::PrivateKw,
+
+        "module" => Token::ModuleKw,
+        "import" => Token::ImportKw,
+
+        "struct" => Token::StructKw,
+        "func" => Token::FuncKw,
+        "init" => Token::InitKw,
+        
+        "var" => Token::VarKw,
+
+        "return" => Token::ReturnKw,
+
+        "integer" => Token::IntegerLiteral(<&'source str>),
+
+        // Symbols
+        "(" => Token::OpenParen,
+        ")" => Token::CloseParen,
+        "{" => Token::OpenBrace,
+        "}" => Token::CloseBrace,
+
+        "." => Token::Period,
+        "," => Token::Comma,
+        ";" => Token::Semicolon,
+        ":" => Token::Colon,
+        "->" => Token::Arrow,
+
+        "=" => Token::Equals,
+
+        "_" => Token::Underscore,
+
+        "whitespace" => Token::Whitespace,
+    }
+}
+
+pub Top = { Function* }
+
+// Function
+FuncParam: Spanned<FuncParam> = {
+    <l: @L> <name: Name> ":" <ty: Type> <r: @R> => Spanned::new(FuncParam::new(name, ty), Span::new(l, r))
+}
+
+Function = { Spanned<UnspannedFunction> }
+UnspannedFunction: Func = {
+    <visibility: Visibility> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" "->" <return_ty: Type> <body: CodeBlock> => Func {
+        visibility,
+        name,
+        params,
+        return_ty,
+        body,
+    }
+}
+
+// Statements
+BindStmt: Stmt = {
+    "var" <name: Name> ":" <ty: Type> "=" <value: Value> => Stmt::Bind(name, ty, value)
+}
+
+Stmt = { Spanned<UnspannedStmt> }
+UnspannedStmt: Stmt = {
+    <Value> => Stmt::Value(<>),
+    <BindStmt> => <>
+}
+
+Stmts: Vec<Spanned<Stmt>> = {
+    <mut v:(<Stmt> ";")*> <e:Stmt?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
+}
+
+CodeBlock: CodeBlock = {
+    "{" <stmts: Stmts> "}" => CodeBlock::new(stmts)
+}
+
+// Values
+Value = { Spanned<UnspannedValue> }
+UnspannedValue: Value = {
+    "(" <items: CommaList<Value>> ")" => Value::Tuple(items),
+    Spanned<"integer"> => Value::IntegerLiteral(Spanned::new(<>.item.into(), <>.span)),
+    <func: Value> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
+    <Path> => Value::Path(<>),
+}
+
+// Types
+Type = { Spanned<UnspannedType> }
+UnspannedType: Ty = {
+    "(" <items: CommaList<Type>> ")" => Ty::Tuple(items),
+    <Path> => Ty::Path(<>)
+}
+
+
+// Common
+Path: Path = {
+    <s: Spanned<PathSegments>> => Path::new(s.item, s.span)
+}
+
+PathSegments: Vec<PathSegment> = {
+    <s: PathSegment> => vec![s],
+    <mut v: PathSegments> <s: PathSegment> => {
+        v.push(s);
+        v
+    }
+}
+
+PathSegment: PathSegment = {
+    <i: Name> => PathSegment::new(i)
+}
+
+Visibility = { Spanned<UnspannedVisibility> }
+UnspannedVisibility: Visibility = {
+    "public" => Visibility::Public,
+    "internal" => Visibility::Internal,
+    "fileprivate" => Visibility::FilePrivate,
+    "private" => Visibility::Private
+}
+
+// Util
+
+Spanned<T>: Spanned<T> = {
+    <l: @L> <t: T> <r: @R> => Spanned::new(t, Span::new(l, r))
+}
+
+#[inline]
+CommaList<T>: Vec<T> = {
+    <mut v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
+}
+
+
+Name: Spanned<String> = {
+    Spanned<"ident"> => Spanned::new(<>.item.into(), <>.span)
+}

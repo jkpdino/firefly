@@ -1,0 +1,10 @@
+workspace = { members = [ "lib/blink-ast","lib/blink-parser", "lib/blink-span"] }
+[package]
+name = "inc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+blink-span = { path = "lib/blink-span" }
+blink-parser = { path = "lib/blink-parser" }
+salsa = "0.16.1"
