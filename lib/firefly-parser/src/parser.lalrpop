@@ -1,16 +1,18 @@
-use blink_ast::{
+use firefly_ast::{
     Visibility,
     Path, PathSegment,
     ty::Ty,
     value::Value,
     stmt::{Stmt, CodeBlock},
-    func::{Func, FuncParam}
+    func::{Func, FuncParam},
+    item::Item,
+    struct_def::{StructDef, Field}
 };
 use crate::{
     error::LexerError,
     lexer::Token,
 };
-use blink_span::{
+use firefly_span::{
     BytePos,
     Span,
     Spanned
@@ -56,13 +58,37 @@ extern {
 
         "=" => Token::Equals,
 
-        "_" => Token::Underscore,
-
         "whitespace" => Token::Whitespace,
     }
 }
 
-pub Top = { Function* }
+pub Top = { Item* }
+
+Item: Item = {
+    <Struct> => Item::StructDef(<>),
+    <Function> => Item::Func(<>),
+    <Field> => Item::Field(<>),
+}
+
+// Structs
+
+Field = { Spanned<UnspannedField> }
+UnspannedField: Field = {
+    <visibility: Visibility?> "var" <name: Name> ":" <ty: Type> => Field {
+        visibility,
+        name,
+        ty,
+    }
+}
+
+Struct = { Spanned<UnspannedStruct> }
+UnspannedStruct: StructDef = {
+    <visibility: Visibility?> "struct" <name: Name> "{" <items: Item*> "}" => StructDef {
+        visibility,
+        name,
+        items,
+    }
+}
 
 // Function
 FuncParam: Spanned<FuncParam> = {
@@ -71,7 +97,7 @@ FuncParam: Spanned<FuncParam> = {
 
 Function = { Spanned<UnspannedFunction> }
 UnspannedFunction: Func = {
-    <visibility: Visibility> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" "->" <return_ty: Type> <body: CodeBlock> => Func {
+    <visibility: Visibility?> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" "->" <return_ty: Type> <body: CodeBlock> => Func {
         visibility,
         name,
         params,
@@ -163,7 +189,6 @@ CommaList<T>: Vec<T> = {
         }
     }
 }
-
 
 Name: Spanned<String> = {
     Spanned<"ident"> => Spanned::new(<>.item.into(), <>.span)

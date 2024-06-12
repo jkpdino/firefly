@@ -1,9 +1,11 @@
-use blink_span::{Span, Spanned};
+use firefly_span::{Span, Spanned};
 
 pub mod ty;
 pub mod stmt;
 pub mod func;
+pub mod item;
 pub mod value;
+pub mod struct_def;
 
 pub type Name = Spanned<String>;
 

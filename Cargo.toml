@@ -1,10 +1,10 @@
-workspace = { members = [ "lib/blink-ast","lib/blink-parser", "lib/blink-span"] }
+workspace = { members = [ "lib/firefly-ast","lib/firefly-parser", "lib/firefly-span", "lib/firefly-hir"] }
 [package]
 name = "inc"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-blink-span = { path = "lib/blink-span" }
-blink-parser = { path = "lib/blink-parser" }
+firefly-span = { path = "lib/firefly-span" }
+firefly-parser = { path = "lib/firefly-parser" }
 salsa = "0.16.1"

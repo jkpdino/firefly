@@ -60,25 +60,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf4b9d6a944f767f8e5e0db018570623c85f3d925ac718db4e06d0187adb21c1"
 
 [[package]]
-name = "blink-ast"
+name = "firefly-ast"
 version = "0.1.0"
 dependencies = [
- "blink-span",
+ "firefly-span",
 ]
 
 [[package]]
-name = "blink-parser"
+name = "firefly-parser"
 version = "0.1.0"
 dependencies = [
- "blink-ast",
- "blink-span",
+ "firefly-ast",
+ "firefly-span",
  "lalrpop",
  "lalrpop-util",
  "logos",
 ]
 
 [[package]]
-name = "blink-span"
+name = "firefly-span"
 version = "0.1.0"
 
 [[package]]
@@ -142,6 +142,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 
 [[package]]
+name = "firefly-hir"
+version = "0.1.0"
+
+[[package]]
 name = "fixedbitset"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -189,8 +193,8 @@ dependencies = [
 name = "inc"
 version = "0.1.0"
 dependencies = [
- "blink-parser",
- "blink-span",
+ "firefly-parser",
+ "firefly-span",
  "salsa",
 ]
 

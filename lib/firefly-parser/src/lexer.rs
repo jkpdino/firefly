@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use blink_span::BytePos;
+use firefly_span::BytePos;
 use logos::Logos;
 
 use crate::error::LexerError;
@@ -27,8 +27,7 @@ pub enum Token<'a> {
 	#[token("struct")] StructKw,
 	#[token("init")] InitKw,
 
-	#[token("var")]
-	VarKw,
+	#[token("var")] VarKw,
 
 	#[token("static")] StaticKw,
 	#[token("mutating")] MutatingKw,
@@ -48,13 +47,8 @@ pub enum Token<'a> {
 	#[token(":")] Colon,
 	#[token("->")] Arrow,
 
-	#[token("!")]
-	Bang,
 	#[token("=")]
 	Equals,
-
-	#[regex("_", priority = 2)]
-	Underscore,
 
 	#[regex("[\n\r\t ]", logos::skip)]
 	Whitespace,

@@ -1,5 +1,5 @@
 [package]
-name = "blink-parser"
+name = "firefly-parser"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,8 +9,8 @@ edition = "2021"
 logos = "0.14.0"
 lalrpop-util = "0.20.2"
 
-blink-ast = { path = "../blink-ast" }
-blink-span = { path = "../blink-span" }
+firefly-ast = { path = "../firefly-ast" }
+firefly-span = { path = "../firefly-span" }
 
 
 [build-dependencies]

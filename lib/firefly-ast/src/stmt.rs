@@ -1,4 +1,4 @@
-use blink_span::Spanned;
+use firefly_span::Spanned;
 
 use crate::{ty::Ty, value::Value, Name};
 

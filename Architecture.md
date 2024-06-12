@@ -2,10 +2,15 @@ Define things closer to how they are defined in the AST
 Then define different nodes on top of them:
 
 Function
-    Signature  { }
-    Generic    { }
-    Visibility { }
-    Implements { }
+    Signature { }
+    VisibleTo { }
+    MemberOf  { }
 
-FunctionPrototype
-Initializer
+Struct
+
+Field
+
+# Firefly-HIR
+
+Everything is represented by an Entity. There are two kinds of entities:
+- 

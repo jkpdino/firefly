@@ -1,3 +1,8 @@
-public func main(a: int, b: int) -> int {
+struct Person {
+    var age: int
+    var name: string
+}
+
+func main(a: int, b: int) -> int {
     var c: int = add(a, b)
 }

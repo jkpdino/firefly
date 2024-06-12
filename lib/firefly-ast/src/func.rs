@@ -1,4 +1,4 @@
-use blink_span::Spanned;
+use firefly_span::Spanned;
 
 use crate::{stmt::CodeBlock, ty::Ty, Name, Visibility};
 
@@ -10,7 +10,7 @@ pub struct FuncParam {
 
 #[derive(Debug)]
 pub struct Func {
-    pub visibility: Spanned<Visibility>,
+    pub visibility: Option<Spanned<Visibility>>,
     pub name:       Name,
     pub params:     Vec<Spanned<FuncParam>>,
     pub return_ty:  Spanned<Ty>,
