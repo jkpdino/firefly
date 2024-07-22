@@ -2,7 +2,6 @@ use firefly_span::Span;
 
 use crate::{
     entity::{Entity, Id},
-    items::StructDef,
     path::Path,
 };
 
@@ -16,12 +15,20 @@ use crate::{
 pub enum TyKind {
     Unit,
     Tuple(Vec<Ty>),
-    StructDef(Id<StructDef>),
+    Named(Path),
+    Infer,
 }
 
 /// Represents a type in the HIR.
 #[derive(Debug, Clone)]
 pub struct Ty {
+    id: Id<Ty>,
     kind: TyKind,
     span: Span,
+}
+
+impl Entity for Ty {
+    fn id(&self) -> Id<Self> {
+        self.id
+    }
 }

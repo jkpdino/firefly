@@ -1,0 +1,10 @@
+[package]
+name = "firefly-ast-lower"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+firefly-ast = { path = "../firefly-ast" }
+firefly-span = { path = "../firefly-span" }
+firefly-hir = { path = "../firefly-hir" }
+itertools = "0.13.0"

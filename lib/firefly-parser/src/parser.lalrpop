@@ -37,7 +37,7 @@ extern {
         "struct" => Token::StructKw,
         "func" => Token::FuncKw,
         "init" => Token::InitKw,
-        
+
         "var" => Token::VarKw,
 
         "return" => Token::ReturnKw,
@@ -83,11 +83,11 @@ UnspannedField: Field = {
 
 Struct = { Spanned<UnspannedStruct> }
 UnspannedStruct: StructDef = {
-    <visibility: Visibility?> "struct" <name: Name> "{" <items: Item*> "}" => StructDef {
+    <visibility: Visibility?> "struct" <name: Name> "{" <items: Item*> "}" => StructDef::new(
         visibility,
         name,
         items,
-    }
+    )
 }
 
 // Function
@@ -97,13 +97,13 @@ FuncParam: Spanned<FuncParam> = {
 
 Function = { Spanned<UnspannedFunction> }
 UnspannedFunction: Func = {
-    <visibility: Visibility?> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" "->" <return_ty: Type> <body: CodeBlock> => Func {
+    <visibility: Visibility?> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" "->" <return_ty: Type> <body: CodeBlock> => Func::new(
         visibility,
         name,
         params,
         return_ty,
         body,
-    }
+    )
 }
 
 // Statements

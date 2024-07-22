@@ -1,0 +1,8 @@
+struct List[T] {
+    var count: UInt
+    var isEmpty: Bool
+
+    func append(item: T)
+    func prepend(item: T)
+    func insert(item: T, at index: UInt)
+}

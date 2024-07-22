@@ -60,28 +60,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf4b9d6a944f767f8e5e0db018570623c85f3d925ac718db4e06d0187adb21c1"
 
 [[package]]
-name = "firefly-ast"
-version = "0.1.0"
-dependencies = [
- "firefly-span",
-]
-
-[[package]]
-name = "firefly-parser"
-version = "0.1.0"
-dependencies = [
- "firefly-ast",
- "firefly-span",
- "lalrpop",
- "lalrpop-util",
- "logos",
-]
-
-[[package]]
-name = "firefly-span"
-version = "0.1.0"
-
-[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -142,7 +120,47 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 
 [[package]]
+name = "firefly-ast"
+version = "0.1.0"
+dependencies = [
+ "firefly-hir",
+ "firefly-span",
+]
+
+[[package]]
+name = "firefly-ast-lower"
+version = "0.1.0"
+dependencies = [
+ "firefly-ast",
+ "firefly-hir",
+ "firefly-span",
+ "itertools 0.13.0",
+]
+
+[[package]]
+name = "firefly-driver"
+version = "0.1.0"
+
+[[package]]
 name = "firefly-hir"
+version = "0.1.0"
+dependencies = [
+ "firefly-span",
+]
+
+[[package]]
+name = "firefly-parser"
+version = "0.1.0"
+dependencies = [
+ "firefly-ast",
+ "firefly-span",
+ "lalrpop",
+ "lalrpop-util",
+ "logos",
+]
+
+[[package]]
+name = "firefly-span"
 version = "0.1.0"
 
 [[package]]
@@ -193,6 +211,9 @@ dependencies = [
 name = "inc"
 version = "0.1.0"
 dependencies = [
+ "firefly-ast",
+ "firefly-ast-lower",
+ "firefly-hir",
  "firefly-parser",
  "firefly-span",
  "salsa",
@@ -237,6 +258,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "lalrpop"
 version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -245,7 +275,7 @@ dependencies = [
  "ascii-canvas",
  "bit-set",
  "ena",
- "itertools",
+ "itertools 0.11.0",
  "lalrpop-util",
  "petgraph",
  "pico-args",

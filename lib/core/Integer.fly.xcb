@@ -1,0 +1,16 @@
+#(macro Integer(bits, is_signed))
+
+#(eval
+if is_signed:
+    integer_name = f"Int{bits}"
+else:
+    integer_name = f"UInt{bits}"
+)
+
+public struct #integer_name {
+    private var inner: i#bits
+
+    publ
+}
+
+#(end macro)

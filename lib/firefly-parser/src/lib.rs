@@ -5,20 +5,20 @@ use logos::Logos;
 
 use crate::lexer::Token;
 
-mod lexer;
 mod error;
+mod lexer;
 lalrpop_mod!(parser);
 
 pub fn parse(source: &str, base: BytePos) -> Result<Vec<Item>, ()> {
-	let tokens = Token::lexer(source)
-		.spanned()
-		.map(|tok| Token::to_lalr_triple(tok, base));
+    let tokens = Token::lexer(source)
+        .spanned()
+        .map(|tok| Token::to_lalr_triple(tok, base));
 
-	match parser::TopParser::new().parse(tokens) {
-		Ok(items) => Ok(items),
-		Err(e) => {
-			println!("{e:?}");
-			Err(())
-		}
-	}
+    match parser::TopParser::new().parse(tokens) {
+        Ok(items) => Ok(items),
+        Err(e) => {
+            print!("{e:?}");
+            Err(())
+        }
+    }
 }

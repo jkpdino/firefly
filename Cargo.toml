@@ -1,4 +1,3 @@
-workspace = { members = [ "lib/firefly-ast","lib/firefly-parser", "lib/firefly-span", "lib/firefly-hir"] }
 [package]
 name = "inc"
 version = "0.1.0"
@@ -7,4 +6,18 @@ edition = "2021"
 [dependencies]
 firefly-span = { path = "lib/firefly-span" }
 firefly-parser = { path = "lib/firefly-parser" }
+firefly-hir = { path = "lib/firefly-hir" }
+firefly-ast = { path = "lib/firefly-ast" }
+firefly-ast-lower = { path = "lib/firefly-ast-lower" }
 salsa = "0.16.1"
+
+[workspace]
+members = [
+    "lib/firefly-ast",
+    "lib/firefly-ast-lower",
+    "lib/firefly-parser",
+    "lib/firefly-span",
+    "lib/firefly-hir",
+    "lib/firefly-ast-lower",
+    "lib/firefly-driver",
+]
