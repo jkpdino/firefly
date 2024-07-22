@@ -1,9 +1,8 @@
 use firefly_span::Span;
 
 use crate::{
-    entity::{Entity, Id},
-    items::StructDef,
-    path::Path,
+    entity::Id,
+    items::StructDef
 };
 
 /// Represents a type in the HIR.

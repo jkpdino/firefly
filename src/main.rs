@@ -2,8 +2,6 @@ use std::path::Path;
 
 use firefly_ast_lower::AstLowerer;
 
-mod source;
-
 fn main() {
     let source_map = firefly_span::SourceMap::new();
     source_map.load_file(&Path::new("tests/All.fly")).unwrap();

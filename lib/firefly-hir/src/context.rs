@@ -73,7 +73,7 @@ impl HirContext {
         }
 
         let new_entity = Entity {
-            id: entity_id,
+            _id: entity_id,
             kind: EntityKind::Placeholder,
             parent: None,
             children: Vec::new(),

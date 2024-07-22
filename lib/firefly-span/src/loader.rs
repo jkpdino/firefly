@@ -3,6 +3,7 @@ use std::{fs, io::Read, path::Path};
 ///
 /// A trait for loading source files
 ///
+#[allow(unused)]
 pub trait SourceLoader {
 	fn exists(&self, path: &Path) -> bool;
 

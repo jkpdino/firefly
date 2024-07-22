@@ -19,10 +19,10 @@ pub fn create_lang_module(context: &mut HirContext) {
 
     let lang_id = create("lang", Module { id: Id::default() }, root, context);
 
-    let int = create("int", typealias(TyKind::Integer), lang_id, context);
-    let string = create("string", typealias(TyKind::String), lang_id, context);
-    let bool = create("bool", typealias(TyKind::Bool), lang_id, context);
-    let float = create("float", typealias(TyKind::Float), lang_id, context);
+    let _int = create("int", typealias(TyKind::Integer), lang_id, context);
+    let _string = create("string", typealias(TyKind::String), lang_id, context);
+    let _bool = create("bool", typealias(TyKind::Bool), lang_id, context);
+    let _float = create("float", typealias(TyKind::Float), lang_id, context);
 }
 
 fn create<Base: BaseComponent>(

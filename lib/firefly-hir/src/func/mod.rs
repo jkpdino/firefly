@@ -1,9 +1,6 @@
 //use signature::FuncSignature;
 
-use crate::{
-    component::{self, BaseComponent, Component},
-    entity::{EntityKind, Id},
-};
+use crate::entity::{EntityKind, Id};
 
 mod signature;
 
