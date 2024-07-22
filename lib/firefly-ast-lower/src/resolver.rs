@@ -5,10 +5,9 @@
 use firefly_ast::item::Item;
 use firefly_hir::{
     resolve::{Namespace, Symbol},
-    Entity, Id, Name,
+    Entity, Id,
 };
 use firefly_span::Spanned;
-use itertools::Itertools;
 
 use crate::AstLowerer;
 
@@ -20,16 +19,16 @@ impl AstLowerer {
     }
 
     fn resolve_items(&mut self, items: &[Item], parent: Id<Entity>) {
-        // Create a symbol for each item
-        let mut symbols = Vec::new();
-
         for item in items {
-            let (symbol, id) = match item {
+            let id = match item {
                 Item::Func(Spanned { item, .. }) => {
                     let name = self.lower_name(&item.name);
                     let visibility = self.lower_visibility(&item.visibility);
 
-                    (Symbol { name, visibility }, item.id.as_base())
+                    let symbol = Symbol { name, visibility };
+                    self.context.add_component(item.id, symbol);
+
+                    item.id.as_base()
                 }
 
                 Item::StructDef(Spanned { item, .. }) => {
@@ -38,21 +37,17 @@ impl AstLowerer {
 
                     self.resolve_items(&item.items, item.id.as_base());
 
-                    (Symbol { name, visibility }, item.id.as_base())
+                    let symbol = Symbol { name, visibility };
+                    self.context.add_component(item.id, symbol);
+
+                    item.id.as_base()
                 }
 
                 _ => continue,
             };
 
-            let symbol_id = self.context.add_component(id, symbol);
-            symbols.push(symbol_id);
-
             // Link it to the parent
             self.context.link(parent, id);
         }
-
-        // Now create a namespace
-        let namespace = Namespace { symbols };
-        self.context.add_component(parent, namespace);
     }
 }

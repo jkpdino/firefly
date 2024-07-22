@@ -10,8 +10,8 @@ pub mod resolve;
 
 pub mod func;
 pub mod items;
-mod path;
-mod ty;
+pub mod path;
+pub mod ty;
 
 pub use component::*;
 pub use context::*;

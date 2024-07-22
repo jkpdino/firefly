@@ -149,6 +149,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "firefly-lang"
+version = "0.1.0"
+dependencies = [
+ "firefly-hir",
+ "firefly-span",
+]
+
+[[package]]
 name = "firefly-parser"
 version = "0.1.0"
 dependencies = [
@@ -214,6 +222,7 @@ dependencies = [
  "firefly-ast",
  "firefly-ast-lower",
  "firefly-hir",
+ "firefly-lang",
  "firefly-parser",
  "firefly-span",
  "salsa",

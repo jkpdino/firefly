@@ -17,11 +17,16 @@ pub enum TyKind {
     Unit,
     Tuple(Vec<Ty>),
     StructDef(Id<StructDef>),
+
+    Integer,
+    String,
+    Bool,
+    Float,
 }
 
 /// Represents a type in the HIR.
 #[derive(Debug, Clone)]
 pub struct Ty {
-    kind: TyKind,
-    span: Span,
+    pub kind: TyKind,
+    pub span: Span,
 }

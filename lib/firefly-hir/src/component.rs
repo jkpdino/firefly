@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use crate::entity::{Entity, EntityKind, Id};
+use crate::{
+    entity::{Entity, EntityKind, Id},
+    HirContext,
+};
 
 pub trait Component {}
 
@@ -8,6 +11,12 @@ pub trait BaseComponent: Component + Sized {
     const ENTITY_KIND: EntityKind;
 
     fn id(&self) -> Id<Self>;
+}
+
+/// A ComputedComponent computes its value when accessed.
+/// It can depend on other components
+pub trait ComputedComponent: Component + Sized {
+    fn compute(entity: Id<Entity>, context: &HirContext) -> Option<Self>;
 }
 
 pub trait AccessComponent<C: Component> {

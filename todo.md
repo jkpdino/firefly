@@ -1,0 +1,3 @@
+- [x] Add type aliases
+- [ ] Add Computed Properties
+- [ ] Add signature to functions

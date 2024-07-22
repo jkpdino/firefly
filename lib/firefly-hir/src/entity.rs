@@ -18,6 +18,7 @@ pub enum EntityKind {
     File,
     StructDef,
     Func,
+    TypeAlias,
     Placeholder,
 }
 

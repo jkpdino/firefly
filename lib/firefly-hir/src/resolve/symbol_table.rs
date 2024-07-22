@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{HirContext, Id};
+use crate::{ComputedComponent, HirContext, Id};
 
 use super::{Namespace, Symbol};
 
@@ -54,13 +54,19 @@ impl SymbolTable {
     pub fn get(&self, name: &str) -> Option<&Id<Symbol>> {
         self.symbols.get(name)
     }
+}
 
-    pub fn get_for_namespace(id: Id<Namespace>, context: &HirContext) -> SymbolTable {
+component!(symbol_tables: SymbolTable);
+
+impl ComputedComponent for SymbolTable {
+    fn compute(entity: Id<crate::Entity>, context: &HirContext) -> Option<Self> {
+        let namespace_id = context.cast_id::<Namespace>(entity)?;
+
         let mut symbol_table = SymbolTable::default();
 
         // Traverse the namespace hierarchy
         // and add the symbols to the symbol table
-        let mut namespace_id = Some(id);
+        let mut namespace_id = Some(namespace_id);
         while let Some(some_namespace_id) = namespace_id {
             let namespace = context.get(some_namespace_id);
 
@@ -78,7 +84,7 @@ impl SymbolTable {
             namespace_id = parent_id.and_then(|parent| context.cast_id(parent));
         }
 
-        return symbol_table;
+        return Some(symbol_table);
     }
 }
 

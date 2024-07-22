@@ -9,6 +9,7 @@ firefly-parser = { path = "lib/firefly-parser" }
 firefly-hir = { path = "lib/firefly-hir" }
 firefly-ast = { path = "lib/firefly-ast" }
 firefly-ast-lower = { path = "lib/firefly-ast-lower" }
+firefly-lang = { path = "lib/firefly-lang" }
 salsa = "0.16.1"
 
 [workspace]
@@ -18,6 +19,8 @@ members = [
     "lib/firefly-parser",
     "lib/firefly-span",
     "lib/firefly-hir",
+    "lib/firefly-lang",
     "lib/firefly-ast-lower",
     "lib/firefly-driver",
+    "lib/firefly-lang",
 ]

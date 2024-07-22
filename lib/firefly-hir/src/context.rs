@@ -4,10 +4,10 @@ use crate::{
     component::{BaseComponent, Component},
     entity::Id,
     func::Func,
-    items::StructDef,
-    resolve::{Namespace, Symbol},
+    items::{Module, StructDef, TypeAlias},
+    resolve::{Namespace, Symbol, SymbolTable},
     util::Root,
-    AccessComponent, Entity, EntityKind,
+    AccessComponent, ComputedComponent, Entity, EntityKind,
 };
 
 // The HirContext keeps track of every entity in the system,
@@ -19,10 +19,13 @@ ecs! {
 
         roots: Root,
         funcs: Func,
+        modules: Module,
         structs: StructDef,
+        typealiases: TypeAlias,
 
         symbols: Symbol,
-        namespaces: Namespace
+        namespaces: Namespace,
+        symbol_tables: SymbolTable
     }
 }
 
@@ -35,11 +38,12 @@ impl HirContext {
     /// with that type.
     ///
     /// Panics if the entity already exists
-    pub fn create<C: BaseComponent>(&mut self, component: C)
+    pub fn create<C: BaseComponent>(&mut self, component: C) -> Id<C>
     where
         Self: AccessComponent<C>,
     {
         // Create the new entity, checking if it already exists
+        let component_id = component.id();
         let entity_id = component.id().as_base();
 
         self.ensure_entity_exists(entity_id);
@@ -57,6 +61,8 @@ impl HirContext {
         let component_map = <Self as AccessComponent<C>>::get_components_mut(self);
 
         component_map.insert(entity_id, component);
+
+        component_id
     }
 
     /// Ensures a record for the entity exists, and marks
@@ -123,6 +129,31 @@ impl HirContext {
         return component_map.get(&entity_id);
     }
 
+    pub fn try_get_computed<'a, C: ComputedComponent>(
+        &'a mut self,
+        id: Id<impl Component>,
+    ) -> Option<&'a C>
+    where
+        Self: AccessComponent<C>,
+    {
+        // todo!: this code is really hacky, but
+        // its the only way I could get the borrow tracker to work
+        let entity_id = id.as_base();
+
+        if <Self as AccessComponent<C>>::get_components(self).contains_key(&entity_id) {
+            return <Self as AccessComponent<C>>::get_components(self).get(&entity_id);
+        }
+
+        if let Some(default) = C::compute(entity_id, self) {
+            let component_map = <Self as AccessComponent<C>>::get_components_mut(self);
+            component_map.insert(entity_id, default);
+
+            return component_map.get(&entity_id);
+        }
+
+        None
+    }
+
     /// Casts an id to a different component type
     pub fn cast_id<C: Component>(&self, id: Id<impl Component>) -> Option<Id<C>>
     where
@@ -164,6 +195,16 @@ impl HirContext {
         if child.parent.replace(parent_id).is_some() {
             panic!("internal compiler error: entity already has a parent");
         }
+    }
+
+    /// Returns this entity's parent
+    pub fn parent(&self, entity: Id<Entity>) -> Option<Id<Entity>> {
+        self.get(entity).parent.clone()
+    }
+
+    /// Gets a list of children of the entity
+    pub fn children(&self, entity: Id<Entity>) -> &[Id<Entity>] {
+        &self.get(entity).children
     }
 
     /// Returns the root element of the tree
