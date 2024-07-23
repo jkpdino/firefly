@@ -1,6 +1,6 @@
 use firefly_hir::{
     items::{Module, TypeAlias},
-    resolve::Symbol,
+    resolve::{Import, Symbol},
     ty::{Ty, TyKind},
     AccessComponent, BaseComponent, Component, HirContext, Id, Name, Visibility,
 };
@@ -23,6 +23,10 @@ pub fn create_lang_module(context: &mut HirContext) {
     let _string = create("string", typealias(TyKind::String), lang_id, context);
     let _bool = create("bool", typealias(TyKind::Bool), lang_id, context);
     let _float = create("float", typealias(TyKind::Float), lang_id, context);
+
+    let root = context.root();
+    let import_id = context.create(Import { id: Default::default(), namespace: lang_id.as_base() });
+    context.link(root, import_id);
 }
 
 fn create<Base: BaseComponent>(

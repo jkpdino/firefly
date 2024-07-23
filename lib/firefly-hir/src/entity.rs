@@ -18,6 +18,7 @@ pub enum EntityKind {
     StructDef,
     Func,
     TypeAlias,
+    Import,
     Placeholder,
 }
 

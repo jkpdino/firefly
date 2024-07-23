@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 use crate::{ComputedComponent, HirContext, Id};
 
-use super::{Namespace, Symbol};
+use super::{Import, Namespace, Symbol};
 
 /// Stores a delta so that scopes can quickly be restored
 #[derive(Clone)]
@@ -66,8 +66,10 @@ impl ComputedComponent for SymbolTable {
 
         // Traverse the namespace hierarchy
         // and add the symbols to the symbol table
-        let mut entity_id = Some(entity);
-        while let Some(some_namespace_id) = entity_id {
+        let mut entities_to_traverse = VecDeque::new();
+        entities_to_traverse.push_back((entity, true));
+
+        while let Some((some_namespace_id, follow_imports)) = entities_to_traverse.pop_front() {
             let namespace = context.try_get_computed::<Namespace>(some_namespace_id)?;
             let symbols = namespace.symbols.clone();
 
@@ -80,9 +82,23 @@ impl ComputedComponent for SymbolTable {
                 symbol_table.insert(name, symbol_id);
             }
 
-            // todo: add imports
-            let parent_id = context.get(some_namespace_id.as_base()).parent;
-            entity_id = parent_id;
+            if follow_imports {
+                // Go through imports and add them to the symbol table
+                let imports = context.children(some_namespace_id)
+                    .iter()
+                    .cloned()
+                    .filter_map(|id| context.cast_id::<Import>(id))
+                    .map(|id| context.get(id))
+                    .collect::<Vec<_>>();
+
+                for import in imports {
+                    entities_to_traverse.push_back((import.namespace, false))
+                }
+
+                if let Some(parent_id) = context.get(some_namespace_id.as_base()).parent {
+                    entities_to_traverse.push_back((parent_id, true));
+                }
+            }
         }
 
         return Some(symbol_table);

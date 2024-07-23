@@ -7,7 +7,7 @@ use crate::{
     entity::Id,
     func::Func,
     items::{Module, StructDef, TypeAlias},
-    resolve::{Namespace, StaticMemberTable, Symbol, SymbolTable},
+    resolve::{Import, Namespace, StaticMemberTable, Symbol, SymbolTable},
     ty::HasType,
     util::Root,
     AccessComponent, ComputedComponent, Entity, EntityKind,
@@ -29,6 +29,7 @@ ecs! {
         has_types: HasType,
 
         symbols: Symbol,
+        imports: Import,
         namespaces: Namespace,
         symbol_tables: SymbolTable,
         static_member_tables: StaticMemberTable
