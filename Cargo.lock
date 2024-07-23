@@ -133,6 +133,7 @@ version = "0.1.0"
 dependencies = [
  "firefly-ast",
  "firefly-hir",
+ "firefly-lang",
  "firefly-span",
  "itertools 0.13.0",
 ]

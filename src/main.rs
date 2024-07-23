@@ -9,9 +9,10 @@ fn main() {
     let mut ast_lowerer = AstLowerer::new();
 
     for file in source_map.files() {
-        let functions = firefly_parser::parse(file.source_text(), file.start_pos).unwrap();
+        let items = firefly_parser::parse(file.source_text(), file.start_pos).unwrap();
 
-        ast_lowerer.resolve_pass(&functions);
+        ast_lowerer.link_pass(&items);
+        ast_lowerer.lower(&items);
     }
 }
 

@@ -5,12 +5,14 @@ use crate::{ComputedComponent, HirContext, Id};
 use super::{Namespace, Symbol};
 
 /// Stores a delta so that scopes can quickly be restored
+#[derive(Clone)]
 struct Scope {
     old_symbols: HashMap<String, Option<Id<Symbol>>>,
 }
 
 /// Associates symbols with names, provides for
 /// quick lookup
+#[derive(Clone)]
 pub struct SymbolTable {
     symbols: HashMap<String, Id<Symbol>>,
     scopes: Vec<Scope>,
@@ -51,28 +53,27 @@ impl SymbolTable {
     }
 
     /// Retrieves a symbol from the symbol table
-    pub fn get(&self, name: &str) -> Option<&Id<Symbol>> {
-        self.symbols.get(name)
+    pub fn get(&self, name: &str) -> Option<Id<Symbol>> {
+        self.symbols.get(name).cloned()
     }
 }
 
 component!(symbol_tables: SymbolTable);
 
 impl ComputedComponent for SymbolTable {
-    fn compute(entity: Id<crate::Entity>, context: &HirContext) -> Option<Self> {
-        let namespace_id = context.cast_id::<Namespace>(entity)?;
-
+    fn compute(entity: Id<crate::Entity>, context: &mut HirContext) -> Option<Self> {
         let mut symbol_table = SymbolTable::default();
 
         // Traverse the namespace hierarchy
         // and add the symbols to the symbol table
-        let mut namespace_id = Some(namespace_id);
-        while let Some(some_namespace_id) = namespace_id {
-            let namespace = context.get(some_namespace_id);
+        let mut entity_id = Some(entity);
+        while let Some(some_namespace_id) = entity_id {
+            let namespace = context.try_get_computed::<Namespace>(some_namespace_id)?;
+            let symbols = namespace.symbols.clone();
 
             // Add the symbols if they don't already exist
             // We support shadowing, so we don't need to check for duplicates
-            for symbol_id in namespace.symbols.iter().cloned() {
+            for symbol_id in symbols.into_iter() {
                 let symbol = context.get(symbol_id);
                 let name = symbol.name.name.clone();
 
@@ -81,7 +82,7 @@ impl ComputedComponent for SymbolTable {
 
             // todo: add imports
             let parent_id = context.get(some_namespace_id.as_base()).parent;
-            namespace_id = parent_id.and_then(|parent| context.cast_id(parent));
+            entity_id = parent_id;
         }
 
         return Some(symbol_table);

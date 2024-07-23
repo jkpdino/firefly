@@ -1,9 +1,10 @@
 use firefly_span::Span;
 
-use crate::{
-    entity::Id,
-    items::StructDef
-};
+use crate::{entity::Id, items::StructDef};
+
+mod has_type;
+
+pub use has_type::HasType;
 
 /// Represents a type in the HIR.
 ///

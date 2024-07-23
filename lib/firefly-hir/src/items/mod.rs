@@ -6,6 +6,7 @@ pub struct StructDef {
 
 component!(base(EntityKind::StructDef) structs: StructDef);
 
+#[derive(Clone)]
 pub struct TypeAlias {
     pub id: Id<TypeAlias>,
 

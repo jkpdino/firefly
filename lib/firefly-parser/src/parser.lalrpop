@@ -155,7 +155,7 @@ Path: Path = {
 
 PathSegments: Vec<PathSegment> = {
     <s: PathSegment> => vec![s],
-    <mut v: PathSegments> <s: PathSegment> => {
+    <mut v: PathSegments> "." <s: PathSegment> => {
         v.push(s);
         v
     }

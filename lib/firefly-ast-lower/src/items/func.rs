@@ -8,7 +8,11 @@ impl AstLowerer {
             panic!("internal compiler error: parent is not a namespace")
         };
 
-        let return_ty = self.lower_ty(&func.return_ty);
+        let symbol_table = symbol_table.clone();
+
+        let return_ty = self.lower_ty(&func.return_ty, &symbol_table);
+
+        println!("{return_ty:#?}");
 
         let func_entity = HirFunc { id: func.id };
         self.context.create(func_entity);

@@ -11,7 +11,7 @@ pub struct Namespace {
 component!(namespaces: Namespace);
 
 impl ComputedComponent for Namespace {
-    fn compute(entity: Id<crate::Entity>, context: &crate::HirContext) -> Option<Self> {
+    fn compute(entity: Id<crate::Entity>, context: &mut crate::HirContext) -> Option<Self> {
         // A namespace is composed of all the children of an entity which
         // have a symbol
         let children = context.children(entity);

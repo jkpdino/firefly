@@ -1,9 +1,10 @@
 use firefly_ast::item::Item;
-use firefly_hir::{resolve::Namespace, Entity, HirContext, Id};
+use firefly_hir::{Entity, HirContext, Id};
 use firefly_span::Spanned;
 
 mod items;
-mod resolver;
+mod link;
+mod resolve;
 mod ty;
 mod util;
 
@@ -13,13 +14,16 @@ pub struct AstLowerer {
 
 impl AstLowerer {
     pub fn new() -> AstLowerer {
-        Self {
-            context: HirContext::new(),
-        }
+        let mut context = HirContext::new();
+        firefly_lang::create_lang_module(&mut context);
+
+        Self { context }
     }
 
     pub fn lower(&mut self, items: &[Item]) {
         let parent = self.context.root().as_base();
+
+        self.resolve_type_aliases();
 
         self.lower_items(items, parent);
     }

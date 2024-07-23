@@ -7,6 +7,7 @@ use crate::{
 
 pub trait Component {}
 
+/// A BaseComponent is the essential component for an entity
 pub trait BaseComponent: Component + Sized {
     const ENTITY_KIND: EntityKind;
 
@@ -16,7 +17,7 @@ pub trait BaseComponent: Component + Sized {
 /// A ComputedComponent computes its value when accessed.
 /// It can depend on other components
 pub trait ComputedComponent: Component + Sized {
-    fn compute(entity: Id<Entity>, context: &HirContext) -> Option<Self>;
+    fn compute(entity: Id<Entity>, context: &mut HirContext) -> Option<Self>;
 }
 
 pub trait AccessComponent<C: Component> {

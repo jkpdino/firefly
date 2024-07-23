@@ -1,3 +1,5 @@
+mod iter;
+
 use std::collections::HashMap;
 
 use crate::{
@@ -5,7 +7,8 @@ use crate::{
     entity::Id,
     func::Func,
     items::{Module, StructDef, TypeAlias},
-    resolve::{Namespace, Symbol, SymbolTable},
+    resolve::{Namespace, StaticMemberTable, Symbol, SymbolTable},
+    ty::HasType,
     util::Root,
     AccessComponent, ComputedComponent, Entity, EntityKind,
 };
@@ -23,9 +26,12 @@ ecs! {
         structs: StructDef,
         typealiases: TypeAlias,
 
+        has_types: HasType,
+
         symbols: Symbol,
         namespaces: Namespace,
-        symbol_tables: SymbolTable
+        symbol_tables: SymbolTable,
+        static_member_tables: StaticMemberTable
     }
 }
 
@@ -129,10 +135,7 @@ impl HirContext {
         return component_map.get(&entity_id);
     }
 
-    pub fn try_get_computed<'a, C: ComputedComponent>(
-        &'a mut self,
-        id: Id<impl Component>,
-    ) -> Option<&'a C>
+    pub fn try_get_computed<C: ComputedComponent>(&mut self, id: Id<impl Component>) -> Option<&C>
     where
         Self: AccessComponent<C>,
     {
@@ -195,6 +198,26 @@ impl HirContext {
         if child.parent.replace(parent_id).is_some() {
             panic!("internal compiler error: entity already has a parent");
         }
+    }
+
+    /// Searches for all entities with a specific component
+    /// and calls the function with the id of the entity.
+    pub fn search_for<C: Component>(&mut self, mut f: impl FnMut(Id<C>, &mut HirContext))
+        where Self: AccessComponent<C>
+    {
+        let entities =
+        self.entities()
+            .filter_map(|entity_id| self.cast_id::<C>(entity_id))
+            .collect::<Vec<_>>();
+
+        for entity in entities {
+            f(entity, self);
+        }
+    }
+
+    /// Iterates over all entities in the hir in a breadth-first order
+    pub fn entities(&self) -> iter::HirContextEntityIter {
+        iter::HirContextEntityIter::new(self)
     }
 
     /// Returns this entity's parent
