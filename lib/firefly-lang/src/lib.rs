@@ -11,10 +11,7 @@ pub fn create_lang_module(context: &mut HirContext) {
 
     let typealias = |kind: TyKind| TypeAlias {
         id: Id::default(),
-        ty: Ty {
-            kind,
-            span: Default::default(),
-        },
+        ty: Ty::new_unspanned(kind),
     };
 
     let lang_id = create("lang", Module { id: Id::default() }, root, context);

@@ -4,6 +4,8 @@ use crate::entity::{EntityKind, Id};
 
 mod signature;
 
+pub use signature::*;
+
 /// Represents a function in the HIR.
 #[derive(Debug, Clone)]
 pub struct Func {

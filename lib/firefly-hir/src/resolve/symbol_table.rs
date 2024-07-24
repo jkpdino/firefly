@@ -5,14 +5,14 @@ use crate::{ComputedComponent, HirContext, Id};
 use super::{Import, Namespace, Symbol};
 
 /// Stores a delta so that scopes can quickly be restored
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Scope {
     old_symbols: HashMap<String, Option<Id<Symbol>>>,
 }
 
 /// Associates symbols with names, provides for
 /// quick lookup
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SymbolTable {
     symbols: HashMap<String, Id<Symbol>>,
     scopes: Vec<Scope>,

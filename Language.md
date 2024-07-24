@@ -8,9 +8,9 @@ All values are mutable
 No global variables
 
 */
-import std.fs (_);
-
 module Test;
+
+import std.fs (_);
 
 public func main(a: int, b: int) {
     var file = File.open("test.txt")

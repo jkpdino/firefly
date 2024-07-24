@@ -43,4 +43,8 @@ impl AstLowerer {
             _ => {}
         }
     }
+
+    pub fn context(&self) -> &HirContext {
+        &self.context
+    }
 }

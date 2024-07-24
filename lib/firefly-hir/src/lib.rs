@@ -12,6 +12,8 @@ pub mod func;
 pub mod items;
 pub mod path;
 pub mod ty;
+pub mod stmt;
+pub mod value;
 
 pub use component::*;
 pub use context::*;

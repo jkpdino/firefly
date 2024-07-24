@@ -14,6 +14,8 @@ fn main() {
         ast_lowerer.link_pass(&items);
         ast_lowerer.lower(&items);
     }
+
+    println!("{}", ast_lowerer.context().display());
 }
 
 /*

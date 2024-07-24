@@ -27,10 +27,7 @@ impl AstLowerer {
             },
         };
 
-        HirTy {
-            kind,
-            span: ty.span,
-        }
+        HirTy::new(kind, ty.span)
     }
 
     pub fn resolve_type_aliases(&mut self) {

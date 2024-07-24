@@ -1,6 +1,6 @@
 use crate::{Entity, EntityKind, Id};
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Import {
     pub id: Id<Import>,
     pub namespace: Id<Entity>,

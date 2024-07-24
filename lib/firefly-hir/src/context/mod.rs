@@ -1,16 +1,12 @@
 mod iter;
+mod display;
 
 use std::collections::HashMap;
 
+use display::DisplayContext;
+
 use crate::{
-    component::{BaseComponent, Component},
-    entity::Id,
-    func::Func,
-    items::{Module, StructDef, TypeAlias},
-    resolve::{Import, Namespace, StaticMemberTable, Symbol, SymbolTable},
-    ty::HasType,
-    util::Root,
-    AccessComponent, ComputedComponent, Entity, EntityKind,
+    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{Module, StructDef, TypeAlias}, resolve::{Import, Namespace, StaticMemberTable, Symbol, SymbolTable}, stmt::Binding, ty::{HasType, Ty}, util::Root, AccessComponent, ComputedComponent, Entity, EntityKind
 };
 
 // The HirContext keeps track of every entity in the system,
@@ -26,7 +22,11 @@ ecs! {
         structs: StructDef,
         typealiases: TypeAlias,
 
+        types: Ty,
+
         has_types: HasType,
+        callables: Callable,
+        bindings: Binding,
 
         symbols: Symbol,
         imports: Import,
@@ -204,10 +204,11 @@ impl HirContext {
     /// Searches for all entities with a specific component
     /// and calls the function with the id of the entity.
     pub fn search_for<C: Component>(&mut self, mut f: impl FnMut(Id<C>, &mut HirContext))
-        where Self: AccessComponent<C>
+    where
+        Self: AccessComponent<C>,
     {
-        let entities =
-        self.entities()
+        let entities = self
+            .entities()
             .filter_map(|entity_id| self.cast_id::<C>(entity_id))
             .collect::<Vec<_>>();
 
@@ -234,5 +235,10 @@ impl HirContext {
     /// Returns the root element of the tree
     pub fn root(&self) -> Id<Root> {
         self.root
+    }
+
+    /// Displays the HirContext as a tree
+    pub fn display(&self) -> DisplayContext {
+        DisplayContext { context: self, node: self.root.as_base(), level: 0 }
     }
 }

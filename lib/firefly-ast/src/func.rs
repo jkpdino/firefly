@@ -10,11 +10,16 @@ pub struct FuncParam {
 }
 
 #[derive(Debug)]
+pub struct FuncSignature {
+    pub params:     Vec<Spanned<FuncParam>>,
+    pub return_ty:  Spanned<Ty>,
+}
+
+#[derive(Debug)]
 pub struct Func {
     pub visibility: Option<Spanned<Visibility>>,
     pub name: Name,
-    pub params: Vec<Spanned<FuncParam>>,
-    pub return_ty: Spanned<Ty>,
+    pub signature: FuncSignature,
     pub body: CodeBlock,
     pub id: Id<firefly_hir::func::Func>,
 }
@@ -30,8 +35,7 @@ impl Func {
         Self {
             visibility,
             name,
-            params,
-            return_ty,
+            signature: FuncSignature { params, return_ty },
             body,
             id: Id::default(),
         }

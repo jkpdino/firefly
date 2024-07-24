@@ -4,6 +4,7 @@ use super::Symbol;
 
 // todo!: add imports
 
+#[derive(Clone, Debug)]
 pub struct Namespace {
     pub symbols: Vec<Id<Symbol>>,
 }

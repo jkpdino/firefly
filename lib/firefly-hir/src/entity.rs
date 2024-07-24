@@ -1,9 +1,4 @@
-use std::{
-    fmt::Debug,
-    hash::Hash,
-    marker::PhantomData,
-    sync::atomic::AtomicU64,
-};
+use std::{fmt::Debug, hash::Hash, marker::PhantomData, sync::atomic::AtomicU64};
 
 use crate::{component::Component, AccessComponent, HirContext};
 
@@ -19,6 +14,11 @@ pub enum EntityKind {
     Func,
     TypeAlias,
     Import,
+
+    Ty,
+
+    Binding,
+
     Placeholder,
 }
 

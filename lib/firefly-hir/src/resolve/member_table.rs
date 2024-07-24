@@ -9,6 +9,7 @@ use super::{Namespace, Symbol};
 /// a function will have its parameters and generic parameters
 /// in its namespace because they are accessible from inside,
 /// but not in it's member table
+#[derive(Clone, Debug)]
 pub struct StaticMemberTable {
     members: HashMap<String, Id<Symbol>>,
 }

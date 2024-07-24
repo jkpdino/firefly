@@ -1,6 +1,6 @@
 use firefly_span::Span;
 
-use crate::{entity::Id, items::StructDef};
+use crate::{entity::Id, items::StructDef, EntityKind};
 
 mod has_type;
 
@@ -25,8 +25,35 @@ pub enum TyKind {
 }
 
 /// Represents a type in the HIR.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Ty {
+    pub id: Id<Ty>,
     pub kind: TyKind,
     pub span: Span,
+}
+
+impl Ty {
+    pub fn new(kind: TyKind, span: Span) -> Ty {
+        Ty {
+            id: Default::default(),
+            kind,
+            span
+        }
+    }
+
+    pub fn new_unspanned(kind: TyKind) -> Ty {
+        Ty {
+            id: Default::default(),
+            kind,
+            span: Default::default(),
+        }
+    }
+}
+
+component!(base(EntityKind::Ty) types: Ty);
+
+impl std::fmt::Debug for Ty {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.kind)
+    }
 }

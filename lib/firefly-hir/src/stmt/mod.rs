@@ -1,4 +1,7 @@
 mod code_block;
+mod binding;
+
+pub use binding::Binding;
 
 use firefly_span::Span;
 
@@ -15,13 +18,7 @@ pub enum StmtKind {
 }
 
 pub struct Stmt {
-    pub id: Id<Stmt>,
+    //pub id: Id<Stmt>,
     pub kind: StmtKind,
     pub span: Span,
-}
-
-impl Entity for Stmt {
-    fn id(&self) -> Id<Self> {
-        self.id
-    }
 }

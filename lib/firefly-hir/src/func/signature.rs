@@ -1,23 +1,19 @@
-//use crate::{ty::Ty, Visibility};
+use crate::{ty::Ty, Name};
 
-/*
-/// A generic function signature.
+/// Marks a symbol as callable and provides a signature
+/// for calling the symbol
 #[derive(Debug, Clone)]
-pub struct FuncSignature {
-    visibility: Visibility,
-    name: String,
-    params: FuncParamList,
-    return_ty: Ty,
+pub struct Callable {
+    pub params: Vec<FuncParam>,
+    pub return_ty: Ty,
 }
 
 #[derive(Debug, Clone)]
 pub struct FuncParam {
-    bind_name: String,
-    ty: Ty,
+    pub bind_name: Name,
+    pub ty: Ty,
 }
 
-#[derive(Debug, Clone)]
-pub struct FuncParamList {
-    params: Vec<FuncParam>,
-}
-*/
+component!(callables: Callable);
+
+

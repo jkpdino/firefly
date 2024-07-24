@@ -17,14 +17,14 @@ pub enum ValueKind {
 }
 
 pub struct Value {
-    id: Id<Value>,
+    //id: Id<Value>,
     kind: ValueKind,
     ty: Ty,
     span: Span,
 }
 
-impl Entity for Value {
+/*impl Entity for Value {
     fn id(&self) -> Id<Value> {
         self.id
     }
-}
+}*/
