@@ -10,7 +10,8 @@ firefly-hir = { path = "lib/firefly-hir" }
 firefly-ast = { path = "lib/firefly-ast" }
 firefly-ast-lower = { path = "lib/firefly-ast-lower" }
 firefly-lang = { path = "lib/firefly-lang" }
-salsa = "0.16.1"
+clap = { version = "^4.5", features = ["derive"] }
+itertools = "0.13.0"
 
 [workspace]
 members = [

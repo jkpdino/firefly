@@ -19,13 +19,15 @@ impl AstLowerer {
         let mut context = HirContext::new();
         firefly_lang::create_lang_module(&mut context);
 
-        Self { context }
+        let mut lowerer = Self { context };
+
+        lowerer.resolve_type_aliases();
+
+        return lowerer;
     }
 
     pub fn lower(&mut self, items: &[Item]) {
         let parent = self.context.root().as_base();
-
-        self.resolve_type_aliases();
 
         self.lower_items(items, parent);
     }
