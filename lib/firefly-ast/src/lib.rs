@@ -5,6 +5,7 @@ pub mod stmt;
 pub mod func;
 pub mod item;
 pub mod value;
+pub mod module;
 pub mod struct_def;
 
 pub type Name = Spanned<String>;

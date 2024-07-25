@@ -6,7 +6,8 @@ use firefly_ast::{
     stmt::{Stmt, CodeBlock},
     func::{Func, FuncParam},
     item::Item,
-    struct_def::{StructDef, Field}
+    struct_def::{StructDef, Field},
+    module::Module,
 };
 use crate::{
     error::LexerError,
@@ -68,6 +69,14 @@ Item: Item = {
     <Struct> => Item::StructDef(<>),
     <Function> => Item::Func(<>),
     <Field> => Item::Field(<>),
+}
+
+// Modules
+Module = { Spanned<UnspannedModule> }
+UnspannedModule: Module = {
+    "module" <path: Path> ";"? => Module {
+        path
+    }
 }
 
 // Structs
