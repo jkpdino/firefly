@@ -20,6 +20,8 @@ pub enum EntityKind {
     Stmt,
     CodeBlock,
 
+    SourceFile,
+
     Local,
 
     Placeholder,

@@ -4,9 +4,10 @@
 
 use firefly_ast::item::Item;
 use firefly_hir::{
-    items::Module, resolve::Symbol, Entity, Id, Name, Visibility
+    items::{Module, SourceFile}, resolve::{Passthrough, Symbol}, Entity, Id, Name, Visibility
 };
 use firefly_span::Spanned;
+use itertools::Itertools;
 
 use crate::AstLowerer;
 
@@ -17,11 +18,13 @@ impl AstLowerer {
             return;
         };
 
-        /* todo: ensure ONE module is found */
-        /* todo: ensure no modules are found unless we are in the root */
-        /* todo: we need a file to go inside a module */
+        // Create a file
+        let source_file = self.context.create_with_parent(module, (
+            SourceFile::default(),
+            Passthrough
+        ));
 
-        self.link_items(ast, module.as_base());
+        self.link_items(ast, source_file.as_base());
     }
 
     fn link_items(&mut self, items: &[Item], parent: Id<Entity>) {
@@ -49,6 +52,14 @@ impl AstLowerer {
                     item.id.as_base()
                 }
 
+                Item::Module(_) => {
+                    if self.context.try_get::<SourceFile>(parent).is_none() {
+                        println!("error: module declaration found inside other object")
+                    }
+
+                    continue;
+                }
+
                 _ => continue,
             };
 
@@ -58,10 +69,22 @@ impl AstLowerer {
     }
 
     fn get_module(&mut self, items: &[Item]) -> Option<Id<Module>> {
-        let module_def = items.iter().find_map(|item| match item {
+        let module_defs = items.iter().filter_map(|item| match item {
             Item::Module(module) => Some(module),
             _ => None
-        })?;
+        }).collect_vec();
+
+        let module_def = match &module_defs[..] {
+            [] => {
+                println!("error: no module declaration found");
+                return None
+            }
+            [module_def] => *module_def,
+            [..] => { 
+                println!("error: multiple module declarations found");
+                return None
+            }
+        };
 
         let path = &module_def.item.path;
 

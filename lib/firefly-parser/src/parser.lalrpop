@@ -107,13 +107,17 @@ FuncParam: Spanned<FuncParam> = {
 
 Function = { Spanned<UnspannedFunction> }
 UnspannedFunction: Func = {
-    <visibility: Visibility?> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" "->" <return_ty: Type> <body: CodeBlock> => Func::new(
+    <visibility: Visibility?> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" <return_ty:ReturnType?> <body: CodeBlock> => Func::new(
         visibility,
         name,
         params,
         return_ty,
         body,
     )
+}
+
+ReturnType: Spanned<Ty> = {
+    "->" <return_ty:Type> => return_ty,
 }
 
 // Statements
