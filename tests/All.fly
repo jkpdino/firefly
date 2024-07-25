@@ -4,5 +4,6 @@ struct Person {
 }
 
 func main(a: int, b: int) -> int {
-    var c: int = a
+    var c: int = a;
+    var d: int = b
 }

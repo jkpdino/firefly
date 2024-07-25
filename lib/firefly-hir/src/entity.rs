@@ -20,7 +20,7 @@ pub enum EntityKind {
     Stmt,
     CodeBlock,
 
-    Binding,
+    Local,
 
     Placeholder,
 }

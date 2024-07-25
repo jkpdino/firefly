@@ -3,7 +3,7 @@ mod has_value;
 use std::fmt::Debug;
 use firefly_span::Span;
 use crate::{
-    entity::Id, stmt::Binding, ty::Ty
+    entity::Id, stmt::Local, ty::Ty
 };
 pub use has_value::HasValue;
 
@@ -18,7 +18,7 @@ pub enum ValueKind {
     Tuple(Vec<Value>),
     Literal(LiteralValue),
     Invoke(Box<Value>, ()),
-    Local(Id<Binding>)
+    Local(Id<Local>)
 
 }
 

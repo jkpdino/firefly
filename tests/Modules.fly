@@ -1,0 +1,7 @@
+module Test;
+
+import lang (int as Integer);
+
+func main(a: Integer) {
+
+}

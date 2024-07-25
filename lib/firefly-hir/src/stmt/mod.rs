@@ -1,9 +1,9 @@
 mod code_block;
-mod binding;
+mod local;
 
 use std::fmt::Debug;
 
-pub use binding::Binding;
+pub use local::Local;
 pub use code_block::CodeBlock;
 
 use firefly_span::Span;

@@ -1,6 +1,6 @@
 use crate::AstLowerer;
 use firefly_ast::func::{Func as AstFunc, FuncParam as AstFuncParam, FuncSignature as AstFuncSignature};
-use firefly_hir::{func::{Callable, Func as HirFunc, FuncParam as HirFuncParam}, resolve::{Symbol, SymbolTable}, stmt::Binding, ty::Ty, value::{HasValue, Value, ValueKind}, Entity, Id, Name, Visibility};
+use firefly_hir::{func::{Callable, Func as HirFunc, FuncParam as HirFuncParam}, resolve::{Symbol, SymbolTable}, stmt::Local, ty::Ty, value::{HasValue, Value, ValueKind}, Entity, Id, Name, Visibility};
 use firefly_span::Spanned;
 use itertools::Itertools;
 
@@ -35,23 +35,23 @@ impl AstLowerer {
         let ty = self.lower_ty(&param.item.ty, symbol_table);
         let bind_name = self.lower_name(&param.item.name);
 
-        self.create_binding(parent, &bind_name, &ty);
+        self.create_local(parent, &bind_name, &ty);
 
         HirFuncParam { ty, bind_name }
     }
 
-    pub fn create_binding(&mut self, parent: Id<Entity>, name: &Name, ty: &Ty) {
-        let binding = self.context.create(Binding {
+    pub fn create_local(&mut self, parent: Id<Entity>, name: &Name, ty: &Ty) {
+        let local = self.context.create(Local {
             id: Default::default(),
             ty: ty.clone(),
         });
-        self.context.add_component(binding, Symbol {
+        self.context.add_component(local, Symbol {
             name: name.clone(),
             visibility: Visibility::Local,
         });
-        self.context.add_component(binding, HasValue {
-            value: Value::new(ValueKind::Local(binding), ty.clone(), Default::default()),
+        self.context.add_component(local, HasValue {
+            value: Value::new(ValueKind::Local(local), ty.clone(), Default::default()),
         });
-        self.context.link(parent, binding);
+        self.context.link(parent, local);
     }
 }

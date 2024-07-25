@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use display::DisplayContext;
 
 use crate::{
-    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{Module, StructDef, TypeAlias}, resolve::{Import, Namespace, StaticMemberTable, Symbol, SymbolTable}, stmt::{Binding, CodeBlock}, ty::{HasType, Ty}, util::Root, value::HasValue, AccessComponent, ComputedComponent, Entity, EntityKind
+    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{Module, StructDef, TypeAlias}, resolve::{Import, Namespace, StaticMemberTable, Symbol, SymbolTable}, stmt::{Local, CodeBlock}, ty::{HasType, Ty}, util::Root, value::HasValue, AccessComponent, ComputedComponent, Entity, EntityKind
 };
 
 // The HirContext keeps track of every entity in the system,
@@ -28,7 +28,7 @@ ecs! {
         has_types: HasType,
         has_values: HasValue,
         callables: Callable,
-        bindings: Binding,
+        locals: Local,
 
         symbols: Symbol,
         imports: Import,

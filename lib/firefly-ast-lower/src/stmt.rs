@@ -40,8 +40,8 @@ impl AstLowerer {
                 let ty = self.lower_ty(&ty, symbol_table);
                 let value = self.lower_value(&value, symbol_table);
 
-                // Create a binding so we can reference the symbol
-                self.create_binding(parent.as_base(), &name, &ty);
+                // Create a local so we can reference the symbol
+                self.create_local(parent.as_base(), &name, &ty);
 
                 // Now return a statement
                 HirStmt::new(
