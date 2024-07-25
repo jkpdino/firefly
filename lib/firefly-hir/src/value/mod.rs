@@ -1,30 +1,47 @@
+mod has_value;
+
+use std::fmt::Debug;
 use firefly_span::Span;
-
 use crate::{
-    entity::{Entity, Id},
-    ty::Ty,
+    entity::Id, stmt::Binding, ty::Ty
 };
+pub use has_value::HasValue;
 
+#[derive(Debug, Clone)]
 pub enum LiteralValue {
     Integer(String),
 }
 
+#[derive(Debug, Clone)]
 pub enum ValueKind {
     Unit,
     Tuple(Vec<Value>),
     Literal(LiteralValue),
     Invoke(Box<Value>, ()),
+    Local(Id<Binding>)
+
 }
 
+#[derive(Clone)]
 pub struct Value {
     //id: Id<Value>,
-    kind: ValueKind,
-    ty: Ty,
-    span: Span,
+    pub kind: ValueKind,
+    pub ty: Ty,
+    pub span: Span,
 }
 
-/*impl Entity for Value {
-    fn id(&self) -> Id<Value> {
-        self.id
+impl Value {
+    pub fn new(kind: ValueKind, ty: Ty, span: Span) -> Value {
+        Value {
+            kind,
+            ty,
+            span
+        }
     }
-}*/
+}
+
+impl Debug for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.kind.fmt(f)
+    }
+}

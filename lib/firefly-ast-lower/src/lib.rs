@@ -7,6 +7,8 @@ mod link;
 mod resolve;
 mod ty;
 mod util;
+mod stmt;
+mod value;
 
 pub struct AstLowerer {
     context: HirContext,

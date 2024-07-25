@@ -16,6 +16,9 @@ pub enum EntityKind {
     Import,
 
     Ty,
+    Value,
+    Stmt,
+    CodeBlock,
 
     Binding,
 

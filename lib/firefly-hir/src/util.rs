@@ -7,6 +7,7 @@ pub enum Visibility {
     Internal,
     FilePrivate,
     Private,
+    Local,
 }
 
 #[derive(Clone)]

@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{func::{Callable, Func}, items::{Module, StructDef, TypeAlias}, resolve::{Import, Namespace, StaticMemberTable, Symbol, SymbolTable}, ty::{HasType, Ty}, Entity, Id, Root};
+use crate::{func::{Callable, Func}, items::{Module, StructDef, TypeAlias}, resolve::{Import, Namespace, StaticMemberTable, Symbol, SymbolTable}, stmt::CodeBlock, ty::{HasType, Ty}, value::HasValue, Entity, Id, Root};
 
 use super::HirContext;
 
@@ -23,16 +23,18 @@ pub struct DisplayContext<'a> {
 impl Display for DisplayContext<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let prefix = "  ".repeat(self.level);
+        let newline_prefix = format!("\n  {prefix}");
         let entity = self.context.get(self.node);
 
         writeln!(f, "{prefix}{:?}:", entity.kind)?;
 
         for_each_component!(
-            x in self.node,
+            com in self.node,
             self.context,
-            (Root, Func, Module, StructDef, TypeAlias, Ty, HasType, Callable, Symbol, Import, Namespace, SymbolTable, StaticMemberTable),
+            (Root, Func, Module, StructDef, TypeAlias, Ty, CodeBlock, HasType, HasValue, Callable, Symbol, Import, Namespace, SymbolTable, StaticMemberTable),
             {
-                println!("  {prefix}{x:?}");
+                let com = format!("{com:?}").replace("\n", &newline_prefix);
+                println!("  {prefix}{com}");
             }
         );
 

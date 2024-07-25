@@ -1,13 +1,24 @@
 use firefly_hir::{
-    resolve::{StaticMemberTable, SymbolTable},
-    ty::{HasType, Ty},
-    Entity, Id,
+    resolve::{StaticMemberTable, SymbolTable}, ty::{HasType, Ty}, value::{HasValue, Value}, Entity, Id
 };
 
 use crate::AstLowerer;
 use firefly_ast::Path;
 
 impl AstLowerer {
+    pub fn resolve_value(&mut self, path: &Path, symbol_table: &SymbolTable) -> Option<Value> {
+        let value_node = self.resolve_path(path, symbol_table)?;
+
+        if let Some(has_value) = self.context.try_get::<HasValue>(value_node) {
+            let mut value = has_value.value.clone();
+            value.span = path.span;
+            return Some(value);
+        } else {
+            println!("error: not a value");
+            return None;
+        }
+    }
+
     pub fn resolve_type(&mut self, path: &Path, symbol_table: &SymbolTable) -> Option<Ty> {
         let type_node = self.resolve_path(path, symbol_table)?;
 
