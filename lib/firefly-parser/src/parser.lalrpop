@@ -69,6 +69,7 @@ Item: Item = {
     <Struct> => Item::StructDef(<>),
     <Function> => Item::Func(<>),
     <Field> => Item::Field(<>),
+    <Module> => Item::Module(<>),
 }
 
 // Modules

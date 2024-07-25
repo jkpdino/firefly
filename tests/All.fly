@@ -1,3 +1,5 @@
+module Test
+
 struct Person {
     var age: int
     var name: string

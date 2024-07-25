@@ -16,6 +16,12 @@
 - [ ] Add function calls
 - [ ] Add system functions
 
+# Error Handling
+
+- [ ] Passes on HIR
+- [ ] Lower errors
+- [ ] Make list of rules
+
 # VM
 
 - [ ] Lower HIR to VM
