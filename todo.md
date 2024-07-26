@@ -7,14 +7,17 @@
 - [x] Add values
 - [x] Rename bindings to locals
 - [x] Add modules
-- [ ] Add visibilities
-- [ ] Add imports
-- [ ] Add structs
+- [x] Add visibilities
+- [x] Add imports
 - [ ] Add strings
+- [ ] Add structs
 - [ ] Add members
 - [ ] Add globals
 - [ ] Add function calls
 - [ ] Add system functions
+- [ ] Add control flow
+
+# Testing framework
 
 # Error Handling
 
@@ -26,3 +29,7 @@
 
 - [ ] Lower HIR to VM
 - [ ] Run the VM
+
+# Bugs
+
+- [ ] Add invisible items but mark them as such

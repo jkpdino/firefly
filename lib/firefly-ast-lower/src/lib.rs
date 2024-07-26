@@ -1,5 +1,5 @@
 use firefly_ast::item::Item;
-use firefly_hir::{ty::{HasType, Ty, TyKind}, HirContext};
+use firefly_hir::HirContext;
 use firefly_span::Spanned;
 
 mod items;
@@ -39,11 +39,12 @@ impl AstLowerer {
                 self.lower_func(item, parent);
             }
 
-            Item::StructDef(Spanned { item, .. }) => {
-                // todo: remove this
-                self.context.add_component(item.id, HasType {
-                    ty: Ty::new_unspanned(TyKind::Unit)
-                });
+            Item::StructDef(Spanned { .. }) => {
+
+            }
+
+            Item::Import(Spanned { item, .. }) => {
+                self.lower_import(item);
             }
 
             _ => {}

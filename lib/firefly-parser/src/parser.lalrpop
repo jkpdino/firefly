@@ -8,6 +8,7 @@ use firefly_ast::{
     item::Item,
     struct_def::{StructDef, Field},
     module::Module,
+    import::{Import, ImportSymbolList, ImportSymbol}
 };
 use crate::{
     error::LexerError,
@@ -43,6 +44,8 @@ extern {
 
         "return" => Token::ReturnKw,
 
+        "as" => Token::AsKw,
+
         "integer" => Token::IntegerLiteral(<&'source str>),
 
         // Symbols
@@ -70,6 +73,7 @@ Item: Item = {
     <Function> => Item::Func(<>),
     <Field> => Item::Field(<>),
     <Module> => Item::Module(<>),
+    <Import> => Item::Import(<>),
 }
 
 // Modules
@@ -78,6 +82,29 @@ UnspannedModule: Module = {
     "module" <path: Path> ";"? => Module {
         path
     }
+}
+
+// Imports
+
+Import = { Spanned<UnspannedImport> };
+UnspannedImport: Import = {
+    "import" <module: Path> <alias: Rename?> <symbol_list: ImportSymbolList?> ";"? => Import::new(
+        module,
+        alias,
+        symbol_list
+    )
+}
+
+ImportSymbolList: ImportSymbolList = {
+    "(" <symbols: CommaList<ImportSymbol>> ")" => ImportSymbolList { symbols }
+}
+
+ImportSymbol: ImportSymbol = {
+    <name: Name> <alias: Rename?> => ImportSymbol { name, alias }
+}
+
+Rename: Spanned<String> = {
+    "as" <name: Name> => name
 }
 
 // Structs

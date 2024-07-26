@@ -22,7 +22,7 @@ pub fn create_lang_module(context: &mut HirContext) {
     let _float = create("float", typealias(TyKind::Float), lang_id, context);
 
     let root = context.root();
-    let import_id = context.create(Import { id: Default::default(), namespace: lang_id.as_base() });
+    let import_id = context.create(Import::import(Default::default(), lang_id.as_base()));
     context.link(root, import_id);
 }
 

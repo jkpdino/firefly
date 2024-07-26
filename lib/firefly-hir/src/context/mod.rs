@@ -1,7 +1,7 @@
 mod iter;
 mod display;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Debug};
 
 use display::DisplayContext;
 
@@ -168,6 +168,7 @@ impl HirContext {
     pub fn try_get_computed<C: ComputedComponent>(&mut self, id: Id<impl Component>) -> Option<&C>
     where
         Self: AccessComponent<C>,
+        C: Debug
     {
         // todo!: this code is really hacky, but
         // its the only way I could get the borrow tracker to work

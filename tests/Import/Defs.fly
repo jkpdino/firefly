@@ -1,0 +1,5 @@
+module Test.Defs;
+
+public struct Foo {}
+internal struct Bar {}
+private struct Baz {}

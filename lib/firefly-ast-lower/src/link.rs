@@ -4,7 +4,7 @@
 
 use firefly_ast::item::Item;
 use firefly_hir::{
-    items::{Module, SourceFile}, resolve::{Passthrough, Symbol}, Entity, Id, Name, Visibility
+    items::{Module, SourceFile}, resolve::{Passthrough, Symbol}, ty::{HasType, Ty, TyKind}, Entity, Id, Name, Visibility
 };
 use firefly_span::Spanned;
 use itertools::Itertools;
@@ -14,7 +14,6 @@ use crate::AstLowerer;
 impl AstLowerer {
     pub fn link_pass(&mut self, ast: &[Item]) {
         let Some(module) = self.get_module(ast) else {
-            println!("error: no module definition found");
             return;
         };
 
@@ -49,6 +48,14 @@ impl AstLowerer {
                     let symbol = Symbol { name, visibility };
                     self.context.add_component(item.id, symbol);
 
+                    self.context.add_component(item.id, HasType {
+                        ty: Ty::new_unspanned(TyKind::Unit)
+                    });
+
+                    item.id.as_base()
+                }
+
+                Item::Import(Spanned { item, .. }) => {
                     item.id.as_base()
                 }
 
