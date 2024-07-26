@@ -174,12 +174,6 @@ impl HirContext {
         // its the only way I could get the borrow tracker to work
         let entity_id = id.as_base();
 
-        let kind = self.get::<Entity>(id.as_base()).kind;
-        println!("{kind:?} {entity_id:?}");
-
-        let component = <Self as AccessComponent<C>>::get_components(self).get(&entity_id);
-        //println!("{component:?}");
-
         if <Self as AccessComponent<C>>::get_components(self).contains_key(&entity_id) {
             return <Self as AccessComponent<C>>::get_components(self).get(&entity_id);
         }

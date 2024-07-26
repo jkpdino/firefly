@@ -72,53 +72,42 @@ impl ComputedComponent for SymbolTable {
         
         symbol_table.push_scope();
 
-        // Traverse the namespace hierarchy
-        // and add the symbols to the symbol table
-        let mut entities_to_traverse = VecDeque::new();
-        entities_to_traverse.push_back(entity);
+        let namespace = context.try_get_computed::<Namespace>(entity)?;
+        let symbols = namespace.symbols.clone();
 
-        while let Some(some_namespace_id) = entities_to_traverse.pop_front() {
-            let namespace = context.try_get_computed::<Namespace>(some_namespace_id)?;
-            let symbols = namespace.symbols.clone();
+        // We're looking at 4-6 ancestors on average, so its faster to use
+        // a Vec than a HashSet
+        let ancestors = Self::get_ancestors(entity.as_base(), context);
 
-            // We're looking at 4-6 ancestors on average, so its faster to use
-            // a Vec than a HashSet
-            let ancestors = Self::get_ancestors(some_namespace_id.as_base(), context);
+        // Add the symbols if they don't already exist
+        // We support shadowing, so we don't need to check for duplicates
+        for symbol_id in symbols.into_iter() {
+            // Where is the symbol visible from?
+            let Some(VisibleWithin(scope)) = context.try_get_computed::<VisibleWithin>(symbol_id) else {
+                panic!("internal compiler error: couldn't calculate visibility");
+            };
 
-            // Add the symbols if they don't already exist
-            // We support shadowing, so we don't need to check for duplicates
-            for symbol_id in symbols.into_iter() {
-                // Where is the symbol visible from?
-                let Some(VisibleWithin(scope)) = context.try_get_computed::<VisibleWithin>(symbol_id) else {
-                    panic!("internal compiler error: couldn't calculate visibility");
-                };
-
-                // If we aren't in a scope where the symbol is visible,
-                // don't add it
-                if !ancestors.contains(&scope) {
-                    continue;
-                }
-
-                let symbol = context.get(symbol_id);
-                let name = symbol.name.name.clone();
-
-                symbol_table.insert(name, symbol_id);
+            // If we aren't in a scope where the symbol is visible,
+            // don't add it
+            if !ancestors.contains(&scope) {
+                continue;
             }
 
-            // Go through imports and add them to the symbol table
-            let imports = context.children(some_namespace_id)
-                .iter()
-                .cloned()
-                .filter_map(|id| context.cast_id::<Import>(id))
-                .collect_vec();
+            let symbol = context.get(symbol_id);
+            let name = symbol.name.name.clone();
 
-            for import in imports {
-                Self::import(import, &mut symbol_table, context)
-            }
+            symbol_table.insert(name, symbol_id);
+        }
 
-            if let Some(parent_id) = context.get(some_namespace_id.as_base()).parent {
-                entities_to_traverse.push_back(parent_id);
-            }
+        // Go through imports and add them to the symbol table
+        let imports = context.children(entity)
+            .iter()
+            .cloned()
+            .filter_map(|id| context.cast_id::<Import>(id))
+            .collect_vec();
+
+        for import in imports {
+            Self::import(import, &mut symbol_table, context)
         }
 
         return Some(symbol_table);
