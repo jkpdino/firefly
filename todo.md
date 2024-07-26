@@ -8,7 +8,7 @@
 - [x] Rename bindings to locals
 - [x] Add modules
 - [x] Add visibilities
-- [ ] Add imports
+- [x] Add imports
 - [ ] Add strings
 - [ ] Add structs
 - [ ] Add members
@@ -16,6 +16,8 @@
 - [ ] Add function calls
 - [ ] Add system functions
 - [ ] Add control flow
+
+# Testing framework
 
 # Error Handling
 
