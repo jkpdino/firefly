@@ -16,7 +16,7 @@ pub struct TypeAlias {
 
 component!(base(EntityKind::TypeAlias) typealiases: TypeAlias);
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Module {
     pub id: Id<Module>,
 }

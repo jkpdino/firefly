@@ -96,33 +96,36 @@ impl AstLowerer {
                 .filter_map(|id| self.context().cast_id::<Symbol>(*id))
                 .find(|sym| self.context().get(*sym).name.name == segment.name.item);
 
+
+            // If the item we're accessing isn't a module,
+            // throw an error
             if let Some(next_id) = next {
-                if self.context.cast_id::<Module>(next_id).is_none() {
+                if self.context.has::<Module>(next_id) {
                     println!("error: {} is not a module", segment.name.item);
                     return None;
                 }
 
                 current = next_id.as_base();
+                continue;
             }
-            else {
-                let module = self.context.create(
-                    Module { id: Default::default() }
-                );
-                self.context.add_component(module, Symbol {
-                    visibility: Visibility::Public,
-                    name: Name {
-                        name: segment.name.item.clone(),
-                        span: Default::default(),
-                    }
-                });
 
-                self.context.link(current, module);
+            // Create a new submodule if one doesn't already exist
+            else {
+                let module = self.context.create_with_parent(current, (
+                    Module::default(),
+                    Symbol {
+                        visibility: Visibility::Public,
+                        name: Name::internal(&segment.name.item)
+                    }
+                ));
+    
                 current = module.as_base();
             }
         }
 
-        let module = self.context.cast_id::<Module>(current).expect("internal compiler error");
-
+        // Return the module we get
+        let module = self.context.cast_id::<Module>(current)
+            .expect("internal compiler error");
         Some(module)
     }
 }

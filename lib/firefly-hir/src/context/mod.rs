@@ -199,6 +199,18 @@ impl HirContext {
         Some(unsafe { id.as_base().cast() })
     }
 
+    /// Checks if an entity has a component
+    pub fn has<C: Component>(&self, id: Id<impl Component>) -> bool
+    where
+        Self: AccessComponent<C>,
+    {
+        let entity_id = id.as_base();
+
+        let component_map = <Self as AccessComponent<C>>::get_components(self);
+
+        return component_map.contains_key(&entity_id);
+    }
+
     /// Creates a link between a parent and child entity
     ///
     /// Panics if the child already has a parent
