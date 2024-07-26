@@ -32,8 +32,9 @@ fn main() {
     for ast in &parsed_ast {
         ast_lowerer.lower_items(ast);
     }
-
-    println!("{}", ast_lowerer.context().display());
+    if args.print_hir {
+        println!("{}", ast_lowerer.context().display());
+    }
 }
 
 /*
