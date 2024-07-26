@@ -26,7 +26,8 @@ impl ComputedComponent for StaticMemberTable {
     fn compute(entity: Id<crate::Entity>, context: &mut crate::HirContext) -> Option<Self> {
         // A namespace is composed of all the children of an entity which
         // have a symbol. We can filter those elements to get the ones
-        // that should be accessible from outside
+        // that should be accessible from outside. We don't filter by
+        // visibility until we are resolving things.
         let namespace = context.try_get_computed::<Namespace>(entity)?;
         let symbols = namespace.symbols.clone();
 

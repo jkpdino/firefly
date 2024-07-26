@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use display::DisplayContext;
 
 use crate::{
-    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{Module, SourceFile, StructDef, TypeAlias}, resolve::{Import, Namespace, Passthrough, StaticMemberTable, Symbol, SymbolTable}, stmt::{CodeBlock, Local}, ty::{HasType, Ty}, util::Root, value::HasValue, AccessComponent, ComponentConstructor, ComputedComponent, Entity, EntityKind
+    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{Module, SourceFile, StructDef, TypeAlias}, resolve::{Import, Namespace, Passthrough, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, stmt::{CodeBlock, Local}, ty::{HasType, Ty}, util::Root, value::HasValue, AccessComponent, ComponentConstructor, ComputedComponent, Entity, EntityKind
 };
 
 // The HirContext keeps track of every entity in the system,
@@ -16,27 +16,31 @@ ecs! {
     pub struct HirContext {
         entities: Entity,
 
+        // Base items
         roots: Root,
         funcs: Func,
         modules: Module,
         structs: StructDef,
         typealiases: TypeAlias,
+        source_files: SourceFile,
 
+        // Code items
         types: Ty,
         code_blocks: CodeBlock,
 
+        // Attributes
         has_types: HasType,
         has_values: HasValue,
         callables: Callable,
         locals: Local,
 
-        source_files: SourceFile,
-
+        // Resolving
         symbols: Symbol,
-        passthroughs: Passthrough,
         imports: Import,
         namespaces: Namespace,
+        passthroughs: Passthrough,
         symbol_tables: SymbolTable,
+        visible_withins: VisibleWithin,
         static_member_tables: StaticMemberTable
     }
 }
@@ -105,7 +109,7 @@ impl HirContext {
         }
 
         let new_entity = Entity {
-            _id: entity_id,
+            id: entity_id,
             kind: EntityKind::Placeholder,
             parent: None,
             children: Vec::new(),

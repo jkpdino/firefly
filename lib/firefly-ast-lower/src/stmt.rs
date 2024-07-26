@@ -27,7 +27,7 @@ impl AstLowerer {
     pub fn lower_stmt(&mut self, stmt: &Spanned<AstStmt>, parent: Id<HirCodeBlock>, symbol_table: &mut SymbolTable) -> HirStmt {
         match &stmt.item {
             AstStmt::Value(value) => {
-                let value = self.lower_value(&value, symbol_table);
+                let value = self.lower_value(&value, parent.as_base(), symbol_table);
 
                 HirStmt::new(
                     HirStmtKind::Value(value),
@@ -37,8 +37,8 @@ impl AstLowerer {
 
             AstStmt::Bind(name, ty, value) => {
                 let name = self.lower_name(name);
-                let ty = self.lower_ty(&ty, symbol_table);
-                let value = self.lower_value(&value, symbol_table);
+                let ty = self.lower_ty(&ty, parent.as_base(), symbol_table);
+                let value = self.lower_value(&value, parent.as_base(), symbol_table);
 
                 // Create a local so we can reference the symbol
                 self.create_local(parent.as_base(), &name, &ty);

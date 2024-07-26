@@ -23,7 +23,7 @@ impl AstLowerer {
 
     fn lower_signature(&mut self, signature: &AstFuncSignature, parent: Id<Entity>, symbol_table: &SymbolTable) -> Callable {
         let return_ty = signature.return_ty.as_ref()
-            .map(|return_ty| self.lower_ty(return_ty, symbol_table))
+            .map(|return_ty| self.lower_ty(return_ty, parent, symbol_table))
             .unwrap_or_else(|| Ty::new_unspanned(TyKind::Unit));
         let params = signature.params.iter()
             .map(|param| self.lower_func_parameter(param, parent, symbol_table))
@@ -33,7 +33,7 @@ impl AstLowerer {
     }
 
     fn lower_func_parameter(&mut self, param: &Spanned<AstFuncParam>, parent: Id<Entity>, symbol_table: &SymbolTable) -> HirFuncParam {
-        let ty = self.lower_ty(&param.item.ty, symbol_table);
+        let ty = self.lower_ty(&param.item.ty, parent, symbol_table);
         let bind_name = self.lower_name(&param.item.name);
 
         self.create_local(parent, &bind_name, &ty);
