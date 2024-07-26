@@ -94,7 +94,6 @@ impl AstLowerer {
             current = parent;
         }
 
-
         return false;
     }
 }

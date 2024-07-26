@@ -1,0 +1,9 @@
+module Test.Uses
+
+import Test.Defs
+
+func foo(
+    a: Foo,
+    b: Bar,
+    c: Baz
+) { }

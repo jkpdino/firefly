@@ -88,11 +88,11 @@ UnspannedModule: Module = {
 
 Import = { Spanned<UnspannedImport> };
 UnspannedImport: Import = {
-    "import" <module: Path> <alias: Rename?> <symbol_list: ImportSymbolList?> ";"? => Import {
+    "import" <module: Path> <alias: Rename?> <symbol_list: ImportSymbolList?> ";"? => Import::new(
         module,
         alias,
         symbol_list
-    }
+    )
 }
 
 ImportSymbolList: ImportSymbolList = {
