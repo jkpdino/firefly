@@ -1,5 +1,6 @@
 use firefly_ast::{import::Import as AstImport, Path};
-use firefly_hir::{items::Module, resolve::Symbol, Id, resolve::Import as HirImport};
+use firefly_hir::{items::Module, resolve::{Import as HirImport, ImportRequest, Symbol}, Id};
+use itertools::Itertools;
 
 use crate::AstLowerer;
 
@@ -9,9 +10,21 @@ impl AstLowerer {
             return;
         };
 
+        let alias = import.alias.as_ref().map(|alias| self.lower_name(alias));
+
+        let symbols = import.symbol_list
+            .as_ref()
+            .map(|symbol_list| symbol_list.symbols.iter()
+            .map(|sym| ImportRequest {
+                name: self.lower_name(&sym.name),
+                alias: sym.alias.as_ref().map(|alias| self.lower_name(&alias)),
+            }).collect_vec());
+
         self.context.create(HirImport {
             id: import.id,
-            namespace: module.as_base()
+            namespace: module.as_base(),
+            alias,
+            symbols
         });
     }
 

@@ -9,12 +9,13 @@
 - [x] Add modules
 - [x] Add visibilities
 - [ ] Add imports
-- [ ] Add structs
 - [ ] Add strings
+- [ ] Add structs
 - [ ] Add members
 - [ ] Add globals
 - [ ] Add function calls
 - [ ] Add system functions
+- [ ] Add control flow
 
 # Error Handling
 
@@ -26,3 +27,7 @@
 
 - [ ] Lower HIR to VM
 - [ ] Run the VM
+
+# Bugs
+
+- [ ] Add invisible items but mark them as such

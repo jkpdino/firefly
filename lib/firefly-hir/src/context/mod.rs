@@ -1,7 +1,7 @@
 mod iter;
 mod display;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Debug};
 
 use display::DisplayContext;
 
@@ -168,10 +168,17 @@ impl HirContext {
     pub fn try_get_computed<C: ComputedComponent>(&mut self, id: Id<impl Component>) -> Option<&C>
     where
         Self: AccessComponent<C>,
+        C: Debug
     {
         // todo!: this code is really hacky, but
         // its the only way I could get the borrow tracker to work
         let entity_id = id.as_base();
+
+        let kind = self.get::<Entity>(id.as_base()).kind;
+        println!("{kind:?} {entity_id:?}");
+
+        let component = <Self as AccessComponent<C>>::get_components(self).get(&entity_id);
+        //println!("{component:?}");
 
         if <Self as AccessComponent<C>>::get_components(self).contains_key(&entity_id) {
             return <Self as AccessComponent<C>>::get_components(self).get(&entity_id);
