@@ -8,11 +8,7 @@ use firefly_ast_lower::AstLowerer;
 use itertools::Itertools;
 
 fn main() {
-    let args = Args::parse_from(&[
-        "",
-        "tests/Import/Defs.fly",
-        "tests/Import/UsesList.fly"
-    ]);
+    let args = Args::parse();
 
     // Load files into the source map
     let source_map = firefly_span::SourceMap::new();
