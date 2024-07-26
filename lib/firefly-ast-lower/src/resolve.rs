@@ -40,6 +40,7 @@ impl AstLowerer {
                 "can't find symbol {} in the current scope",
                 first_segment.name.item
             );
+
             return None;
         };
 

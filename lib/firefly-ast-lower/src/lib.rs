@@ -26,21 +26,16 @@ impl AstLowerer {
         return lowerer;
     }
 
-    pub fn lower(&mut self, items: &[Item]) {
-        let parent = self.context.root().as_base();
-
-        self.lower_items(items, parent);
-    }
-
-    fn lower_items(&mut self, items: &[Item], parent: Id<Entity>) {
+    pub fn lower_items(&mut self, items: &[Item]) {
         for item in items {
-            self.lower_item(item, parent);
+            self.lower_item(item);
         }
     }
 
-    fn lower_item(&mut self, item: &Item, parent: Id<Entity>) {
+    fn lower_item(&mut self, item: &Item) {
         match item {
             Item::Func(Spanned { item, .. }) => {
+                let parent = self.context.parent(item.id.as_base()).unwrap();
                 self.lower_func(item, parent);
             }
 

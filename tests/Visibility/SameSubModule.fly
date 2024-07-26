@@ -1,0 +1,9 @@
+module Test.Visibility
+
+// We shouldn't be able to access Fileprivate here
+func testSubmodule(
+    a: Public,
+    b: Internal,
+    c: Fileprivate,
+    d: Private
+) { }

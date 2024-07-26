@@ -1,0 +1,17 @@
+module Test.Visibility
+
+public struct Public { }
+
+internal struct Internal { }
+
+fileprivate struct Fileprivate { }
+
+private struct Private {}
+
+// We should be able to access all of them here
+func test(
+    a: Public,
+    b: Internal,
+    c: Fileprivate,
+    d: Private,
+) { }

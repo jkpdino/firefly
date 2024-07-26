@@ -1,0 +1,9 @@
+module Test2
+
+// We should only be able to access Public from here
+func testDifferent(
+    a: Test.Visibility.Public,
+    b: Test.Visibility.Internal,
+    c: Test.Visibility.Fileprivate,
+    d: Test.Visibility.Private
+) { }

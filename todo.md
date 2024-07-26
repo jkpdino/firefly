@@ -6,7 +6,7 @@
 - [x] Add types
 - [x] Add values
 - [x] Rename bindings to locals
-- [ ] Add modules
+- [x] Add modules
 - [ ] Add visibilities
 - [ ] Add imports
 - [ ] Add structs

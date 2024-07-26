@@ -27,7 +27,7 @@ fn main() {
     }
 
     for ast in &parsed_ast {
-        ast_lowerer.lower(ast);
+        ast_lowerer.lower_items(ast);
     }
 
     println!("{}", ast_lowerer.context().display());
