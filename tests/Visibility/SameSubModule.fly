@@ -1,6 +1,6 @@
 module Test.Visibility
 
-// We shouldn't be able to access Fileprivate here
+// We shouldn't be able to access Fileprivate or Private here
 func testSubmodule(
     a: Public,
     b: Internal,

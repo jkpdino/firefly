@@ -75,9 +75,23 @@ impl ComputedComponent for SymbolTable {
             let namespace = context.try_get_computed::<Namespace>(some_namespace_id)?;
             let symbols = namespace.symbols.clone();
 
+            let ancestors = Self::get_ancestors(some_namespace_id.as_base(), context);
+
+
             // Add the symbols if they don't already exist
             // We support shadowing, so we don't need to check for duplicates
             for symbol_id in symbols.into_iter() {
+                // Where is the symbol visible from?
+                let Some(VisibleWithin(scope)) = context.try_get_computed::<VisibleWithin>(symbol_id) else {
+                    panic!("internal compiler error: couldn't calculate visibility");
+                };
+
+                // If we aren't in a scope where the symbol is visible,
+                // don't add it
+                if !ancestors.contains(&scope) {
+                    continue;
+                }
+
                 let symbol = context.get(symbol_id);
                 let name = symbol.name.name.clone();
 
@@ -130,7 +144,6 @@ impl SymbolTable {
             if !ancestors.contains(&scope) {
                 continue;
             }
-
 
             let symbol = context.get(symbol_id);
             let name = symbol.name.name.clone();

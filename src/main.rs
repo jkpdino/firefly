@@ -33,7 +33,7 @@ fn main() {
         ast_lowerer.lower_items(ast);
     }
 
-    // println!("{}", ast_lowerer.context().display());
+    println!("{}", ast_lowerer.context().display());
 }
 
 /*
