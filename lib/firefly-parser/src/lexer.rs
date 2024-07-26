@@ -49,6 +49,9 @@ pub enum Token<'a> {
     #[token("return")]
     ReturnKw,
 
+    #[token("as")]
+    AsKw,
+
     // Symbols
     #[token("(")]
     OpenParen,

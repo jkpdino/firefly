@@ -14,7 +14,6 @@ use crate::AstLowerer;
 impl AstLowerer {
     pub fn link_pass(&mut self, ast: &[Item]) {
         let Some(module) = self.get_module(ast) else {
-            println!("error: no module definition found");
             return;
         };
 

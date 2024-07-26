@@ -1,0 +1,7 @@
+module Test
+
+import std.fs
+import std.fs as fs
+import std.fs (File, open)
+import std.fs as fs (File, open)
+import std.fs (File, open as OpenFile)
