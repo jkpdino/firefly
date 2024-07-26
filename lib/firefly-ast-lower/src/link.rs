@@ -100,7 +100,7 @@ impl AstLowerer {
             // If the item we're accessing isn't a module,
             // throw an error
             if let Some(next_id) = next {
-                if self.context.has::<Module>(next_id) {
+                if !self.context.has::<Module>(next_id) {
                     println!("error: {} is not a module", segment.name.item);
                     return None;
                 }

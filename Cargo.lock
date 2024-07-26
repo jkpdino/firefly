@@ -244,6 +244,7 @@ name = "firefly-hir"
 version = "0.1.0"
 dependencies = [
  "firefly-span",
+ "itertools 0.13.0",
 ]
 
 [[package]]

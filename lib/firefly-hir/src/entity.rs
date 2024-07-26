@@ -29,7 +29,7 @@ pub enum EntityKind {
 
 /// An entity is the base data class in `firefly-ecs`
 pub struct Entity {
-    pub(crate) _id: Id<Entity>,
+    pub(crate) id: Id<Entity>,
     pub(crate) kind: EntityKind,
     pub(crate) parent: Option<Id<Entity>>,
     pub(crate) children: Vec<Id<Entity>>,

@@ -1,8 +1,8 @@
 use std::collections::{HashMap, VecDeque};
 
-use crate::{ComputedComponent, HirContext, Id};
+use crate::{ComputedComponent, Entity, HirContext, Id};
 
-use super::{Import, Namespace, Symbol};
+use super::{Import, Namespace, Symbol, VisibleWithin};
 
 /// Stores a delta so that scopes can quickly be restored
 #[derive(Clone, Debug)]
@@ -73,9 +73,24 @@ impl ComputedComponent for SymbolTable {
             let namespace = context.try_get_computed::<Namespace>(some_namespace_id)?;
             let symbols = namespace.symbols.clone();
 
+            // We're looking at 4-6 ancestors on average, so its faster to use
+            // a Vec than a HashSet
+            let ancestors = Self::get_ancestors(some_namespace_id.as_base(), context);
+
             // Add the symbols if they don't already exist
             // We support shadowing, so we don't need to check for duplicates
             for symbol_id in symbols.into_iter() {
+                // Where is the symbol visible from?
+                let Some(VisibleWithin(scope)) = context.try_get_computed::<VisibleWithin>(symbol_id) else {
+                    panic!("internal compiler error: couldn't calculate visibility");
+                };
+
+                // If we aren't in a scope where the symbol is visible,
+                // don't add it
+                if !ancestors.contains(&scope) {
+                    continue;
+                }
+
                 let symbol = context.get(symbol_id);
                 let name = symbol.name.name.clone();
 
@@ -84,24 +99,35 @@ impl ComputedComponent for SymbolTable {
 
             if follow_imports {
                 // Go through imports and add them to the symbol table
-                let imports = context.children(some_namespace_id)
+                context.children(some_namespace_id)
                     .iter()
                     .cloned()
-                    .filter_map(|id| context.cast_id::<Import>(id))
-                    .map(|id| context.get(id))
-                    .collect::<Vec<_>>();
-
-                for import in imports {
-                    entities_to_traverse.push_back((import.namespace, false))
-                }
+                    .filter_map(|id| context.try_get::<Import>(id))
+                    .for_each(|import| entities_to_traverse.push_back((import.namespace, false)));
 
                 if let Some(parent_id) = context.get(some_namespace_id.as_base()).parent {
-                    entities_to_traverse.push_back((parent_id, true));
+                    entities_to_traverse.push_back((parent_id, follow_imports));
                 }
             }
         }
 
         return Some(symbol_table);
+    }
+}
+
+impl SymbolTable {
+    /// Return a list of the ancestors of an entity
+    fn get_ancestors(entity: Id<Entity>, context: &HirContext) -> Vec<Id<Entity>> {
+        let mut ancestors = vec![entity];
+
+        let mut current = entity;
+        while let Some(parent) = context.parent(current) {
+            ancestors.push(parent);
+            current = parent;
+        }
+
+
+        return ancestors;
     }
 }
 

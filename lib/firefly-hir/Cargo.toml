@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 firefly-span = { path = "../firefly-span" }
+itertools = "0.13.0"
