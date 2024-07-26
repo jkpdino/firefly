@@ -8,13 +8,19 @@
 - [x] Rename bindings to locals
 - [ ] Add modules
 - [ ] Add visibilities
-- [ ] Add strings
 - [ ] Add imports
 - [ ] Add structs
+- [ ] Add strings
 - [ ] Add members
 - [ ] Add globals
 - [ ] Add function calls
 - [ ] Add system functions
+
+# Error Handling
+
+- [ ] Passes on HIR
+- [ ] Lower errors
+- [ ] Make list of rules
 
 # VM
 

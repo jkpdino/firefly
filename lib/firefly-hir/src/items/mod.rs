@@ -16,9 +16,16 @@ pub struct TypeAlias {
 
 component!(base(EntityKind::TypeAlias) typealiases: TypeAlias);
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Module {
     pub id: Id<Module>,
 }
 
 component!(base(EntityKind::Module) modules: Module);
+
+#[derive(Clone, Debug, Default)]
+pub struct SourceFile {
+    pub id: Id<SourceFile>
+}
+
+component!(base(EntityKind::SourceFile) source_files: SourceFile);

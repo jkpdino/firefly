@@ -23,6 +23,15 @@ pub struct Root {
 
 component!(base(EntityKind::Root) roots: Root);
 
+impl Name {
+    pub fn internal(s: &str) -> Name {
+        Name {
+            name: s.to_string(),
+            span: Default::default()
+        }
+    }
+}
+
 
 impl std::fmt::Debug for Name {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

@@ -12,7 +12,7 @@ pub struct FuncParam {
 #[derive(Debug)]
 pub struct FuncSignature {
     pub params:     Vec<Spanned<FuncParam>>,
-    pub return_ty:  Spanned<Ty>,
+    pub return_ty:  Option<Spanned<Ty>>,
 }
 
 #[derive(Debug)]
@@ -29,7 +29,7 @@ impl Func {
         visibility: Option<Spanned<Visibility>>,
         name: Name,
         params: Vec<Spanned<FuncParam>>,
-        return_ty: Spanned<Ty>,
+        return_ty: Option<Spanned<Ty>>,
         body: CodeBlock,
     ) -> Self {
         Self {

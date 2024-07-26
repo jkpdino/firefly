@@ -6,7 +6,8 @@ use firefly_ast::{
     stmt::{Stmt, CodeBlock},
     func::{Func, FuncParam},
     item::Item,
-    struct_def::{StructDef, Field}
+    struct_def::{StructDef, Field},
+    module::Module,
 };
 use crate::{
     error::LexerError,
@@ -68,6 +69,15 @@ Item: Item = {
     <Struct> => Item::StructDef(<>),
     <Function> => Item::Func(<>),
     <Field> => Item::Field(<>),
+    <Module> => Item::Module(<>),
+}
+
+// Modules
+Module = { Spanned<UnspannedModule> }
+UnspannedModule: Module = {
+    "module" <path: Path> ";"? => Module {
+        path
+    }
 }
 
 // Structs
@@ -97,13 +107,17 @@ FuncParam: Spanned<FuncParam> = {
 
 Function = { Spanned<UnspannedFunction> }
 UnspannedFunction: Func = {
-    <visibility: Visibility?> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" "->" <return_ty: Type> <body: CodeBlock> => Func::new(
+    <visibility: Visibility?> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" <return_ty:ReturnType?> <body: CodeBlock> => Func::new(
         visibility,
         name,
         params,
         return_ty,
         body,
     )
+}
+
+ReturnType: Spanned<Ty> = {
+    "->" <return_ty:Type> => return_ty,
 }
 
 // Statements

@@ -8,3 +8,9 @@ pub struct Symbol {
 }
 
 component!(symbols: Symbol);
+
+/// An entity with passthrough will give all its symbols to a namespace
+#[derive(Clone, Debug)]
+pub struct Passthrough;
+
+component!(passthroughs: Passthrough);

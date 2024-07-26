@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use display::DisplayContext;
 
 use crate::{
-    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{Module, StructDef, TypeAlias}, resolve::{Import, Namespace, StaticMemberTable, Symbol, SymbolTable}, stmt::{Local, CodeBlock}, ty::{HasType, Ty}, util::Root, value::HasValue, AccessComponent, ComputedComponent, Entity, EntityKind
+    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{Module, SourceFile, StructDef, TypeAlias}, resolve::{Import, Namespace, Passthrough, StaticMemberTable, Symbol, SymbolTable}, stmt::{CodeBlock, Local}, ty::{HasType, Ty}, util::Root, value::HasValue, AccessComponent, ComponentConstructor, ComputedComponent, Entity, EntityKind
 };
 
 // The HirContext keeps track of every entity in the system,
@@ -30,7 +30,10 @@ ecs! {
         callables: Callable,
         locals: Local,
 
+        source_files: SourceFile,
+
         symbols: Symbol,
+        passthroughs: Passthrough,
         imports: Import,
         namespaces: Namespace,
         symbol_tables: SymbolTable,
@@ -47,13 +50,13 @@ impl HirContext {
     /// with that type.
     ///
     /// Panics if the entity already exists
-    pub fn create<C: BaseComponent>(&mut self, component: C) -> Id<C>
+    pub fn create<C: ComponentConstructor>(&mut self, component: C) -> Id<C::Base>
     where
-        Self: AccessComponent<C>,
+        Self: AccessComponent<C::Base>,
     {
         // Create the new entity, checking if it already exists
-        let component_id = component.id();
-        let entity_id = component.id().as_base();
+        let component_id = component.base_id();
+        let entity_id = component.base_id().as_base();
 
         self.ensure_entity_exists(entity_id);
         let Some(entity) = self.entities.get_mut(&entity_id) else {
@@ -64,14 +67,34 @@ impl HirContext {
             panic!("tried to create duplicate entities")
         }
 
-        entity.kind = C::ENTITY_KIND;
+        entity.kind = C::Base::ENTITY_KIND;
+
+        // Add the components and get the base component
+        let base = component.create(self);
 
         // Now add the base component
-        let component_map = <Self as AccessComponent<C>>::get_components_mut(self);
-
-        component_map.insert(entity_id, component);
+        let component_map = <Self as AccessComponent<C::Base>>::get_components_mut(self);
+        component_map.insert(entity_id, base);
 
         component_id
+    }
+
+    /// Adds a new base component to the hir and give it
+    /// a parent
+    ///
+    /// Base components have an associated id and
+    /// entity kind, so this creates a new entity for them
+    /// with that specified kind, and adds a new component
+    /// with that type.
+    ///
+    /// Panics if the entity already exists
+    pub fn create_with_parent<C: ComponentConstructor>(&mut self, parent: Id<impl Component>, component: C) -> Id<C::Base>
+    where 
+        Self: AccessComponent<C::Base>
+    {
+        let component_id = self.create(component);
+        self.link(parent, component_id);
+        return component_id;
     }
 
     /// Ensures a record for the entity exists, and marks
@@ -174,6 +197,18 @@ impl HirContext {
         }
 
         Some(unsafe { id.as_base().cast() })
+    }
+
+    /// Checks if an entity has a component
+    pub fn has<C: Component>(&self, id: Id<impl Component>) -> bool
+    where
+        Self: AccessComponent<C>,
+    {
+        let entity_id = id.as_base();
+
+        let component_map = <Self as AccessComponent<C>>::get_components(self);
+
+        return component_map.contains_key(&entity_id);
     }
 
     /// Creates a link between a parent and child entity
