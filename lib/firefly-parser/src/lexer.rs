@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use firefly_span::BytePos;
+use firefly_span::{BytePos, Span};
 use logos::Logos;
 
 use crate::error::LexerError;
@@ -187,8 +187,8 @@ impl<'a> Token<'a> {
     pub fn to_lalr_triple(
         (t, r): (Result<Token<'a>, LexerError>, Range<usize>),
         base: BytePos,
-    ) -> Result<(BytePos, Token, BytePos), LexerError> {
-        let t = t?;
+    ) -> Result<(BytePos, Token, BytePos), (LexerError, Span)> {
+        let t = t.map_err(|e| (e, Span::new(base + r.start, base + r.end)))?;
         Ok((base + r.start, t, base + r.end))
     }
 }

@@ -11,7 +11,7 @@ mod error;
 mod lexer;
 lalrpop_mod!(parser);
 
-pub fn parse(source: &str, base: BytePos, emitter: &mut Emitter) -> Result<Vec<Item>, ()> {
+pub fn parse(source: &str, base: BytePos, emitter: &Emitter) -> Result<Vec<Item>, ()> {
     let tokens = Token::lexer(source)
         .spanned()
         .map(|tok| Token::to_lalr_triple(tok, base));

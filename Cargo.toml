@@ -11,7 +11,7 @@ firefly-ast = { path = "lib/firefly-ast" }
 firefly-ast-lower = { path = "lib/firefly-ast-lower" }
 firefly-lang = { path = "lib/firefly-lang" }
 firefly-errors = { path = "lib/firefly-errors" }
-clap = { version = "^4.5", features = ["derive"] }
+firefly-driver = { path = "lib/firefly-driver" }
 itertools = "0.13.0"
 
 [workspace]

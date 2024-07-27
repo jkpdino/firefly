@@ -31,7 +31,7 @@ pub struct ParserErrorEnv<'a>(pub(crate) &'a Emitter);
 impl ParserErrorEnv<'_> {
 	pub fn emit(
 		&self,
-		error: ParseError<BytePos, Token, LexerError>,
+		error: ParseError<BytePos, Token, (LexerError, Span)>,
         expecting: Option<Expecting>
 	) {
 		let expected_message = |expected_tokens: &[String]| match expecting {
@@ -81,29 +81,33 @@ impl ParserErrorEnv<'_> {
 				));
 				Diagnostic::new(Level::Error, message).with_source(span)
 			}
-			ParseError::User { error: LexerError::NewlineInString } => {
+			ParseError::User { error: (LexerError::NewlineInString, span) } => {
 				let message = DiagnosticMessage::Str(format!(
                     "found newline in string literal"
                 ));
 				Diagnostic::new(Level::Error, message)
+					.with_source(span)
 			}
-            ParseError::User { error: LexerError::UnclosedString } => {
+            ParseError::User { error: (LexerError::UnclosedString, span) } => {
                 let message = DiagnosticMessage::Str(format!(
                     "unclosed string literal"
                 ));
                 Diagnostic::new(Level::Error, message)
+					.with_source(span)
             }
-            ParseError::User { error: LexerError::UnclosedEscape } => {
+            ParseError::User { error: (LexerError::UnclosedEscape, span) } => {
                 let message = DiagnosticMessage::Str(format!(
                     "unclosed escape sequence"
                 ));
                 Diagnostic::new(Level::Error, message)
+					.with_source(span)
             }
-            ParseError::User { error: LexerError::Other } => {
+            ParseError::User { error: (LexerError::Other, span) } => {
                 let message = DiagnosticMessage::Str(format!(
                     "unexpected error"
                 ));
                 Diagnostic::new(Level::Error, message)
+					.with_source(span)
             }
 		};
 

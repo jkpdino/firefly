@@ -26,7 +26,7 @@ grammar<'source, 'env>(
 
 extern {
     type Location = BytePos;
-    type Error = LexerError;
+    type Error = (LexerError, Span);
     enum Token<'source> {
         "ident" => Token::Ident(<&'source str>),
 

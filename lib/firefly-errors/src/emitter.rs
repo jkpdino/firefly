@@ -1,9 +1,9 @@
-use std::sync::Arc;
+use std::sync::{atomic::AtomicBool, Arc};
 
 use firefly_span::{SourceMap, Span};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, StandardStreamLock, WriteColor};
 
-use crate::diagnostic::Diagnostic;
+use crate::diagnostic::{Diagnostic, Level};
 use std::io::Write;
 
 pub enum Destination {
@@ -13,6 +13,8 @@ pub enum Destination {
 pub struct Emitter {
 	destination: Destination,
 
+	triggered: AtomicBool,
+
 	source_map: Option<Arc<SourceMap>>,
 }
 
@@ -20,6 +22,7 @@ impl Emitter {
 	pub fn new(destination: Destination, source_map: &Arc<SourceMap>) -> Emitter {
 		Emitter {
 			destination,
+			triggered: AtomicBool::new(false),
 			source_map: Some(source_map.clone()),
 		}
 	}
@@ -29,6 +32,10 @@ impl Emitter {
 		spec.set_fg(color).set_bold(is_bold);
 
 		stream.set_color(&spec).unwrap();
+	}
+
+	pub fn has_triggered(&self) -> bool {
+		self.triggered.load(std::sync::atomic::Ordering::Relaxed)
 	}
 
 	pub fn emit(&self, diagnostic: Diagnostic) -> std::io::Result<()> {
@@ -57,6 +64,10 @@ impl Emitter {
 
 		for span in diagnostic.source {
 			self.write_span(&mut output, span)?;
+		}
+
+		if let Level::Error = diagnostic.level {
+			self.triggered.store(true, std::sync::atomic::Ordering::Relaxed);
 		}
 
 		// As of right now, get the color for the level
