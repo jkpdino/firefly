@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use firefly_ast::item::Item;
 use firefly_errors::emitter::Emitter;
-use firefly_hir::{HirContext, IntoDiagnostic};
+use firefly_hir::{items::SourceFile, HirContext, IntoDiagnostic};
 use firefly_span::Spanned;
 
 mod items;

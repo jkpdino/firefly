@@ -76,6 +76,8 @@ impl AstLowerer {
 
                     continue;
                 }
+
+                Item::Error => continue
             };
 
             // Link it to the parent
