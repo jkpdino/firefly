@@ -1,9 +1,8 @@
 use firefly_ast::Name;
 use firefly_error_messages::DiagnosticMessage;
 use firefly_errors::diagnostic::{Diagnostic, DiagnosticId, Level};
+use firefly_hir::{HirContext, IntoDiagnostic};
 use firefly_span::Span;
-
-use super::IntoDiagnostic;
 
 pub enum SymbolError {
     NotFound(Name),
@@ -15,7 +14,7 @@ pub enum SymbolError {
 }
 
 impl IntoDiagnostic for SymbolError {
-    fn into_diagnostic(&self) -> firefly_errors::diagnostic::Diagnostic {
+    fn into_diagnostic(&self, _context: &HirContext) -> firefly_errors::diagnostic::Diagnostic {
         match self {
             SymbolError::NotFound(name) => {
                 Diagnostic::new(Level::Error, DiagnosticMessage::Str(format!("symbol {} not found", name.item)))

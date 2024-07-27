@@ -1,8 +1,7 @@
 use firefly_error_messages::DiagnosticMessage;
 use firefly_errors::diagnostic::{Diagnostic, DiagnosticId, Level};
+use firefly_hir::{HirContext, IntoDiagnostic};
 use firefly_span::Span;
-
-use super::IntoDiagnostic;
 
 pub enum StringError {
     InvalidHexSequence(String, Span),
@@ -11,7 +10,7 @@ pub enum StringError {
 }
 
 impl IntoDiagnostic for StringError {
-    fn into_diagnostic(&self) -> firefly_errors::diagnostic::Diagnostic {
+    fn into_diagnostic(&self, _context: &HirContext) -> firefly_errors::diagnostic::Diagnostic {
         match self {
             StringError::InvalidEscapeSequence(span) => {
                 Diagnostic::new(Level::Error,

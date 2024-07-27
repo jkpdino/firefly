@@ -281,6 +281,7 @@ dependencies = [
 name = "firefly-hir"
 version = "0.1.0"
 dependencies = [
+ "firefly-errors",
  "firefly-span",
  "itertools 0.13.0",
 ]

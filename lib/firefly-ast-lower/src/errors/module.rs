@@ -1,9 +1,7 @@
 use firefly_error_messages::DiagnosticMessage;
 use firefly_errors::diagnostic::{Diagnostic, DiagnosticId, Level};
-use firefly_hir::Name;
+use firefly_hir::{HirContext, IntoDiagnostic, Name};
 use firefly_span::Span;
-
-use super::IntoDiagnostic;
 
 pub enum ModuleError {
     NotAModule(Name),
@@ -13,7 +11,7 @@ pub enum ModuleError {
 }
 
 impl IntoDiagnostic for ModuleError {
-    fn into_diagnostic(&self) -> firefly_errors::diagnostic::Diagnostic {
+    fn into_diagnostic(&self, _context: &HirContext) -> firefly_errors::diagnostic::Diagnostic {
         match self {
             ModuleError::NotAModule(name) => {
                 Diagnostic::new(Level::Error,
