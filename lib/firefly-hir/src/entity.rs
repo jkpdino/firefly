@@ -14,6 +14,7 @@ pub enum EntityKind {
     Func,
     TypeAlias,
     Import,
+    Global,
 
     Ty,
     Value,
@@ -44,7 +45,7 @@ impl<T: Component> Id<T> {
 
     /// ONLY perform this function with a guarantee
     /// the component will exist
-    pub(crate) unsafe fn cast<C: Component>(&self) -> Id<C> {
+    pub unsafe fn cast<C: Component>(&self) -> Id<C> {
         Id(self.0, PhantomData)
     }
 }

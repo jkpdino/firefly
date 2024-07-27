@@ -1,4 +1,4 @@
-use crate::{ty::Ty, EntityKind, Id};
+use crate::{ty::Ty, value::Value, EntityKind, Id};
 
 #[derive(Clone, Debug)]
 pub struct StructDef {
@@ -29,3 +29,12 @@ pub struct SourceFile {
 }
 
 component!(base(EntityKind::SourceFile) source_files: SourceFile);
+
+#[derive(Clone, Debug)]
+pub struct Global {
+    pub id: Id<Global>,
+    pub ty: Ty,
+    pub default_value: Value
+}
+
+component!(base(EntityKind::Global) globals: Global);

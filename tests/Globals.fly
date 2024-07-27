@@ -1,5 +1,7 @@
-var counter: int
+module Test;
+
+var counter: int = 0
 
 func main() {
-    print(counter)
+    counter
 }
