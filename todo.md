@@ -10,6 +10,7 @@
 - [x] Add visibilities
 - [x] Add imports
 - [ ] Add strings
+- [ ] Add global variables
 - [ ] Add structs
 - [ ] Add members
 - [ ] Add globals

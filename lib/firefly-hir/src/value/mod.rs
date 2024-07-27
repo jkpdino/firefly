@@ -10,6 +10,7 @@ pub use has_value::HasValue;
 #[derive(Debug, Clone)]
 pub enum LiteralValue {
     Integer(String),
+    String(String),
 }
 
 #[derive(Debug, Clone)]
