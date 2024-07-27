@@ -9,7 +9,7 @@ use firefly_hir::{
 use firefly_span::Spanned;
 use itertools::Itertools;
 
-use crate::AstLowerer;
+use crate::{errors::ModuleError, AstLowerer};
 
 impl AstLowerer {
     pub fn link_pass(&mut self, ast: &[Item]) {
@@ -69,9 +69,9 @@ impl AstLowerer {
                     item.id.as_base()
                 }
 
-                Item::Module(_) => {
+                Item::Module(Spanned { span, .. }) => {
                     if self.context.try_get::<SourceFile>(parent).is_none() {
-                        println!("error: module declaration found inside other object")
+                        self.emit(ModuleError::ModuleDeclarationInside(*span));
                     }
 
                     continue;
@@ -91,12 +91,13 @@ impl AstLowerer {
 
         let module_def = match &module_defs[..] {
             [] => {
-                println!("error: no module declaration found");
+                self.emit(ModuleError::NoModuleFound);
                 return None
             }
             [module_def] => *module_def,
-            [..] => { 
-                println!("error: multiple module declarations found");
+            modules @ [..] => { 
+                let spans = modules.iter().map(|module| module.span).collect_vec();
+                self.emit(ModuleError::MultipleModulesFound(spans));
                 return None
             }
         };
@@ -116,7 +117,8 @@ impl AstLowerer {
             // throw an error
             if let Some(next_id) = next {
                 if !self.context.has::<Module>(next_id) {
-                    println!("error: {} is not a module", segment.name.item);
+                    self.emit(ModuleError::NotAModule(self.lower_name(&segment.name)));
+
                     return None;
                 }
 

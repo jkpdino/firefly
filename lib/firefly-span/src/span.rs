@@ -12,6 +12,7 @@ pub struct Span {
 ///
 /// Associates a span with a value
 ///
+#[derive(Clone)]
 pub struct Spanned<T> {
 	pub item: T,
 	pub span: Span,

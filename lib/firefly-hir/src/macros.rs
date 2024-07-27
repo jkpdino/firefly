@@ -50,17 +50,19 @@ macro_rules! ecs {
     ) => {
         $v struct $ecs_name {
             root: Id<Root>,
+            pub(crate) emitter: std::sync::Arc<firefly_errors::emitter::Emitter>,
         $(
             pub(crate) $name: HashMap<Id<Entity>, $component>
         ),*
         }
 
         impl $ecs_name {
-            pub fn new() -> Self {
+            pub fn new(emitter: &std::sync::Arc<firefly_errors::emitter::Emitter>) -> Self {
                 let root = Root::default();
 
                 let mut context = HirContext {
                     root: root.id(),
+                    emitter: emitter.clone(),
 
                     $(
                         $name: HashMap::new()

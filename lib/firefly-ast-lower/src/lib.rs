@@ -1,5 +1,8 @@
+use std::sync::Arc;
+
 use firefly_ast::item::Item;
-use firefly_hir::{items::SourceFile, HirContext};
+use firefly_errors::emitter::Emitter;
+use firefly_hir::{HirContext, IntoDiagnostic};
 use firefly_span::Spanned;
 
 mod items;
@@ -9,14 +12,15 @@ mod ty;
 mod util;
 mod stmt;
 mod value;
+pub mod errors;
 
 pub struct AstLowerer {
     context: HirContext,
 }
 
 impl AstLowerer {
-    pub fn new() -> AstLowerer {
-        let mut context = HirContext::new();
+    pub fn new(emitter: Arc<Emitter>) -> AstLowerer {
+        let mut context = HirContext::new(&emitter);
         firefly_lang::create_lang_module(&mut context);
 
         let mut lowerer = Self { context };
@@ -60,5 +64,9 @@ impl AstLowerer {
 
     pub fn context(&self) -> &HirContext {
         &self.context
+    }
+
+    pub fn emit(&self, diagnostic: impl IntoDiagnostic) {
+        self.context.emit(diagnostic);
     }
 }

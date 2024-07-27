@@ -11,7 +11,7 @@ use firefly_ast::{
     import::{Import, ImportSymbolList, ImportSymbol}
 };
 use crate::{
-    error::LexerError,
+    error::{LexerError, ParserErrorEnv, Expecting},
     lexer::Token,
 };
 use firefly_span::{
@@ -20,11 +20,13 @@ use firefly_span::{
     Spanned
 };
 
-grammar<'source>;
+grammar<'source, 'env>(
+    errors: &'env ParserErrorEnv<'source>
+);
 
 extern {
     type Location = BytePos;
-    type Error = LexerError;
+    type Error = (LexerError, Span);
     enum Token<'source> {
         "ident" => Token::Ident(<&'source str>),
 
@@ -76,6 +78,8 @@ Item: Item = {
     <Field> => Item::Field(<>),
     <Module> => Item::Module(<>),
     <Import> => Item::Import(<>),
+
+    ExpectItem => Item::Error
 }
 
 // Modules
@@ -83,7 +87,7 @@ Module = { Spanned<UnspannedModule> }
 UnspannedModule: Module = {
     "module" <path: Path> ";"? => Module {
         path
-    }
+    },
 }
 
 // Imports
@@ -94,7 +98,7 @@ UnspannedImport: Import = {
         module,
         alias,
         symbol_list
-    )
+    ),
 }
 
 ImportSymbolList: ImportSymbolList = {
@@ -208,7 +212,9 @@ PathSegments: Vec<PathSegment> = {
     <mut v: PathSegments> "." <s: PathSegment> => {
         v.push(s);
         v
-    }
+    },
+    <v: PathSegments> "." Recover => vec![]
+    
 }
 
 PathSegment: PathSegment = {
@@ -242,4 +248,42 @@ CommaList<T>: Vec<T> = {
 
 Name: Spanned<String> = {
     Spanned<"ident"> => Spanned::new(<>.item.into(), <>.span)
+}
+
+
+// Error Handling
+
+#[inline]
+Recover: () = {
+    ! => {
+        errors.emit(<>.error, None);
+    }
+}
+
+#[inline]
+ExpectItem: () = {
+    ! => {
+        errors.emit(<>.error, Some(Expecting::Item));
+    }
+}
+
+#[inline]
+ExpectType: () = {
+    ! => {
+        errors.emit(<>.error, Some(Expecting::Type));
+    }
+}
+
+#[inline]
+ExpectValue: () = {
+    ! => {
+        errors.emit(<>.error, Some(Expecting::Value));
+    }
+}
+
+#[inline]
+ExpectPath: () = {
+    ! => {
+        errors.emit(<>.error, Some(Expecting::Path));
+    }
 }

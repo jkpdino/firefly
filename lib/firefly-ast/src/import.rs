@@ -3,7 +3,7 @@ use firefly_hir::resolve::Import as HirImport;
 
 use crate::{Name, Path};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Import {
     pub id: Id<HirImport>,
     pub module: Path,

@@ -32,4 +32,4 @@
 
 # Bugs
 
-- [ ] Add invisible items but mark them as such
+- [ ] Add invisible items to a namespace but mark them as such

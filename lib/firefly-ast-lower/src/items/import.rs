@@ -2,7 +2,7 @@ use firefly_ast::{import::Import as AstImport, Path};
 use firefly_hir::{items::Module, resolve::{Import as HirImport, ImportRequest, Symbol}, Id};
 use itertools::Itertools;
 
-use crate::AstLowerer;
+use crate::{errors::{ModuleError, SymbolError}, AstLowerer};
 
 impl AstLowerer {
     pub fn lower_import(&mut self, import: &AstImport) {
@@ -42,7 +42,7 @@ impl AstLowerer {
             // throw an error
             if let Some(next_id) = next {
                 if !self.context.has::<Module>(next_id) {
-                    println!("error: {} is not a module", segment.name.item);
+                    self.emit(ModuleError::NotAModule(self.lower_name(&segment.name)));
                     return None;
                 }
 
@@ -52,7 +52,7 @@ impl AstLowerer {
 
             // If the module doesn't exist, throw an error
             else {
-                println!("error: {} does not exist", segment.name.item);
+                self.emit(SymbolError::NotFound(segment.name.clone()));
                 return None;
             }
         }

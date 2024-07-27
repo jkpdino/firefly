@@ -10,7 +10,8 @@ firefly-hir = { path = "lib/firefly-hir" }
 firefly-ast = { path = "lib/firefly-ast" }
 firefly-ast-lower = { path = "lib/firefly-ast-lower" }
 firefly-lang = { path = "lib/firefly-lang" }
-clap = { version = "^4.5", features = ["derive"] }
+firefly-errors = { path = "lib/firefly-errors" }
+firefly-driver = { path = "lib/firefly-driver" }
 itertools = "0.13.0"
 
 [workspace]
@@ -24,4 +25,6 @@ members = [
     "lib/firefly-ast-lower",
     "lib/firefly-driver",
     "lib/firefly-lang",
+    "lib/firefly-errors",
+    "lib/firefly-error-messages",
 ]

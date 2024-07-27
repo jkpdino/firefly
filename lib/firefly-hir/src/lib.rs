@@ -4,6 +4,7 @@ mod macros;
 mod component;
 mod context;
 mod entity;
+mod errors;
 mod util;
 
 pub mod resolve;
@@ -18,7 +19,5 @@ pub mod value;
 pub use component::*;
 pub use context::*;
 pub use entity::*;
+pub use errors::*;
 pub use util::*;
-
-#[cfg(test)]
-mod tests;

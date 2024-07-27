@@ -32,7 +32,7 @@ impl PathSegment {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Path {
     pub segments: Vec<PathSegment>,
     pub span: Span,
