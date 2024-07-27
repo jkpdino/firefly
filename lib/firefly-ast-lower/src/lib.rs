@@ -43,6 +43,13 @@ impl AstLowerer {
                 self.lower_func(item, parent);
             }
 
+            Item::Field(Spanned { item, .. }) => {
+                let parent = self.context.parent(item.id.as_base()).unwrap();
+                if self.context.has::<SourceFile>(parent) {
+                    self.lower_global(item, parent);
+                }
+            }
+
             Item::StructDef(Spanned { .. }) => {
 
             }
