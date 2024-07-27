@@ -6,7 +6,7 @@ use std::{collections::HashMap, fmt::Debug};
 use display::DisplayContext;
 
 use crate::{
-    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{Module, SourceFile, StructDef, TypeAlias}, resolve::{Import, Namespace, Passthrough, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, stmt::{CodeBlock, Local}, ty::{HasType, Ty}, util::Root, value::HasValue, AccessComponent, ComponentConstructor, ComputedComponent, Entity, EntityKind
+    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{Global, Module, SourceFile, StructDef, TypeAlias}, resolve::{Import, Namespace, Passthrough, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, stmt::{CodeBlock, Local}, ty::{HasType, Ty}, util::Root, value::HasValue, AccessComponent, ComponentConstructor, ComputedComponent, Entity, EntityKind
 };
 
 // The HirContext keeps track of every entity in the system,
@@ -19,6 +19,7 @@ ecs! {
         // Base items
         roots: Root,
         funcs: Func,
+        globals: Global,
         modules: Module,
         structs: StructDef,
         typealiases: TypeAlias,
@@ -125,6 +126,8 @@ impl HirContext {
         Self: AccessComponent<C>,
     {
         let entity_id = entity.as_base();
+        self.ensure_entity_exists(entity_id);
+
         let component_map = <Self as AccessComponent<C>>::get_components_mut(self);
 
         component_map.insert(entity_id, component);

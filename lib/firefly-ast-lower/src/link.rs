@@ -39,6 +39,16 @@ impl AstLowerer {
                     item.id.as_base()
                 }
 
+                Item::Field(Spanned { item, .. }) => {
+                    let name = self.lower_name(&item.name);
+                    let visibility = self.lower_visibility(&item.visibility);
+
+                    let symbol = Symbol { name, visibility };
+                    self.context.add_component(item.id, symbol);
+
+                    item.id
+                }
+
                 Item::StructDef(Spanned { item, .. }) => {
                     let name = self.lower_name(&item.name);
                     let visibility = self.lower_visibility(&item.visibility);
@@ -66,8 +76,6 @@ impl AstLowerer {
 
                     continue;
                 }
-
-                _ => continue,
             };
 
             // Link it to the parent

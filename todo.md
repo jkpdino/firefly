@@ -9,11 +9,10 @@
 - [x] Add modules
 - [x] Add visibilities
 - [x] Add imports
-- [ ] Add strings
-- [ ] Add global variables
+- [x] Add strings
+- [x] Add global variables
 - [ ] Add structs
 - [ ] Add members
-- [ ] Add globals
 - [ ] Add function calls
 - [ ] Add system functions
 - [ ] Add control flow

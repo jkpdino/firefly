@@ -113,11 +113,12 @@ Rename: Spanned<String> = {
 
 Field = { Spanned<UnspannedField> }
 UnspannedField: Field = {
-    <visibility: Visibility?> "var" <name: Name> ":" <ty: Type> => Field {
+    <visibility: Visibility?> "var" <name: Name> ":" <ty: Type> <default: EqualsValue?> ";"? => Field::new(
         visibility,
         name,
         ty,
-    }
+        default,
+    )
 }
 
 Struct = { Spanned<UnspannedStruct> }
@@ -127,6 +128,10 @@ UnspannedStruct: StructDef = {
         name,
         items,
     )
+}
+
+EqualsValue: Spanned<Value> = {
+    "=" <value: Value> => value
 }
 
 // Function
