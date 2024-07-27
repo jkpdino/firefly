@@ -11,6 +11,9 @@ lalrpop-util = "0.20.2"
 
 firefly-ast = { path = "../firefly-ast" }
 firefly-span = { path = "../firefly-span" }
+firefly-errors = { path = "../firefly-errors" }
+firefly-error-messages = { path = "../firefly-error-messages" }
+itertools = "0.13.0"
 
 
 [build-dependencies]

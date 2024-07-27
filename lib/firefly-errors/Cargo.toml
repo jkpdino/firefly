@@ -1,0 +1,9 @@
+[package]
+name = "firefly-errors"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+firefly-span = { path = "../firefly-span" }
+firefly-error-messages = { path= "../firefly-error-messages" }
+termcolor = "1.4.1"

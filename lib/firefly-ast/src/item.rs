@@ -8,5 +8,7 @@ pub enum Item {
     Field(Spanned<Field>),
     StructDef(Spanned<StructDef>),
     Module(Spanned<Module>),
-    Import(Spanned<Import>)
+    Import(Spanned<Import>),
+
+    Error
 }

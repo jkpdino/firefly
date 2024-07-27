@@ -5,6 +5,7 @@ use std::path::Path;
 use args::Args;
 use clap::Parser;
 use firefly_ast_lower::AstLowerer;
+use firefly_errors::emitter::Destination;
 use itertools::Itertools;
 
 fn main() {
@@ -16,9 +17,11 @@ fn main() {
         source_map.load_file(&Path::new(file)).unwrap();
     }
 
+    let mut emitter = firefly_errors::emitter::Emitter::new(Destination::stderr(), &source_map);
+
     // Parse files
     let parsed_ast = source_map.files().iter()
-        .map(|file | firefly_parser::parse(file.source_text(), file.start_pos).unwrap())
+        .filter_map(|file| firefly_parser::parse(file.source_text(), file.start_pos, &mut emitter).ok())
         .collect_vec();
 
 
