@@ -21,10 +21,6 @@
 
 # Error Handling
 
-- [ ] Move Emitter to HirContext
-- [ ] Move IntoDiagnostic to firefly-hir
-- [ ] Finish errors for SymbolTable
-
 - [ ] Passes on HIR
 - [ ] Lower errors
 - [ ] Make list of rules
