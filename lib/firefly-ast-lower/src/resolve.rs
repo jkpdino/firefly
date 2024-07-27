@@ -1,8 +1,8 @@
 use firefly_hir::{
-    resolve::{StaticMemberTable, SymbolTable, VisibleWithin}, ty::{HasType, Ty}, value::{HasValue, Value}, Entity, Id
+    resolve::{StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, ty::{HasType, Ty}, value::{HasValue, Value}, Entity, Id
 };
 
-use crate::AstLowerer;
+use crate::{errors::SymbolError, AstLowerer};
 use firefly_ast::Path;
 
 impl AstLowerer {
@@ -10,7 +10,11 @@ impl AstLowerer {
         let value_node = self.resolve_path(path, from, symbol_table)?;
 
         let Some(has_value) = self.context.try_get::<HasValue>(value_node) else {
-            println!("error: not a value");
+            let symbol_name_span = self.context.try_get::<Symbol>(value_node)
+                .expect("internal compiler error: doesn't have a symbol")
+                .name.span;
+
+            self.emit(SymbolError::NotAValue(path.span, symbol_name_span));
             return None;
         };
 
@@ -23,7 +27,11 @@ impl AstLowerer {
         let type_node = self.resolve_path(path, from, symbol_table)?;
 
         let Some(has_ty) = self.context.try_get::<HasType>(type_node) else {
-            println!("error: not a type");
+            let symbol_name_span = self.context.try_get::<Symbol>(type_node)
+                .expect("internal compiler error: doesn't have a symbol")
+                .name.span;
+
+            self.emit(SymbolError::NotAType(path.span, symbol_name_span));
             return None;
         };
 
@@ -36,10 +44,7 @@ impl AstLowerer {
         let first_segment = path.segments.first()?;
 
         let Some(mut current_entity) = symbol_table.get(&first_segment.name.item) else {
-            println!(
-                "error: can't find symbol {} in the current scope",
-                first_segment.name.item
-            );
+            self.emit(SymbolError::NotFound(first_segment.name.clone()));
 
             return None;
         };
@@ -53,10 +58,10 @@ impl AstLowerer {
             };
 
             let Some(symbol) = static_member_table.lookup(&segment.name.item) else {
-                println!(
-                    "error: can't find symbol {} in the namespace",
-                    segment.name.item
-                );
+                let current_entity_name_span = self.context.get(current_entity).name.span;
+
+                self.emit(SymbolError::NotFoundIn(segment.name.clone(), current_entity_name_span));
+
                 return None;
             };
 
@@ -66,11 +71,8 @@ impl AstLowerer {
 
             // todo: if it becomes a performance concern, cache ancestors
             if !self.has_ancestor(from, scope) {
-                // it isn't visible
-                println!(
-                    "error: symbol {} isn't visible",
-                    segment.name.item
-                );
+                let symbol_name = self.context.get(symbol).name.span;
+                self.emit(SymbolError::NotVisible(segment.name.clone(), symbol_name));
                 return None;
             }
 

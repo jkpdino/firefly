@@ -1,7 +1,7 @@
-use crate::AstLowerer;
+use crate::{errors::StringError, AstLowerer};
 use firefly_ast::value::Value as AstValue;
 use firefly_hir::{resolve::SymbolTable, ty::{Ty, TyKind}, value::{LiteralValue, Value as HirValue, ValueKind as HirValueKind}, Entity, Id};
-use firefly_span::Spanned;
+use firefly_span::{Span, Spanned};
 use itertools::Itertools;
 
 impl AstLowerer {
@@ -33,7 +33,7 @@ impl AstLowerer {
             }
 
             AstValue::StringLiteral(string) => {
-                let sanitized_str = self.sanitize_string(&string.item);
+                let sanitized_str = self.sanitize_string(&string.item, span);
 
                 println!("\"{sanitized_str}\"");
 
@@ -54,7 +54,7 @@ impl AstLowerer {
         HirValue::new(kind, ty, span)
     }
 
-    fn sanitize_string(&self, s: &str) -> String {
+    fn sanitize_string(&self, s: &str, span: Span) -> String {
         let is_raw = s.starts_with("raw");
         let s = if is_raw { &s[3..] } else { s };
 
@@ -63,7 +63,7 @@ impl AstLowerer {
         let mut inner = s[num_of_quotes..s.len() - num_of_quotes].to_string();
 
         if !is_raw {
-            inner = self.unescape_string(&inner);
+            inner = self.unescape_string(&inner, span);
         }
 
         if num_of_quotes >= 3 {
@@ -114,7 +114,7 @@ impl AstLowerer {
         return unindented;
     }
 
-    fn unescape_string(&self, s: &str) -> String {
+    fn unescape_string(&self, s: &str, span: Span) -> String {
         let mut unescaped = String::with_capacity(s.len());
 
         let mut remaining = s.chars();
@@ -151,12 +151,12 @@ impl AstLowerer {
                             }
 
                             if n_hex_digits == 0 {
-                                print!("error: invalid hex escape sequence");
+                                self.emit(StringError::NoHexSequence(span));
                                 continue;
                             }
 
                             let Some(c) = char::from_u32(hex.parse().unwrap()) else {
-                                print!("error: invalid hex escape sequence");
+                                self.emit(StringError::InvalidHexSequence(hex, span));
                                 continue;
                             };
 
@@ -164,7 +164,7 @@ impl AstLowerer {
                         }
 
                         _ => {
-                            println!("error: invalid escape sequence");
+                            self.emit(StringError::InvalidEscapeSequence(span));
                             continue;
                         }
                     };

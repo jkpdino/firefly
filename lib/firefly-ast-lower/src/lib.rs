@@ -1,4 +1,7 @@
+use std::sync::Arc;
+
 use firefly_ast::item::Item;
+use firefly_errors::emitter::Emitter;
 use firefly_hir::HirContext;
 use firefly_span::Spanned;
 
@@ -9,17 +12,19 @@ mod ty;
 mod util;
 mod stmt;
 mod value;
+pub mod errors;
 
 pub struct AstLowerer {
     context: HirContext,
+    emitter: Arc<Emitter>,
 }
 
 impl AstLowerer {
-    pub fn new() -> AstLowerer {
+    pub fn new(emitter: Arc<Emitter>) -> AstLowerer {
         let mut context = HirContext::new();
         firefly_lang::create_lang_module(&mut context);
 
-        let mut lowerer = Self { context };
+        let mut lowerer = Self { context, emitter };
 
         lowerer.resolve_type_aliases();
 

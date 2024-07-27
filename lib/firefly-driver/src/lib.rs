@@ -14,7 +14,7 @@ mod args;
 
 pub struct Driver {
     source_map: Arc<SourceMap>,
-    emitter: Emitter,
+    emitter: Arc<Emitter>,
     ast_lowerer: AstLowerer,
 
     print_hir: bool,
@@ -23,8 +23,8 @@ pub struct Driver {
 impl Driver {
     pub fn new() -> Driver {
         let source_map = SourceMap::new();
-        let emitter = Emitter::new(Destination::stderr(), &source_map);
-        let ast_lowerer = AstLowerer::new();
+        let emitter = Arc::new(Emitter::new(Destination::stderr(), &source_map));
+        let ast_lowerer = AstLowerer::new(emitter.clone());
 
         Driver { source_map, emitter, ast_lowerer, print_hir: false }
     }

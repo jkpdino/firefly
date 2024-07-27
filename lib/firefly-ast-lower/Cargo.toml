@@ -8,4 +8,6 @@ firefly-ast = { path = "../firefly-ast" }
 firefly-span = { path = "../firefly-span" }
 firefly-hir = { path = "../firefly-hir" }
 firefly-lang = { path = "../firefly-lang" }
+firefly-errors = { path = "../firefly-errors" }
+firefly-error-messages = { path = "../firefly-error-messages" }
 itertools = "0.13.0"

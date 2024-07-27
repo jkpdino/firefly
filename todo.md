@@ -13,7 +13,6 @@
 - [x] Add global variables
 - [ ] Add structs
 - [ ] Add members
-- [ ] Add globals
 - [ ] Add function calls
 - [ ] Add system functions
 - [ ] Add control flow
@@ -33,4 +32,4 @@
 
 # Bugs
 
-- [ ] Add invisible items but mark them as such
+- [ ] Add invisible items to a namespace but mark them as such

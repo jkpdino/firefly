@@ -241,6 +241,8 @@ name = "firefly-ast-lower"
 version = "0.1.0"
 dependencies = [
  "firefly-ast",
+ "firefly-error-messages",
+ "firefly-errors",
  "firefly-hir",
  "firefly-lang",
  "firefly-span",
