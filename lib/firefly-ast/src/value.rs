@@ -6,6 +6,7 @@ use crate::{Name, Path};
 pub enum Value {
     Tuple(Vec<Spanned<Value>>),
     IntegerLiteral(Name),
+    StringLiteral(Name),
     Path(Path),
     Call(Box<Spanned<Value>>, Vec<Spanned<Value>>),
 }

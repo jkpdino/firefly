@@ -47,6 +47,8 @@ extern {
         "as" => Token::AsKw,
 
         "integer" => Token::IntegerLiteral(<&'source str>),
+        "string" => Token::StringLiteral(<&'source str>),
+        "long_string" => Token::LongStringLiteral(<&'source str>),
 
         // Symbols
         "(" => Token::OpenParen,
@@ -177,6 +179,8 @@ Value = { Spanned<UnspannedValue> }
 UnspannedValue: Value = {
     "(" <items: CommaList<Value>> ")" => Value::Tuple(items),
     Spanned<"integer"> => Value::IntegerLiteral(Spanned::new(<>.item.into(), <>.span)),
+    Spanned<"string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
+    Spanned<"long_string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
     <func: Value> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
     <Path> => Value::Path(<>),
 }
