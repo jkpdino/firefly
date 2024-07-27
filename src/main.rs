@@ -11,10 +11,3 @@ fn main() {
     ));
     driver.output();
 }
-
-/*
-chain:
-    Parse (SourceFile -> AST)
-    Lower (AST -> HIR)
-
-*/
