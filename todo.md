@@ -13,7 +13,6 @@
 - [x] Add global variables
 - [ ] Add structs
 - [ ] Add members
-- [ ] Add globals
 - [ ] Add function calls
 - [ ] Add system functions
 - [ ] Add control flow
