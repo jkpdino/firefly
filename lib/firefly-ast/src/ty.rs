@@ -6,4 +6,5 @@ use crate::Path;
 pub enum Ty {
     Tuple(Vec<Spanned<Ty>>),
     Path(Path),
+    Error,
 }

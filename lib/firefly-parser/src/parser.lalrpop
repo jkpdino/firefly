@@ -166,7 +166,7 @@ BindStmt: Stmt = {
 Stmt = { Spanned<UnspannedStmt> }
 UnspannedStmt: Stmt = {
     <Value> => Stmt::Value(<>),
-    <BindStmt> => <>
+    <BindStmt> => <>,
 }
 
 Stmts: Vec<Spanned<Stmt>> = {
@@ -192,13 +192,17 @@ UnspannedValue: Value = {
     Spanned<"long_string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
     <func: Value> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
     <Path> => Value::Path(<>),
+
+    ExpectValue => Value::Error,
 }
 
 // Types
 Type = { Spanned<UnspannedType> }
 UnspannedType: Ty = {
     "(" <items: CommaList<Type>> ")" => Ty::Tuple(items),
-    <Path> => Ty::Path(<>)
+    <Path> => Ty::Path(<>),
+
+    ExpectType => Ty::Error,
 }
 
 
@@ -213,8 +217,7 @@ PathSegments: Vec<PathSegment> = {
         v.push(s);
         v
     },
-    <v: PathSegments> "." Recover => vec![]
-    
+    <v: PathSegments> "." Recover => vec![],
 }
 
 PathSegment: PathSegment = {
@@ -278,6 +281,13 @@ ExpectType: () = {
 ExpectValue: () = {
     ! => {
         errors.emit(<>.error, Some(Expecting::Value));
+    }
+}
+
+#[inline]
+ExpectStmt: () = {
+    ! => {
+        errors.emit(<>.error, Some(Expecting::Stmt));
     }
 }
 

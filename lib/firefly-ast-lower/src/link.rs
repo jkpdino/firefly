@@ -33,7 +33,7 @@ impl AstLowerer {
                     let name = self.lower_name(&item.name);
                     let visibility = self.lower_visibility(&item.visibility);
 
-                    let symbol = Symbol { name, visibility };
+                    let symbol = Symbol { name, visibility, is_static: true };
                     self.context.add_component(item.id, symbol);
 
                     item.id.as_base()
@@ -43,7 +43,7 @@ impl AstLowerer {
                     let name = self.lower_name(&item.name);
                     let visibility = self.lower_visibility(&item.visibility);
 
-                    let symbol = Symbol { name, visibility };
+                    let symbol = Symbol { name, visibility, is_static: true };
                     self.context.add_component(item.id, symbol);
 
                     item.id
@@ -55,7 +55,7 @@ impl AstLowerer {
 
                     self.link_items(&item.items, item.id.as_base());
 
-                    let symbol = Symbol { name, visibility };
+                    let symbol = Symbol { name, visibility, is_static: true };
                     self.context.add_component(item.id, symbol);
 
                     self.context.add_component(item.id, HasType {
@@ -134,7 +134,8 @@ impl AstLowerer {
                     Module::default(),
                     Symbol {
                         visibility: Visibility::Public,
-                        name: Name::internal(&segment.name.item)
+                        name: Name::internal(&segment.name.item),
+                        is_static: true,
                     }
                 ));
     

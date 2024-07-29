@@ -22,7 +22,8 @@ pub enum Expecting {
     Item,
 	Value,
 	Type,
-	Path
+	Path,
+	Stmt
 }
 
 pub struct ParserErrorEnv<'a>(pub(crate) &'a Emitter);
@@ -177,6 +178,7 @@ impl Display for Expecting {
 			Expecting::Type => write!(f, "type"),
 			Expecting::Value => write!(f, "value"),
 			Expecting::Path => write!(f, "path"),
+			Expecting::Stmt => write!(f, "statement"),
 		}
 	}
 }

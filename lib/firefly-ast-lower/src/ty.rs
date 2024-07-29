@@ -25,6 +25,8 @@ impl AstLowerer {
                 Some(ty) => ty.kind,
                 None => HirTyKind::Unit,
             },
+
+            AstTy::Error => unreachable!()
         };
 
         HirTy::new(kind, ty.span)

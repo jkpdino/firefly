@@ -44,6 +44,7 @@ where
             span: Span::default(),
         },
         visibility: Visibility::Public,
+        is_static: true,
     };
 
     context.add_component::<Symbol>(id.as_base(), symbol);

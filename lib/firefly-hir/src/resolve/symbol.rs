@@ -5,6 +5,7 @@ use crate::{Name, Visibility};
 pub struct Symbol {
     pub name: Name,
     pub visibility: Visibility,
+    pub is_static: bool,
 }
 
 component!(symbols: Symbol);

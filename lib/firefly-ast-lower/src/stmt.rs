@@ -49,6 +49,8 @@ impl AstLowerer {
                     stmt.span
                 )
             }
+
+            AstStmt::Error => unreachable!()
         }
     }
 }

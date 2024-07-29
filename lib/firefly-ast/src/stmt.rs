@@ -6,6 +6,7 @@ use crate::{ty::Ty, value::Value, Name};
 pub enum Stmt {
     Value(Spanned<Value>),
     Bind(Name, Spanned<Ty>, Spanned<Value>),
+    Error
 }
 
 #[derive(Debug)]

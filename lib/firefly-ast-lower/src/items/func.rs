@@ -52,6 +52,7 @@ impl AstLowerer {
             Symbol {
                 name: name.clone(),
                 visibility: Visibility::Local,
+                is_static: true
             },
             HasValue {
                 value: Value::new(ValueKind::Local(local), ty.clone(), Default::default()),
