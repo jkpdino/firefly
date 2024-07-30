@@ -50,8 +50,8 @@ impl AstLowerer {
                 }
             }
 
-            Item::StructDef(Spanned { .. }) => {
-
+            Item::StructDef(Spanned { item, .. }) => {
+                self.lower_struct(item);
             }
 
             Item::Import(Spanned { item, .. }) => {

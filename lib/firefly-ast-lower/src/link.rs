@@ -59,7 +59,7 @@ impl AstLowerer {
                     self.context.add_component(item.id, symbol);
 
                     self.context.add_component(item.id, HasType {
-                        ty: Ty::new_unspanned(TyKind::Unit)
+                        ty: Ty::new_unspanned(TyKind::StructDef(item.id))
                     });
 
                     item.id.as_base()

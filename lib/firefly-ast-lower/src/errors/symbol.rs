@@ -17,18 +17,18 @@ impl IntoDiagnostic for SymbolError {
     fn into_diagnostic(&self, _context: &HirContext) -> firefly_errors::diagnostic::Diagnostic {
         match self {
             SymbolError::NotFound(name) => {
-                Diagnostic::new(Level::Error, DiagnosticMessage::Str(format!("symbol {} not found", name.item)))
+                Diagnostic::new(Level::Error, DiagnosticMessage::Str(format!("symbol `{}` not found", name.item)))
                     .with_error_code(DiagnosticId::new("E0101"))
                     .with_source(name.span)
             }
             SymbolError::NotVisible(access, decl) => {
-                Diagnostic::new(Level::Error, DiagnosticMessage::Str(format!("symbol {} not visible", access.item)))
+                Diagnostic::new(Level::Error, DiagnosticMessage::Str(format!("symbol `{}` not visible", access.item)))
                     .with_error_code(DiagnosticId::new("E0102"))
                     .with_source(access.span)
                     .with_source(*decl)
             }
             SymbolError::NotFoundIn(access, decl) => {
-                Diagnostic::new(Level::Error, DiagnosticMessage::Str(format!("symbol {} not found in scope", access.item)))
+                Diagnostic::new(Level::Error, DiagnosticMessage::Str(format!("member `{}` not found", access.item)))
                     .with_error_code(DiagnosticId::new("E0103"))
                     .with_source(access.span)
                     .with_source(*decl)

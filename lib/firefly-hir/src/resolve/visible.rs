@@ -21,7 +21,6 @@ impl ComputedComponent for VisibleWithin {
         // Quickly return a value if we can
         match visibility {
             Visibility::Public => return Some(VisibleWithin(context.root().as_base())),
-            Visibility::Local => return Some(VisibleWithin(entity)),
 
             _ => {}
         }
@@ -29,8 +28,8 @@ impl ComputedComponent for VisibleWithin {
         let mut current = entity;
         while let Some(parent) = context.parent(current) {
             match visibility {
-                Visibility::Private => {
-                    // Private visibility is only visible to the parent
+                Visibility::Private | Visibility::Local => {
+                    // Private and local visibility is only visible to the parent
                     current = parent;
                     break;
                 }
@@ -48,7 +47,6 @@ impl ComputedComponent for VisibleWithin {
                 }
 
                 Visibility::Public => unreachable!(),
-                Visibility::Local => unreachable!(),
             }
 
             current = parent;

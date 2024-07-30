@@ -3,7 +3,6 @@ module Test;
 public struct Person {
     var age: int
     var name: string
-}
 
 // func main() {
 //    let person = Person(24, "John")
@@ -12,6 +11,8 @@ public struct Person {
 //    let name = person.name
 // }
 
+}
+
 func age(person: Person) -> int {
-    //return person.age
+    var x: int = person.age;
 }
