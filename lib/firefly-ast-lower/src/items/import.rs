@@ -2,32 +2,9 @@ use firefly_ast::{import::Import as AstImport, Path};
 use firefly_hir::{items::Module, resolve::{Import as HirImport, ImportRequest, Symbol}, Id};
 use itertools::Itertools;
 
-use crate::{errors::{ModuleError, SymbolError}, AstLowerer};
+use crate::{errors::{ModuleError, SymbolError}, AstLowerer, Lower};
 
 impl AstLowerer {
-    pub fn lower_import(&mut self, import: &AstImport) {
-        let Some(module) = self.resolve_module(&import.module) else {
-            return;
-        };
-
-        let alias = import.alias.as_ref().map(|alias| self.lower_name(alias));
-
-        let symbols = import.symbol_list
-            .as_ref()
-            .map(|symbol_list| symbol_list.symbols.iter()
-            .map(|sym| ImportRequest {
-                name: self.lower_name(&sym.name),
-                alias: sym.alias.as_ref().map(|alias| self.lower_name(&alias)),
-            }).collect_vec());
-
-        self.context.create(HirImport {
-            id: import.id,
-            namespace: module.as_base(),
-            alias,
-            symbols
-        });
-    }
-
     fn resolve_module(&mut self, path: &Path) -> Option<Id<Module>> {
         let mut current = self.context.root().as_base();
 
@@ -62,4 +39,39 @@ impl AstLowerer {
             .expect("internal compiler error");
         Some(module)
     }
+}
+
+impl Lower for AstImport {
+    fn id(&self) -> Id<firefly_hir::Entity> {
+        self.id.as_base()
+    }
+
+    fn get_symbol(&self) -> Option<crate::SymbolDesc> {
+        None
+    }
+
+    fn lower_def(&self, _: Id<firefly_hir::Entity>, lowerer: &mut AstLowerer) {
+        let Some(module) = lowerer.resolve_module(&self.module) else {
+            return;
+        };
+
+        let alias = self.alias.as_ref().map(|alias| lowerer.lower_name(alias));
+
+        let symbols = self.symbol_list
+            .as_ref()
+            .map(|symbol_list| symbol_list.symbols.iter()
+            .map(|sym| ImportRequest {
+                name: lowerer.lower_name(&sym.name),
+                alias: sym.alias.as_ref().map(|alias| lowerer.lower_name(&alias)),
+            }).collect_vec());
+
+        lowerer.context_mut().create(HirImport {
+            id: self.id,
+            namespace: module.as_base(),
+            alias,
+            symbols
+        });
+    }
+
+    fn lower_code(&self, _: Id<firefly_hir::Entity>, _: &mut AstLowerer) { }
 }

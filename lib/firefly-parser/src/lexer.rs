@@ -53,10 +53,6 @@ pub enum Token<'a> {
 
     #[token("static")]
     StaticKw,
-    #[token("mutating")]
-    MutatingKw,
-    #[token("owning")]
-    Owning,
 
     #[token("return")]
     ReturnKw,

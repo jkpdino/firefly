@@ -1,5 +1,5 @@
 use firefly_hir::{Entity, Id};
-use firefly_span::Spanned;
+use firefly_span::{Span, Spanned};
 
 use crate::{item::Item, value::Value, Name, Visibility};
 
@@ -14,6 +14,7 @@ pub struct StructDef {
 #[derive(Debug)]
 pub struct Field {
     pub visibility: Option<Spanned<Visibility>>,
+    pub static_kw: Option<Span>,
     pub name: Name,
     pub ty: Spanned<crate::ty::Ty>,
     pub default: Option<Spanned<Value>>,
@@ -32,9 +33,10 @@ impl StructDef {
 }
 
 impl Field {
-    pub fn new(visibility: Option<Spanned<Visibility>>, name: Name, ty: Spanned<crate::ty::Ty>, default: Option<Spanned<Value>>) -> Self {
+    pub fn new(visibility: Option<Spanned<Visibility>>, static_kw: Option<Span>, name: Name, ty: Spanned<crate::ty::Ty>, default: Option<Spanned<Value>>) -> Self {
         Self {
             visibility,
+            static_kw,
             name,
             ty,
             default,

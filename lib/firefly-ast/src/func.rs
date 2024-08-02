@@ -1,5 +1,5 @@
 use firefly_hir::Id;
-use firefly_span::Spanned;
+use firefly_span::{Span, Spanned};
 
 use crate::{stmt::CodeBlock, ty::Ty, Name, Visibility};
 
@@ -18,6 +18,7 @@ pub struct FuncSignature {
 #[derive(Debug)]
 pub struct Func {
     pub visibility: Option<Spanned<Visibility>>,
+    pub static_kw: Option<Span>,
     pub name: Name,
     pub signature: FuncSignature,
     pub body: CodeBlock,
@@ -27,6 +28,7 @@ pub struct Func {
 impl Func {
     pub fn new(
         visibility: Option<Spanned<Visibility>>,
+        static_kw: Option<Span>,
         name: Name,
         params: Vec<Spanned<FuncParam>>,
         return_ty: Option<Spanned<Ty>>,
@@ -34,6 +36,7 @@ impl Func {
     ) -> Self {
         Self {
             visibility,
+            static_kw,
             name,
             signature: FuncSignature { params, return_ty },
             body,

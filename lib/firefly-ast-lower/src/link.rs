@@ -4,12 +4,12 @@
 
 use firefly_ast::item::Item;
 use firefly_hir::{
-    items::{Module, SourceFile}, resolve::{Passthrough, Symbol}, ty::{HasType, Ty, TyKind}, Entity, Id, Name, Visibility
+    items::{Module, SourceFile}, resolve::{Passthrough, Symbol}, Entity, Id, Name, Visibility
 };
 use firefly_span::Spanned;
 use itertools::Itertools;
 
-use crate::{errors::ModuleError, AstLowerer};
+use crate::{errors::ModuleError, AstLowerer, Lower, SymbolDesc};
 
 impl AstLowerer {
     pub fn link_pass(&mut self, ast: &[Item]) {
@@ -17,72 +17,56 @@ impl AstLowerer {
             return;
         };
 
-        // Create a file
         let source_file = self.context.create_with_parent(module, (
             SourceFile::default(),
             Passthrough
         ));
 
-        self.link_items(ast, source_file.as_base());
+        self.link_items(ast, source_file.as_base(), true);
     }
 
-    fn link_items(&mut self, items: &[Item], parent: Id<Entity>) {
+    fn link_items(&mut self, items: &[Item], parent: Id<Entity>, is_static: bool) {
         for item in items {
-            let id = match item {
-                Item::Func(Spanned { item, .. }) => {
-                    let name = self.lower_name(&item.name);
-                    let visibility = self.lower_visibility(&item.visibility);
+            self.link_item(item, parent, is_static);
 
-                    let symbol = Symbol { name, visibility, is_static: true };
-                    self.context.add_component(item.id, symbol);
-
-                    item.id.as_base()
-                }
-
-                Item::Field(Spanned { item, .. }) => {
-                    let name = self.lower_name(&item.name);
-                    let visibility = self.lower_visibility(&item.visibility);
-
-                    let symbol = Symbol { name, visibility, is_static: true };
-                    self.context.add_component(item.id, symbol);
-
-                    item.id
-                }
-
+            match item {
                 Item::StructDef(Spanned { item, .. }) => {
-                    let name = self.lower_name(&item.name);
-                    let visibility = self.lower_visibility(&item.visibility);
-
-                    self.link_items(&item.items, item.id.as_base());
-
-                    let symbol = Symbol { name, visibility, is_static: true };
-                    self.context.add_component(item.id, symbol);
-
-                    self.context.add_component(item.id, HasType {
-                        ty: Ty::new_unspanned(TyKind::StructDef(item.id))
-                    });
-
-                    item.id.as_base()
+                    self.link_items(&item.items, item.id.as_base(), false);
                 }
 
-                Item::Import(Spanned { item, .. }) => {
-                    item.id.as_base()
-                }
-
-                Item::Module(Spanned { span, .. }) => {
-                    if self.context.try_get::<SourceFile>(parent).is_none() {
-                        self.emit(ModuleError::ModuleDeclarationInside(*span));
-                    }
-
-                    continue;
-                }
-
-                Item::Error => continue
-            };
-
-            // Link it to the parent
-            self.context.link(parent, id);
+                _ => {}
+            }
         }
+    }
+
+    fn link_item(&mut self, item: &Item, parent: Id<Entity>, is_static: bool) {
+        let item: &dyn Lower = match item {
+            Item::Func(Spanned { item, .. }) => item,
+            Item::Field(Spanned { item, .. }) => item,
+            Item::StructDef(Spanned { item, .. }) => item,
+            Item::Import(Spanned { item, .. }) => item,
+
+            _ => return,
+        };
+
+        let id = item.id();
+
+        if let Some(SymbolDesc { name, visibility, static_kw }) = item.get_symbol() {
+            let name = self.lower_name(&name);
+            let visibility = self.lower_visibility(&visibility);
+
+            if is_static && static_kw.is_some() {
+                // throw an error
+            }
+
+            let is_static = is_static || static_kw.is_some();
+
+            self.context.add_component(id, Symbol { name, visibility, is_static });
+        }
+
+        item.add_information(&mut self.context);
+
+        self.context.link(parent, id);
     }
 
     fn get_module(&mut self, items: &[Item]) -> Option<Id<Module>> {

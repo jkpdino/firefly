@@ -11,7 +11,7 @@ pub mod struct_def;
 
 pub type Name = Spanned<String>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Visibility {
     Public,
     Internal,
@@ -19,7 +19,7 @@ pub enum Visibility {
     Private,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PathSegment {
     pub name: Name
 }

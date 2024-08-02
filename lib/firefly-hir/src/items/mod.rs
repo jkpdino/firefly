@@ -10,6 +10,7 @@ component!(base(EntityKind::StructDef) structs: StructDef);
 #[derive(Clone, Debug)]
 pub struct Field {
     pub id: Id<Field>,
+    pub ty: Ty,
 }
 
 component!(base(EntityKind::Field) fields: Field);

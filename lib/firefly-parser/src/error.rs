@@ -143,8 +143,6 @@ impl ParserErrorEnv<'_> {
             Token::VarKw => "keyword `var`".to_string(),
 
             Token::StaticKw => "keyword `static`".to_string(),
-            Token::MutatingKw => "keyword `mutating`".to_string(),
-            Token::Owning => "keyword `owning`".to_string(),
 
             Token::ReturnKw => "keyword `return`".to_string(),
 

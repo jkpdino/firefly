@@ -42,6 +42,8 @@ extern {
         "func" => Token::FuncKw,
         "init" => Token::InitKw,
 
+        "static" => Token::StaticKw,
+
         "var" => Token::VarKw,
 
         "return" => Token::ReturnKw,
@@ -117,8 +119,9 @@ Rename: Spanned<String> = {
 
 Field = { Spanned<UnspannedField> }
 UnspannedField: Field = {
-    <visibility: Visibility?> "var" <name: Name> ":" <ty: Type> <default: EqualsValue?> ";"? => Field::new(
+    <visibility: Visibility?> <static_kw: StaticKw?> "var" <name: Name> ":" <ty: Type> <default: EqualsValue?> ";"? => Field::new(
         visibility,
+        static_kw,
         name,
         ty,
         default,
@@ -145,8 +148,9 @@ FuncParam: Spanned<FuncParam> = {
 
 Function = { Spanned<UnspannedFunction> }
 UnspannedFunction: Func = {
-    <visibility: Visibility?> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" <return_ty:ReturnType?> <body: CodeBlock> => Func::new(
+    <visibility: Visibility?> <static_kw: StaticKw?> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" <return_ty:ReturnType?> <body: CodeBlock> => Func::new(
         visibility,
+        static_kw,
         name,
         params,
         return_ty,
@@ -233,7 +237,6 @@ UnspannedVisibility: Visibility = {
 }
 
 // Util
-
 Spanned<T>: Spanned<T> = {
     <l: @L> <t: T> <r: @R> => Spanned::new(t, Span::new(l, r))
 }
@@ -251,6 +254,11 @@ CommaList<T>: Vec<T> = {
 
 Name: Spanned<String> = {
     Spanned<"ident"> => Spanned::new(<>.item.into(), <>.span)
+}
+
+// Keywords
+StaticKw: Span = {
+    Spanned<"static"> => <>.span
 }
 
 
