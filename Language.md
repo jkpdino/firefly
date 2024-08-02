@@ -60,7 +60,7 @@ func fibonacci(n: int) -> int {
     var n2 = 1
 
     while lessThan(i, n) {
-        var n3 = n1 + n2;
+        var n3 = add(n1, n2);
 
         n1 = n2;
         n2 = n3;

@@ -11,8 +11,8 @@
 - [x] Add imports
 - [x] Add strings
 - [x] Add global variables
-- [ ] Add structs
-- [ ] Add members
+- [x] Add structs
+- [x] Add members
 - [ ] Add function calls
 - [ ] Add system functions
 - [ ] Add control flow

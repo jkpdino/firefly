@@ -1,0 +1,11 @@
+module Tests
+
+public struct User {
+    var id: int
+    var name: string
+    var username: string
+}
+
+func greet(user: User) {
+    var name: string = user.name;
+}

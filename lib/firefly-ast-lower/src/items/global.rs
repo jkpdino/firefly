@@ -38,8 +38,6 @@ impl Lower for Field {
         else {
             let id = unsafe { self.id.cast::<HirField>() };
 
-            println!("creating field...");
-
             lowerer.context_mut().create(HirField { id, ty });
         }
     }
