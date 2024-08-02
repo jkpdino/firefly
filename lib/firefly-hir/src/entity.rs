@@ -11,6 +11,7 @@ pub enum EntityKind {
     Module,
     File,
     StructDef,
+    Field,
     Func,
     TypeAlias,
     Import,

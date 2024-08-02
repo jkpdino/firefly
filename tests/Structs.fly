@@ -1,11 +1,18 @@
+module Test;
+
 public struct Person {
     var age: int
     var name: string
+
+// func main() {
+//    let person = Person(24, "John")
+//
+//    let age = person.age
+//    let name = person.name
+// }
+
 }
 
-func main() {
-    let person = Person(24, "John")
-
-    let age = person.age
-    let name = person.name
+func age(person: Person) -> int {
+    var x: int = person.age;
 }

@@ -1,4 +1,4 @@
-use crate::AstLowerer;
+use crate::{AstLowerer, Lower, SymbolDesc};
 use firefly_ast::func::{Func as AstFunc, FuncParam as AstFuncParam, FuncSignature as AstFuncSignature};
 use firefly_hir::{func::{Callable, Func as HirFunc, FuncParam as HirFuncParam}, resolve::{Symbol, SymbolTable}, stmt::Local, ty::{Ty, TyKind}, value::{HasValue, Value, ValueKind}, Entity, Id, Name, Visibility};
 use firefly_span::Spanned;
@@ -52,10 +52,45 @@ impl AstLowerer {
             Symbol {
                 name: name.clone(),
                 visibility: Visibility::Local,
+                is_static: true
             },
             HasValue {
                 value: Value::new(ValueKind::Local(local), ty.clone(), Default::default()),
             }
         ));
+    }
+}
+
+impl Lower for AstFunc {
+    fn id(&self) -> Id<Entity> {
+        return self.id.as_base();
+    }
+
+    fn get_symbol(&self) -> Option<SymbolDesc> {
+        let name = self.name.clone();
+        let visibility = self.visibility.clone();
+        let static_kw = self.static_kw;
+
+        Some(SymbolDesc { name, visibility, static_kw })
+    }
+
+    fn lower_def(&self, parent: Id<Entity>, lowerer: &mut AstLowerer) {
+        let Some(symbol_table) = lowerer.context_mut().try_get_computed::<SymbolTable>(parent).cloned() else {
+            panic!("internal compiler error: parent is not a namespace")
+        };
+
+        let signature = lowerer.lower_signature(&self.signature, self.id.as_base(), &symbol_table);
+
+        lowerer.context_mut().create((
+            HirFunc { id: self.id },
+            signature
+        ));
+    }
+    
+    fn lower_code(&self, _: Id<Entity>, lowerer: &mut AstLowerer) {
+        let mut code_symbol_table = lowerer.context_mut().try_get_computed::<SymbolTable>(self.id).cloned()
+            .expect("internal compiler error: function is not a namespace");
+
+        lowerer.lower_code_block(&self.body, self.id.as_base(), &mut code_symbol_table);
     }
 }

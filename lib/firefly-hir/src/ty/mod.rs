@@ -1,6 +1,6 @@
 use firefly_span::Span;
 
-use crate::{entity::Id, items::StructDef, EntityKind};
+use crate::{entity::Id, items::StructDef, Entity, EntityKind};
 
 mod has_type;
 
@@ -46,6 +46,14 @@ impl Ty {
             id: Default::default(),
             kind,
             span: Default::default(),
+        }
+    }
+
+    pub fn references(&self) -> Option<Id<Entity>> {
+        match self.kind {
+            TyKind::StructDef(id) => Some(id.as_base()),
+
+            _ => None
         }
     }
 }

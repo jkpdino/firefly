@@ -1,0 +1,10 @@
+module Test
+
+public struct Person {
+    var name: string
+}
+
+public struct User {
+    var person: Person
+    var username: string
+}

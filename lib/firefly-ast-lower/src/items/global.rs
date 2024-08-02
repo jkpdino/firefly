@@ -1,29 +1,66 @@
 use firefly_ast::struct_def::Field;
-use firefly_hir::{items::Global, resolve::SymbolTable, value::{HasValue, Value, ValueKind}, Entity, Id};
+use firefly_hir::{items::{Field as HirField, Global, SourceFile}, resolve::SymbolTable, value::{HasValue, Value, ValueKind}, Entity, Id};
 
-use crate::AstLowerer;
+use crate::{AstLowerer, Lower, SymbolDesc};
 
-impl AstLowerer {
-    pub fn lower_global(&mut self, field: &Field, parent: Id<Entity>) {
-        let id = unsafe { field.id.cast::<Global>() };
+impl Lower for Field {
+    fn id(&self) -> Id<Entity> {
+        return self.id;
+    }
 
-        let Some(symbol_table) = self.context.try_get_computed::<SymbolTable>(parent).cloned() else {
+    fn get_symbol(&self) -> Option<SymbolDesc> {
+        let name = self.name.clone();
+        let visibility = self.visibility.clone();
+        let static_kw = self.static_kw;
+
+        Some(SymbolDesc {
+            name,
+            visibility,
+            static_kw,
+        })
+    }
+
+    fn lower_def(&self, parent: Id<Entity>, lowerer: &mut AstLowerer) {
+        let is_static = lowerer.context().has::<SourceFile>(parent) || self.static_kw.is_some();
+
+        let Some(symbol_table) = lowerer.context_mut().try_get_computed::<SymbolTable>(parent).cloned() else {
             panic!("internal compiler error: parent is not a namespace")
         };
 
-        let Some(default) = &field.default else {
+        let ty = lowerer.lower_ty(&self.ty, parent, &symbol_table);
+
+        if is_static {
+            let id = unsafe { self.id.cast::<Global>() };
+
+            let value = Value::new(ValueKind::Global(id), ty.clone(), self.name.span);
+            lowerer.context_mut().add_component(id, HasValue { value });
+        }
+        else {
+            let id = unsafe { self.id.cast::<HirField>() };
+
+            lowerer.context_mut().create(HirField { id, ty });
+        }
+    }
+
+    fn lower_code(&self, parent: Id<Entity>, lowerer: &mut AstLowerer) {
+        let is_static = lowerer.context().has::<SourceFile>(parent) || self.static_kw.is_some();
+
+        if !is_static { return; }
+
+        let id = unsafe { self.id.cast::<Global>() };
+
+        let Some(symbol_table) = lowerer.context_mut().try_get_computed::<SymbolTable>(parent).cloned() else {
+            panic!("internal compiler error: parent is not a namespace")
+        };
+
+        let Some(default) = &self.default else {
             println!("error: global does not have a default value");
             return;
         };
 
-        let ty = self.lower_ty(&field.ty, parent, &symbol_table);
-        let default_value = self.lower_value(&default, parent, &symbol_table);
+        let ty = lowerer.lower_ty(&self.ty, parent, &symbol_table);
+        let default_value = lowerer.lower_value(&default, parent, &symbol_table);
 
-        let value = Value::new(ValueKind::Global(id), ty.clone(), field.name.span);
-
-        self.context.create((
-            Global { id, ty, default_value },
-            HasValue { value }
-        ));
+        lowerer.context_mut().create(Global { id, ty, default_value });
     }
 }

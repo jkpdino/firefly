@@ -1,0 +1,13 @@
+module Tests
+
+public struct User {
+    var id: int
+    var name: string
+    var username: string
+
+    private static var usersLoggedIn: int = 0
+
+    static func newUser() {
+
+    }
+}

@@ -49,6 +49,8 @@ impl AstLowerer {
                 Some(value) => { return value },
                 None => (HirValueKind::Unit, Ty::new(TyKind::Unit, span))
             }
+
+            AstValue::Error => unreachable!()
         };
 
         HirValue::new(kind, ty, span)

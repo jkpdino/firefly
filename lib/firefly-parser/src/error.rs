@@ -22,7 +22,8 @@ pub enum Expecting {
     Item,
 	Value,
 	Type,
-	Path
+	Path,
+	Stmt
 }
 
 pub struct ParserErrorEnv<'a>(pub(crate) &'a Emitter);
@@ -142,8 +143,6 @@ impl ParserErrorEnv<'_> {
             Token::VarKw => "keyword `var`".to_string(),
 
             Token::StaticKw => "keyword `static`".to_string(),
-            Token::MutatingKw => "keyword `mutating`".to_string(),
-            Token::Owning => "keyword `owning`".to_string(),
 
             Token::ReturnKw => "keyword `return`".to_string(),
 
@@ -177,6 +176,7 @@ impl Display for Expecting {
 			Expecting::Type => write!(f, "type"),
 			Expecting::Value => write!(f, "value"),
 			Expecting::Path => write!(f, "path"),
+			Expecting::Stmt => write!(f, "statement"),
 		}
 	}
 }

@@ -42,6 +42,8 @@ extern {
         "func" => Token::FuncKw,
         "init" => Token::InitKw,
 
+        "static" => Token::StaticKw,
+
         "var" => Token::VarKw,
 
         "return" => Token::ReturnKw,
@@ -117,8 +119,9 @@ Rename: Spanned<String> = {
 
 Field = { Spanned<UnspannedField> }
 UnspannedField: Field = {
-    <visibility: Visibility?> "var" <name: Name> ":" <ty: Type> <default: EqualsValue?> ";"? => Field::new(
+    <visibility: Visibility?> <static_kw: StaticKw?> "var" <name: Name> ":" <ty: Type> <default: EqualsValue?> ";"? => Field::new(
         visibility,
+        static_kw,
         name,
         ty,
         default,
@@ -145,8 +148,9 @@ FuncParam: Spanned<FuncParam> = {
 
 Function = { Spanned<UnspannedFunction> }
 UnspannedFunction: Func = {
-    <visibility: Visibility?> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" <return_ty:ReturnType?> <body: CodeBlock> => Func::new(
+    <visibility: Visibility?> <static_kw: StaticKw?> "func" <name: Name> "(" <params: CommaList<FuncParam>> ")" <return_ty:ReturnType?> <body: CodeBlock> => Func::new(
         visibility,
+        static_kw,
         name,
         params,
         return_ty,
@@ -166,7 +170,7 @@ BindStmt: Stmt = {
 Stmt = { Spanned<UnspannedStmt> }
 UnspannedStmt: Stmt = {
     <Value> => Stmt::Value(<>),
-    <BindStmt> => <>
+    <BindStmt> => <>,
 }
 
 Stmts: Vec<Spanned<Stmt>> = {
@@ -192,13 +196,17 @@ UnspannedValue: Value = {
     Spanned<"long_string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
     <func: Value> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
     <Path> => Value::Path(<>),
+
+    ExpectValue => Value::Error,
 }
 
 // Types
 Type = { Spanned<UnspannedType> }
 UnspannedType: Ty = {
     "(" <items: CommaList<Type>> ")" => Ty::Tuple(items),
-    <Path> => Ty::Path(<>)
+    <Path> => Ty::Path(<>),
+
+    ExpectType => Ty::Error,
 }
 
 
@@ -213,8 +221,7 @@ PathSegments: Vec<PathSegment> = {
         v.push(s);
         v
     },
-    <v: PathSegments> "." Recover => vec![]
-    
+    <v: PathSegments> "." Recover => vec![],
 }
 
 PathSegment: PathSegment = {
@@ -230,7 +237,6 @@ UnspannedVisibility: Visibility = {
 }
 
 // Util
-
 Spanned<T>: Spanned<T> = {
     <l: @L> <t: T> <r: @R> => Spanned::new(t, Span::new(l, r))
 }
@@ -248,6 +254,11 @@ CommaList<T>: Vec<T> = {
 
 Name: Spanned<String> = {
     Spanned<"ident"> => Spanned::new(<>.item.into(), <>.span)
+}
+
+// Keywords
+StaticKw: Span = {
+    Spanned<"static"> => <>.span
 }
 
 
@@ -278,6 +289,13 @@ ExpectType: () = {
 ExpectValue: () = {
     ! => {
         errors.emit(<>.error, Some(Expecting::Value));
+    }
+}
+
+#[inline]
+ExpectStmt: () = {
+    ! => {
+        errors.emit(<>.error, Some(Expecting::Stmt));
     }
 }
 
