@@ -11,6 +11,7 @@ pub use has_value::HasValue;
 pub enum LiteralValue {
     Integer(String),
     String(String),
+    Boolean(bool),
 }
 
 #[derive(Debug, Clone)]
@@ -23,6 +24,7 @@ pub enum ValueKind {
 
     StaticFunc(Id<Func>),
     InitFor(Id<StructDef>),
+    BuiltinFunc(&'static str),
 
     Invoke(Box<Value>, Vec<Value>),
     Local(Id<Local>),

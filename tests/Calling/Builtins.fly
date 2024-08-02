@@ -1,0 +1,5 @@
+module Test;
+
+func fibonacci(n: int) {
+    add(n, 0)
+}
