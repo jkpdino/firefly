@@ -35,8 +35,6 @@ impl AstLowerer {
             AstValue::StringLiteral(string) => {
                 let sanitized_str = self.sanitize_string(&string.item, span);
 
-                println!("\"{sanitized_str}\"");
-
                 let str_kind = HirValueKind::Literal(LiteralValue::String(sanitized_str));
                 let str_type = Ty::new(TyKind::String, span);
 
