@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use firefly_ast::{item::Item, Visibility};
 use firefly_errors::emitter::Emitter;
-use firefly_hir::{Entity, HirContext, Id, IntoDiagnostic};
+use firefly_hir::{ty::Ty, Entity, HirContext, Id, IntoDiagnostic};
 use firefly_span::{Span, Spanned};
 
 mod items;
@@ -47,7 +47,10 @@ impl AstLowerer {
             Item::Func(Spanned { item, .. }) => item,
             Item::Field(Spanned { item, .. }) => item,
             Item::Import(Spanned { item, .. }) => item,
-            Item::StructDef(Spanned { item, .. }) => item,
+            Item::StructDef(Spanned { item, .. }) => {
+                self.lower_item_defs(&item.items);
+                item
+            },
             Item::Module(_) => {
                 return
             }
@@ -65,7 +68,10 @@ impl AstLowerer {
             Item::Func(Spanned { item, .. }) => item,
             Item::Field(Spanned { item, .. }) => item,
             Item::Import(Spanned { item, .. }) => item,
-            Item::StructDef(Spanned { item, .. }) => item,
+            Item::StructDef(Spanned { item, .. }) => {
+                self.lower_item_codes(&item.items);
+                item
+            },
             Item::Module(_) => {
                 return
             }
@@ -99,7 +105,7 @@ pub trait Lower {
     fn get_symbol(&self) -> Option<SymbolDesc>;
 
     /// Add HasType or HasValue to a node
-    fn add_information(&self, _context: &mut HirContext) { }
+    fn get_type(&self) -> Option<Ty> { None }
 
     /// Lowers definitions
     fn lower_def(&self, parent: Id<Entity>, lowerer: &mut AstLowerer);

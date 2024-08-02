@@ -10,6 +10,8 @@ impl AstLowerer {
 
         let code_block_id = Id::<HirCodeBlock>::default();
 
+        self.context.link(parent, code_block_id);
+
         let stmts = code_block.stmts.iter()
             .map(|stmt| self.lower_stmt(stmt, code_block_id, symbol_table))
             .collect_vec();
@@ -19,7 +21,6 @@ impl AstLowerer {
             stmts,
             span: Default::default(),
         });
-        self.context.link(parent, code_block_id);
 
         symbol_table.pop_scope();
     }

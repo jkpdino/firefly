@@ -1,6 +1,6 @@
 use crate::{AstLowerer, Lower, SymbolDesc};
 use firefly_ast::struct_def::StructDef as AstStruct;
-use firefly_hir::{items::StructDef as HirStructDef, Entity, Id};
+use firefly_hir::{items::StructDef as HirStructDef, ty::{Ty, TyKind}, Entity, Id};
 
 
 impl Lower for AstStruct {
@@ -13,6 +13,10 @@ impl Lower for AstStruct {
         let visibility = self.visibility.clone();
 
         Some(SymbolDesc { name, visibility, static_kw: None })
+    }
+
+    fn get_type(&self) -> Option<firefly_hir::ty::Ty> {
+        Some(Ty::new_unspanned(TyKind::StructDef(self.id)))
     }
 
     fn lower_def(&self, _: Id<Entity>, lowerer: &mut AstLowerer) {

@@ -4,7 +4,7 @@
 
 use firefly_ast::item::Item;
 use firefly_hir::{
-    items::{Module, SourceFile}, resolve::{Passthrough, Symbol}, Entity, Id, Name, Visibility
+    items::{Module, SourceFile}, resolve::{Passthrough, Symbol}, ty::HasType, Entity, Id, Name, Visibility
 };
 use firefly_span::Spanned;
 use itertools::Itertools;
@@ -64,7 +64,9 @@ impl AstLowerer {
             self.context.add_component(id, Symbol { name, visibility, is_static });
         }
 
-        item.add_information(&mut self.context);
+        if let Some(ty) = item.get_type() {
+            self.context.add_component(id, HasType { ty });
+        }
 
         self.context.link(parent, id);
     }

@@ -1,5 +1,5 @@
 use firefly_hir::{
-    resolve::{InstanceMemberTable, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, ty::{HasType, Ty}, value::{HasValue, Value}, Entity, Id
+    items::Field, resolve::{InstanceMemberTable, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, ty::{HasType, Ty}, value::{HasValue, Value, ValueKind}, Entity, Id
 };
 
 use crate::{errors::SymbolError, AstLowerer};
@@ -55,9 +55,19 @@ impl AstLowerer {
             return None;
         }
 
-        // Now use the GetValue
+        if let Some(field) = self.context().try_get::<Field>(symbol) {
+            let kind = ValueKind::FieldOf(Box::new(value), field.id);
+            let mut ty = field.ty.clone();
+            let span = segment.name.span;
 
-        return None;
+            ty.span = span;
+            
+
+            Some(Value { kind, ty, span })
+        }
+        else {
+            return None
+        }
     }
 
     pub fn resolve_type(&mut self, path: &Path, from: Id<Entity>, symbol_table: &SymbolTable) -> Option<Ty> {
