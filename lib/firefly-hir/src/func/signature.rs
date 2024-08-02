@@ -1,4 +1,6 @@
-use crate::{ty::Ty, Name};
+use itertools::Itertools;
+
+use crate::{ty::{Ty, TyKind}, Name};
 
 /// Marks a symbol as callable and provides a signature
 /// for calling the symbol
@@ -17,3 +19,14 @@ pub struct FuncParam {
 component!(callables: Callable);
 
 
+impl Callable {
+    pub fn ty(&self) -> Ty {
+        let params = self.params.iter()
+                                .map(|p| &p.ty)
+                                .cloned()
+                                .collect_vec();
+        let kind = TyKind::Func(params, Box::new(self.return_ty.clone()));
+
+        Ty::new_unspanned(kind)
+    }
+}

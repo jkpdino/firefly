@@ -3,7 +3,7 @@ mod has_value;
 use std::fmt::Debug;
 use firefly_span::Span;
 use crate::{
-    entity::Id, items::{Field, Global}, stmt::Local, ty::Ty
+    entity::Id, func::Func, items::{Field, Global}, stmt::Local, ty::Ty
 };
 pub use has_value::HasValue;
 
@@ -21,7 +21,9 @@ pub enum ValueKind {
 
     FieldOf(Box<Value>, Id<Field>),
 
-    Invoke(Box<Value>, ()),
+    StaticFunc(Id<Func>),
+
+    Invoke(Box<Value>, Vec<Value>),
     Local(Id<Local>),
     Global(Id<Global>),
 }

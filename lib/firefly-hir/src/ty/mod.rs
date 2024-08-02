@@ -17,6 +17,7 @@ pub enum TyKind {
     Unit,
     Tuple(Vec<Ty>),
     StructDef(Id<StructDef>),
+    Func(Vec<Ty>, Box<Ty>),
 
     Integer,
     String,
