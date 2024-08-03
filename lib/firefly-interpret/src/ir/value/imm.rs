@@ -32,9 +32,9 @@ pub enum ImmediateKind {
 }
 
 pub struct Immediate {
-    kind: Box<ImmediateKind>,
-    ty:   Ty,
-    span: Span,
+    pub kind: Box<ImmediateKind>,
+    pub ty:   Ty,
+    pub span: Span,
 }
 
 impl Display for ConstantValue {

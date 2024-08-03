@@ -1,12 +1,14 @@
 mod local;
 mod bb;
 mod func;
+mod terminator;
 
 use std::fmt::Display;
 
 pub use local::*;
 pub use bb::*;
 pub use func::*;
+pub use terminator::*;
 
 use super::value::{Immediate, Place};
 

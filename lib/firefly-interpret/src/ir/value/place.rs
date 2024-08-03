@@ -2,17 +2,29 @@ use std::fmt::Display;
 
 use firefly_span::Span;
 
-use crate::ir::{code::LocalId, ty::Ty};
+use crate::{ir::{code::Local, ty::Ty}, util::Id};
+
+use super::{Immediate, ImmediateKind};
 
 pub enum PlaceKind {
     /// A value local to a function
-    Local(LocalId),
+    Local(Id<Local>),
 }
 
 pub struct Place {
-    kind: Box<PlaceKind>,
-    ty:   Ty,
-    span: Span,
+    pub kind: Box<PlaceKind>,
+    pub ty:   Ty,
+    pub span: Span,
+}
+
+impl Place {
+    pub fn move_out(self) -> Immediate {
+        let ty = self.ty.clone();
+        let span = self.span;
+        let kind = ImmediateKind::Move(self);
+
+        return Immediate { kind: Box::new(kind), ty, span };
+    }
 }
 
 impl Display for PlaceKind {

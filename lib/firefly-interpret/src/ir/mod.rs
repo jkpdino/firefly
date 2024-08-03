@@ -1,7 +1,9 @@
+use std::fmt::Display;
+
 use code::{BasicBlock, BasicBlockId, Function, FunctionSignature, Local};
 use ty::Ty;
 
-use crate::util::{Container, Id, IdFactory, UniqueContainer, UniqueId};
+use crate::util::{Container, IdFactory, UniqueContainer, UniqueId};
 
 pub mod ty;
 pub mod value;
@@ -25,7 +27,7 @@ impl VirContext {
         &mut self,
         name:      &str,
         params:    Vec<Ty>,
-        return_ty: Ty)
+        return_ty: Ty) -> UniqueId<Function>
     {
         let id = self.functions.next();
 
@@ -33,7 +35,7 @@ impl VirContext {
             id,
             name: name.to_string(),
             signature: FunctionSignature {
-                parameters: params,
+                parameters: params.clone(),
                 return_ty,
             },
             basic_blocks: Vec::new(),
@@ -42,6 +44,12 @@ impl VirContext {
         };
 
         self.functions.push(func);
+
+        for param in &params {
+            self.create_local(id, param.clone());
+        }
+
+        return id;
     }
 
     /// Create a basic block in a function
@@ -55,16 +63,26 @@ impl VirContext {
         let local_id = function.bb_factory.next();
         let global_id = self.basic_blocks.next();
 
-        BasicBlockId { local_id, global_id, func_id }
+        let bb_id = BasicBlockId { local_id, global_id, func_id };
+
+        self.function_mut(func).basic_blocks.push(bb_id);
+        self.basic_blocks.push(BasicBlock::new(bb_id));
+
+        return bb_id;
     }
 
     /// Create a local in a function
     pub fn create_local(
         &mut self,
         func: UniqueId<Function>,
-        ty: &Ty) -> Id<Local>
+        ty: Ty) -> &Local
     {
-        todo!()
+        let function = self.function_mut(func);
+
+        let id = function.locals.next();
+        function.locals.push(Local { id, ty });
+
+        &function.locals[function.locals.len() - 1]
     }
 
     /// Gets a reference to a function by id
@@ -93,5 +111,15 @@ impl VirContext {
         self.basic_blocks
             .get_mut_by_id(id.global_id)
             .expect("internal compiler error: basic block not found")
+    }
+}
+
+impl Display for VirContext {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for func in self.functions.iter() {
+            write!(f, "{}", self.display(func))?;
+        }
+
+        Ok(())
     }
 }

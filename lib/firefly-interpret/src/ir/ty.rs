@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use itertools::Itertools;
 
+#[derive(Clone)]
 pub enum TyKind {
     Integer,
     String,
@@ -12,8 +13,18 @@ pub enum TyKind {
     Tuple(Vec<Ty>),
     Func(Vec<Ty>, Ty),
 }
+
+#[derive(Clone)]
 pub struct Ty {
     kind: Box<TyKind>,
+}
+
+impl Ty {
+    pub fn new(kind: TyKind) -> Self {
+        Self {
+            kind: Box::new(kind)
+        }
+    }
 }
 
 impl Display for TyKind {

@@ -1,21 +1,26 @@
 use std::fmt::Display;
 
-use crate::ir::ty::Ty;
+use firefly_span::Span;
 
-/// Refers to a specific indexed local in the current function
-pub struct LocalId(pub(crate) usize);
+use crate::{ir::{ty::Ty, value::{Place, PlaceKind}}, util::Id};
 
 /// Declares a local value within the function. This
 /// local doesn't have a value, but provides a place
 /// for one to be stored.
 pub struct Local {
-    pub(crate) id: LocalId,
+    pub(crate) id: Id<Local>,
     pub(crate) ty: Ty,
 }
 
-impl Display for LocalId {
+impl Local {
+    pub fn place_unspanned(&self) -> Place {
+        Place { kind: Box::new(PlaceKind::Local(self.id)), ty: self.ty.clone(), span: Span::default() }
+    }
+}
+
+impl Display for Id<Local> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "%{}", self.0)
+        write!(f, "%{}", self.index())
     }
 }
 

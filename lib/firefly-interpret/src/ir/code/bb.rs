@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::{ir::value::{Immediate, Place}, util::{Id, UniqueId}};
 
-use super::{Function, Instruction, InstructionKind};
+use super::{Function, Instruction, InstructionKind, Terminator};
 
 /// BasicBlocks 
 #[derive(Copy, Clone)]
@@ -19,9 +19,19 @@ pub struct BasicBlock {
     id:           BasicBlockId,
 
     instructions: Vec<Instruction>,
+
+    terminator:   Option<Terminator>
 }
 
 impl BasicBlock {
+    pub fn new(id: BasicBlockId) -> Self {
+        Self {
+            id,
+            instructions: Vec::new(),
+            terminator: None,
+        }
+    }
+
     pub fn append_assign(&mut self, place: Place, imm: Immediate) {
         self.instructions.push(Instruction {
             kind: InstructionKind::Assign(place, imm)
@@ -33,11 +43,19 @@ impl BasicBlock {
             kind: InstructionKind::Eval(imm)
         })
     }
+
+    pub fn append_terminator(&mut self, terminator: Terminator) {
+        if self.terminator.is_some() {
+            panic!();
+        }
+
+        self.terminator = Some(terminator);
+    }
 }
 
 impl Display for Id<BasicBlock> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "@{}", self.index())
+        write!(f, "@bb{}", self.index())
     }
 }
 
