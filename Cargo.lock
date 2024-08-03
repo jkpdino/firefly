@@ -287,6 +287,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "firefly-interpret"
+version = "0.1.0"
+dependencies = [
+ "firefly-span",
+ "itertools 0.13.0",
+]
+
+[[package]]
 name = "firefly-lang"
 version = "0.1.0"
 dependencies = [

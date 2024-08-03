@@ -15,6 +15,7 @@
 - [x] Add members
 - [ ] Add function calls
 - [ ] Add system functions
+- [ ] Tuples
 - [ ] Add control flow
 
 # Testing framework
