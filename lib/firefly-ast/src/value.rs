@@ -9,5 +9,6 @@ pub enum Value {
     StringLiteral(Name),
     Path(Path),
     Call(Box<Spanned<Value>>, Vec<Spanned<Value>>),
+    Return(Option<Box<Spanned<Value>>>),
     Error,
 }

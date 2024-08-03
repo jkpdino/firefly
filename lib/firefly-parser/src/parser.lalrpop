@@ -35,20 +35,23 @@ extern {
         "fileprivate" => Token::FilePrivateKw,
         "private" => Token::PrivateKw,
 
+        "static" => Token::StaticKw,
+
         "module" => Token::ModuleKw,
         "import" => Token::ImportKw,
 
+        "as" => Token::AsKw,
+
+        "var" => Token::VarKw,
         "struct" => Token::StructKw,
         "func" => Token::FuncKw,
-        "init" => Token::InitKw,
 
         "static" => Token::StaticKw,
 
-        "var" => Token::VarKw,
-
         "return" => Token::ReturnKw,
-
-        "as" => Token::AsKw,
+        "if" => Token::IfKw,
+        "else" => Token::ElseKw,
+        "while" => Token::WhileKw,
 
         "integer" => Token::IntegerLiteral(<&'source str>),
         "string" => Token::StringLiteral(<&'source str>),
@@ -190,14 +193,29 @@ CodeBlock: CodeBlock = {
 // Values
 Value = { Spanned<UnspannedValue> }
 UnspannedValue: Value = {
+    FlowExpr => <>
+}
+
+FlowExpr: Value = {
+    TrailingExpr => <>,
+    "return" <value: Value?> => Value::Return(value.map(Box::new))
+}
+
+TrailingExpr: Value = {
+    AtomExpr => <>,
+    <func: Spanned<AtomExpr>> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
+}
+
+AtomExpr: Value = {
+    LiteralValue => <>,
     "(" <items: CommaList<Value>> ")" => Value::Tuple(items),
+    <Path> => Value::Path(<>),
+}
+
+LiteralValue: Value = {
     Spanned<"integer"> => Value::IntegerLiteral(Spanned::new(<>.item.into(), <>.span)),
     Spanned<"string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
     Spanned<"long_string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
-    <func: Value> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
-    <Path> => Value::Path(<>),
-
-    ExpectValue => Value::Error,
 }
 
 // Types

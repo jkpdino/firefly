@@ -133,20 +133,21 @@ impl ParserErrorEnv<'_> {
             Token::FilePrivateKw => "keyword `fileprivate`".to_string(),
             Token::PrivateKw => "keyword `private`".to_string(),
 
+			Token::StaticKw => "keyword `static`".to_string(),
+
             Token::ModuleKw => "keyword `module`".to_string(),
             Token::ImportKw => "keyword `import`".to_string(),
 
+			Token::AsKw => "keyword `as`".to_string(),
+
+			Token::VarKw => "keyword `var`".to_string(),
             Token::FuncKw => "keyword `func`".to_string(),
             Token::StructKw => "keyword `struct`".to_string(),
-            Token::InitKw => "keyword `init`".to_string(),
-
-            Token::VarKw => "keyword `var`".to_string(),
-
-            Token::StaticKw => "keyword `static`".to_string(),
 
             Token::ReturnKw => "keyword `return`".to_string(),
-
-            Token::AsKw => "keyword `as`".to_string(),
+			Token::IfKw => "keyword `if`".to_string(),
+			Token::ElseKw => "keyword `else`".to_string(),
+			Token::WhileKw => "keyword `while`".to_string(),
 
             // Symbols
             Token::OpenParen => "symbol `(`".to_string(),

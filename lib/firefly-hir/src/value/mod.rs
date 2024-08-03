@@ -27,6 +27,8 @@ pub enum ValueKind {
     InitFor(Id<StructDef>),
     BuiltinFunc(&'static str),
 
+    Return(Box<Value>),
+
     Invoke(Box<Value>, Vec<Value>),
     Local(Id<Local>),
     Global(Id<Global>),

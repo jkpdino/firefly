@@ -23,6 +23,8 @@ pub enum TyKind {
     String,
     Bool,
     Float,
+
+    Never,
 }
 
 /// Represents a type in the HIR.

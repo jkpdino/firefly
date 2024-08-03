@@ -63,6 +63,17 @@ impl AstLowerer {
                 None => (HirValueKind::Unit, Ty::new(TyKind::Unit, span))
             }
 
+            AstValue::Return(return_value) => {
+                let return_value = if let Some(return_value) = return_value {
+                    self.lower_value(return_value, parent, symbol_table)
+                } else {
+                    let span = value.span;
+                    HirValue::new(HirValueKind::Unit, Ty::new(TyKind::Unit, span), span)
+                };
+
+                (HirValueKind::Return(Box::new(return_value)), Ty::new(TyKind::Never, value.span))
+            }
+
             AstValue::Error => unreachable!()
         };
 
