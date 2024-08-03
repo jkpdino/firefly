@@ -95,9 +95,25 @@ impl Lower for AstFunc {
     }
     
     fn lower_code(&self, _: Id<Entity>, lowerer: &mut AstLowerer) {
+        let old_self_value =
+        if let Some(HasSelf { local, ty }) = lowerer.context().try_get(self.id) {
+            let self_value = Value::new(
+                ValueKind::Local(*local),
+                ty.clone(),
+                Span::default()
+            );
+
+            lowerer.self_value.replace(self_value)
+        }
+        else { None };
+
         let mut code_symbol_table = lowerer.context_mut().try_get_computed::<SymbolTable>(self.id).cloned()
             .expect("internal compiler error: function is not a namespace");
 
         lowerer.lower_code_block(&self.body, self.id.as_base(), &mut code_symbol_table);
+
+        if let Some(old_self_value) = old_self_value {
+            lowerer.self_value.replace(old_self_value);
+        }
     }
 }
