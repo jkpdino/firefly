@@ -1,6 +1,6 @@
 use crate::{AstLowerer, Lower, SymbolDesc};
 use firefly_ast::func::{Func as AstFunc, FuncParam as AstFuncParam, FuncSignature as AstFuncSignature};
-use firefly_hir::{func::{Callable, Func as HirFunc, FuncParam as HirFuncParam}, resolve::{Symbol, SymbolTable}, stmt::Local, ty::{HasType, Ty, TyKind}, value::{HasSelf, HasValue, Value, ValueKind}, Entity, Id, Name, Visibility};
+use firefly_hir::{func::{Callable, Func as HirFunc, FuncParam as HirFuncParam}, resolve::{Symbol, SymbolTable}, stmt::Local, ty::{HasType, Ty, TyKind}, value::{HasSelf, HasValue, HasValueIn, Value, ValueKind}, Entity, Id, Name, Visibility};
 use firefly_span::{Span, Spanned};
 use itertools::Itertools;
 
@@ -79,6 +79,7 @@ impl Lower for AstFunc {
 
             lowerer.context_mut().create((
                 HirFunc { id: self.id },
+                HasValueIn::Method(self.id),
                 HasSelf { local: self_id, ty: receiver.clone() },
                 signature,
             ));

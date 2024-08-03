@@ -23,5 +23,5 @@ struct Package {
 }
 
 func display(package: Package) {
-    //print(package.format())
+    print(package.format())
 }

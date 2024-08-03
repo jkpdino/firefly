@@ -1,5 +1,5 @@
 use firefly_hir::{
-    items::Field, resolve::{InstanceMemberTable, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, ty::{HasType, Ty}, value::{HasValue, HasValueIn, Value, ValueKind}, Entity, Id
+    func::Callable, resolve::{InstanceMemberTable, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, ty::{HasType, Ty}, value::{HasValue, HasValueIn, Value, ValueKind}, Entity, Id
 };
 use firefly_span::Span;
 
@@ -150,7 +150,16 @@ impl AstLowerer {
                 Value { kind, ty, span }
             }
 
-            HasValueIn::Method(_) => { todo!() }
+            HasValueIn::Method(method_id) => {
+                let signature = self.context.try_get::<Callable>(*method_id).unwrap();
+
+                let kind = ValueKind::InstanceFunc(Box::new(value), *method_id);
+
+                let mut ty = signature.ty();
+                ty.span = span;
+
+                Value { kind, ty, span }
+            }
         }
     }
 

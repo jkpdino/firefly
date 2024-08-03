@@ -23,6 +23,7 @@ pub enum ValueKind {
     FieldOf(Box<Value>, Id<Field>),
 
     StaticFunc(Id<Func>),
+    InstanceFunc(Box<Value>, Id<Func>),
     InitFor(Id<StructDef>),
     BuiltinFunc(&'static str),
 
@@ -51,8 +52,6 @@ impl Value {
 
 impl Debug for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        //self.kind.fmt(f)
-
-        write!(f, "{:?}: {:?}", self.kind, self.ty)
+        self.kind.fmt(f)
     }
 }
