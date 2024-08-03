@@ -3,7 +3,7 @@ mod has_value;
 use std::fmt::Debug;
 use firefly_span::Span;
 use crate::{
-    entity::Id, func::Func, items::{Field, Global, StructDef}, stmt::Local, ty::Ty
+    entity::Id, func::Func, items::{Field, Global, StructDef}, stmt::{CodeBlock, Local}, ty::Ty
 };
 pub use has_value::*;
 
@@ -12,6 +12,19 @@ pub enum LiteralValue {
     Integer(String),
     String(String),
     Boolean(bool),
+}
+
+#[derive(Debug, Clone)]
+pub struct IfValue {
+    pub condition: Value,
+    pub positive: Id<CodeBlock>,
+    pub negative: Option<ElseValue>
+}
+
+#[derive(Debug, Clone)]
+pub enum ElseValue {
+    Else(Id<CodeBlock>),
+    ElseIf(Box<IfValue>),
 }
 
 #[derive(Debug, Clone)]
@@ -28,6 +41,8 @@ pub enum ValueKind {
     BuiltinFunc(&'static str),
 
     Return(Box<Value>),
+
+    If(Box<IfValue>),
 
     Invoke(Box<Value>, Vec<Value>),
     Local(Id<Local>),

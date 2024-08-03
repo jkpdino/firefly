@@ -2,6 +2,30 @@
 
 ## If
 
+Checks a condition, running one block of code if it is true and another if it is false.
+
+### Syntax
+
+```firefly
+if condition {
+    // run this code
+}
+else if other_condition {
+    // run this code
+}
+else {
+    // run this code
+}
+```
+
+### Semantics
+
+If the condition isn't a boolean, throw an error
+After the if statement, an else statement can run a code block or another if statement
+The first if statement which's condition is true runs
+An if statement is a value with the type `()`
+
+
 ## While
 
 ## Return

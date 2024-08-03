@@ -1,11 +1,11 @@
 use crate::{errors::StringError, AstLowerer};
-use firefly_ast::value::Value as AstValue;
-use firefly_hir::{resolve::SymbolTable, ty::{Ty, TyKind}, value::{LiteralValue, Value as HirValue, ValueKind as HirValueKind}, Entity, Id};
+use firefly_ast::value::{ElseStatement, IfStatement, Value as AstValue};
+use firefly_hir::{resolve::SymbolTable, ty::{Ty, TyKind}, value::{ElseValue, IfValue, LiteralValue, Value as HirValue, ValueKind as HirValueKind}, Entity, Id};
 use firefly_span::{Span, Spanned};
 use itertools::Itertools;
 
 impl AstLowerer {
-    pub fn lower_value(&mut self, value: &Spanned<AstValue>, parent: Id<Entity>, symbol_table: &SymbolTable) -> HirValue  {
+    pub fn lower_value(&mut self, value: &Spanned<AstValue>, parent: Id<Entity>, symbol_table: &mut SymbolTable) -> HirValue  {
         let span = value.span;
         let (kind, ty) = match &value.item {
             AstValue::Tuple(items) => {
@@ -74,10 +74,32 @@ impl AstLowerer {
                 (HirValueKind::Return(Box::new(return_value)), Ty::new(TyKind::Never, value.span))
             }
 
+            AstValue::If(if_statement) => {
+                let if_value = self.lower_if_statement(&if_statement, parent, symbol_table);
+
+                (HirValueKind::If(Box::new(if_value)), Ty::new(TyKind::Unit, value.span))
+            }
+
             AstValue::Error => unreachable!()
         };
 
         HirValue::new(kind, ty, span)
+    }
+
+    fn lower_if_statement(&mut self, if_stmt: &IfStatement, parent: Id<Entity>, symbol_table: &mut SymbolTable) -> IfValue {
+        let condition = self.lower_value(&if_stmt.condition, parent, symbol_table);
+
+        let positive = self.lower_code_block(&if_stmt.positive, parent, symbol_table);
+        let negative = if_stmt.negative.as_ref().map(|negative| match negative {
+            ElseStatement::Else(code_block) => {
+                ElseValue::Else(self.lower_code_block(code_block, parent, symbol_table))
+            }
+            ElseStatement::ElseIf(negative) => {
+                ElseValue::ElseIf(Box::new(self.lower_if_statement(&negative, parent, symbol_table)))
+            }
+        });
+
+        IfValue { condition, positive, negative }
     }
 
     fn sanitize_string(&self, s: &str, span: Span) -> String {

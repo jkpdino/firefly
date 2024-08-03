@@ -2,7 +2,7 @@ use firefly_ast::{
     Visibility,
     Path, PathSegment,
     ty::Ty,
-    value::Value,
+    value::{Value, IfStatement, ElseStatement},
     stmt::{Stmt, CodeBlock},
     func::{Func, FuncParam},
     item::Item,
@@ -198,6 +198,7 @@ UnspannedValue: Value = {
 
 FlowExpr: Value = {
     TrailingExpr => <>,
+    IfStatement => Value::If(Box::new(<>)),
     "return" <value: Value?> => Value::Return(value.map(Box::new))
 }
 
@@ -216,6 +217,19 @@ LiteralValue: Value = {
     Spanned<"integer"> => Value::IntegerLiteral(Spanned::new(<>.item.into(), <>.span)),
     Spanned<"string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
     Spanned<"long_string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
+}
+
+IfStatement: IfStatement = {
+    "if" <condition: Value> <positive: CodeBlock> <negative: ElseStatement?> => IfStatement {
+        condition,
+        positive,
+        negative,
+    }
+}
+
+ElseStatement: ElseStatement = {
+    "else" <negative: CodeBlock> => ElseStatement::Else(negative),
+    "else" <negative: IfStatement> => ElseStatement::ElseIf(Box::new(negative)),
 }
 
 // Types

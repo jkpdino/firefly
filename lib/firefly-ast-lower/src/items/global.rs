@@ -50,7 +50,7 @@ impl Lower for Field {
 
         let id = unsafe { self.id.cast::<Global>() };
 
-        let Some(symbol_table) = lowerer.context_mut().try_get_computed::<SymbolTable>(parent).cloned() else {
+        let Some(mut symbol_table) = lowerer.context_mut().try_get_computed::<SymbolTable>(parent).cloned() else {
             panic!("internal compiler error: parent is not a namespace")
         };
 
@@ -60,7 +60,7 @@ impl Lower for Field {
         };
 
         let ty = lowerer.lower_ty(&self.ty, parent, &symbol_table);
-        let default_value = lowerer.lower_value(&default, parent, &symbol_table);
+        let default_value = lowerer.lower_value(&default, parent, &mut symbol_table);
 
         lowerer.context_mut().create(Global { id, ty, default_value });
     }
