@@ -1,6 +1,6 @@
 use crate::{AstLowerer, Lower, SymbolDesc};
 use firefly_ast::func::{Func as AstFunc, FuncParam as AstFuncParam, FuncSignature as AstFuncSignature};
-use firefly_hir::{func::{Callable, Func as HirFunc, FuncParam as HirFuncParam}, resolve::{Symbol, SymbolTable}, stmt::Local, ty::{Ty, TyKind}, value::{HasValue, Value, ValueKind}, Entity, Id, Name, Visibility};
+use firefly_hir::{func::{Callable, Func as HirFunc, FuncParam as HirFuncParam}, resolve::{Symbol, SymbolTable}, stmt::Local, ty::{HasType, Ty, TyKind}, value::{HasSelf, HasValue, Value, ValueKind}, Entity, Id, Name, Visibility};
 use firefly_span::{Span, Spanned};
 use itertools::Itertools;
 
@@ -13,7 +13,15 @@ impl AstLowerer {
             .map(|param| self.lower_func_parameter(param, parent, symbol_table))
             .collect_vec();
 
-        Callable { params, return_ty }
+        let parent_of_parent = self.context.parent(parent).unwrap();
+
+        if let Some(has_type) = self.context.try_get::<HasType>(parent_of_parent) {
+            let receiver = has_type.ty.clone();
+
+            return Callable { params, return_ty, receiver: Some(receiver) }
+        }
+
+        Callable { params, return_ty, receiver: None }
     }
 
     fn lower_func_parameter(&mut self, param: &Spanned<AstFuncParam>, parent: Id<Entity>, symbol_table: &SymbolTable) -> HirFuncParam {
@@ -25,7 +33,7 @@ impl AstLowerer {
         HirFuncParam { ty, bind_name }
     }
 
-    pub fn create_local(&mut self, parent: Id<Entity>, name: &Name, ty: &Ty) {
+    pub fn create_local(&mut self, parent: Id<Entity>, name: &Name, ty: &Ty) -> Id<Local> {
         let local = Id::default();
         
         self.context.create_with_parent(parent, (
@@ -41,7 +49,7 @@ impl AstLowerer {
             HasValue {
                 value: Value::new(ValueKind::Local(local), ty.clone(), Default::default()),
             }
-        ));
+        ))
     }
 }
 
@@ -66,13 +74,24 @@ impl Lower for AstFunc {
         let signature = lowerer.lower_signature(&self.signature, self.id.as_base(), &symbol_table);
         let ty = signature.ty();
 
-        let value = Value::new(ValueKind::StaticFunc(self.id), ty, Span::default());
+        if let Some(receiver) = &signature.receiver {
+            let self_id = lowerer.create_local(self.id(), &Name::internal("self"), &receiver);
 
-        lowerer.context_mut().create((
-            HirFunc { id: self.id },
-            HasValue { value },
-            signature
-        ));
+            lowerer.context_mut().create((
+                HirFunc { id: self.id },
+                HasSelf { local: self_id, ty: receiver.clone() },
+                signature,
+            ));
+        }
+        else {
+            let value = Value::new(ValueKind::StaticFunc(self.id), ty, Span::default());
+
+            lowerer.context_mut().create((
+                HirFunc { id: self.id },
+                HasValue { value },
+                signature
+            ));
+        }
     }
     
     fn lower_code(&self, _: Id<Entity>, lowerer: &mut AstLowerer) {

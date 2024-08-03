@@ -8,6 +8,7 @@ use crate::{ty::{Ty, TyKind}, Name};
 pub struct Callable {
     pub params: Vec<FuncParam>,
     pub return_ty: Ty,
+    pub receiver: Option<Ty>,
 }
 
 #[derive(Debug, Clone)]

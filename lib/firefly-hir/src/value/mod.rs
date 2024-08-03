@@ -5,7 +5,7 @@ use firefly_span::Span;
 use crate::{
     entity::Id, func::Func, items::{Field, Global, StructDef}, stmt::Local, ty::Ty
 };
-pub use has_value::HasValue;
+pub use has_value::*;
 
 #[derive(Debug, Clone)]
 pub enum LiteralValue {
@@ -51,6 +51,8 @@ impl Value {
 
 impl Debug for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.kind.fmt(f)
+        //self.kind.fmt(f)
+
+        write!(f, "{:?}: {:?}", self.kind, self.ty)
     }
 }
