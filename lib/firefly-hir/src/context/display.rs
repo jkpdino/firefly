@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{func::{Callable, Func}, items::{Field, Global, Module, StructDef, TypeAlias}, resolve::{Import, InstanceMemberTable, Namespace, Passthrough, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, stmt::CodeBlock, ty::{HasType, Ty}, value::HasValue, Entity, Id, Root};
+use crate::{func::{Callable, Func}, items::{Constant, Field, Global, Module, StructDef, TypeAlias}, resolve::{Import, InstanceMemberTable, Namespace, Passthrough, StaticMemberTable, Symbol, VisibleWithin}, stmt::CodeBlock, ty::{HasType, Ty}, value::{HasSelf, HasValue, HasValueIn}, Entity, Id, Root};
 
 use super::HirContext;
 
@@ -31,7 +31,7 @@ impl Display for DisplayContext<'_> {
         for_each_component!(
             com in self.node,
             self.context,
-            (Root, Func, Module, Global, StructDef, Field, TypeAlias, Ty, CodeBlock, HasType, HasValue, Callable, Symbol, VisibleWithin, Passthrough, Import, Namespace, SymbolTable, StaticMemberTable, InstanceMemberTable),
+            (Root, Func, Module, Global, StructDef, Field, TypeAlias, Constant, Ty, CodeBlock, HasType, HasValue, HasValueIn, HasSelf, Callable, Symbol, VisibleWithin, Passthrough, Import, Namespace, StaticMemberTable, InstanceMemberTable),
             {
                 let com = format!("{com:?}").replace("\n", &newline_prefix);
                 println!("  {prefix}{com}");

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use firefly_ast::{item::Item, Visibility};
 use firefly_errors::emitter::Emitter;
-use firefly_hir::{ty::Ty, Entity, HirContext, Id, IntoDiagnostic};
+use firefly_hir::{ty::Ty, value::Value, Entity, HirContext, Id, IntoDiagnostic};
 use firefly_span::{Span, Spanned};
 
 mod items;
@@ -16,6 +16,7 @@ pub mod errors;
 
 pub struct AstLowerer {
     context: HirContext,
+    pub(crate) self_value: Option<Value>,
 }
 
 impl AstLowerer {
@@ -23,7 +24,7 @@ impl AstLowerer {
         let mut context = HirContext::new(&emitter);
         firefly_lang::create_lang_module(&mut context);
 
-        let mut lowerer = Self { context };
+        let mut lowerer = Self { context, self_value: None };
 
         lowerer.resolve_type_aliases();
 

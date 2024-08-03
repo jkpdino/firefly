@@ -35,15 +35,28 @@ impl AstLowerer {
             AstValue::StringLiteral(string) => {
                 let sanitized_str = self.sanitize_string(&string.item, span);
 
-                println!("\"{sanitized_str}\"");
-
                 let str_kind = HirValueKind::Literal(LiteralValue::String(sanitized_str));
                 let str_type = Ty::new(TyKind::String, span);
 
                 (str_kind, str_type)
             }
 
-            AstValue::Call(_, _) => todo!(),
+            AstValue::Call(function, args) => {
+                let function_value = self.lower_value(function, parent, symbol_table);
+
+                let TyKind::Func(_, return_ty) = &function_value.ty.kind else {
+                    panic!("error: called a non-callable value")
+                };
+                let return_ty = return_ty.as_ref().clone();
+
+                let args = args.iter()
+                               .map(|arg| self.lower_value(arg, parent, symbol_table))
+                               .collect_vec();
+
+                let invoke = HirValueKind::Invoke(Box::new(function_value), args);
+
+                (invoke, return_ty)
+            }
 
             AstValue::Path(path) => match self.resolve_value(path, parent, symbol_table) {
                 Some(value) => { return value },

@@ -13,8 +13,9 @@
 - [x] Add global variables
 - [x] Add structs
 - [x] Add members
-- [ ] Add function calls
-- [ ] Add system functions
+- [x] Add function calls
+- [x] Add system functions
+- [ ] Methods
 - [ ] Add control flow
 
 # Testing framework

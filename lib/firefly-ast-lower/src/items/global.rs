@@ -1,5 +1,5 @@
 use firefly_ast::struct_def::Field;
-use firefly_hir::{items::{Field as HirField, Global, SourceFile}, resolve::SymbolTable, value::{HasValue, Value, ValueKind}, Entity, Id};
+use firefly_hir::{items::{Field as HirField, Global, SourceFile}, resolve::SymbolTable, value::{HasValue, HasValueIn, Value, ValueKind}, Entity, Id};
 
 use crate::{AstLowerer, Lower, SymbolDesc};
 
@@ -39,6 +39,7 @@ impl Lower for Field {
             let id = unsafe { self.id.cast::<HirField>() };
 
             lowerer.context_mut().create(HirField { id, ty });
+            lowerer.context_mut().add_component(id, HasValueIn::Field(id));
         }
     }
 

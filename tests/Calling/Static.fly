@@ -1,0 +1,11 @@
+module Test;
+
+public struct Foo {
+    static func Bar() {
+
+    }
+}
+
+func main() {
+    Foo.Bar();
+}
