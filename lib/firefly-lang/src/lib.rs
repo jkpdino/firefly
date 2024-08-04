@@ -1,5 +1,5 @@
 use firefly_hir::{
-    items::{Constant, Module, TypeAlias}, resolve::{Import, Symbol}, ty::{Ty, TyKind}, value::{HasValue, Value, ValueKind}, AccessComponent, BaseComponent, Component, HirContext, Id, Name, Visibility
+    items::{Constant, Module, TypeAlias}, resolve::{Import, Symbol}, ty::{Ty, TyKind}, value::{HasValue, LiteralValue, Value, ValueKind}, AccessComponent, BaseComponent, Component, HirContext, Id, Name, Visibility
 };
 use firefly_span::Span;
 
@@ -62,6 +62,9 @@ pub fn create_lang_module(context: &mut HirContext) {
     create_func("eq_str", &[TyKind::String, TyKind::String], TyKind::Bool, lang_id, context);
     create_func("neq_str", &[TyKind::String, TyKind::String], TyKind::Bool, lang_id, context);
 
+    create_literal("true", ValueKind::Literal(LiteralValue::Boolean(true)), TyKind::Bool, lang_id, context);
+    create_literal("false", ValueKind::Literal(LiteralValue::Boolean(false)), TyKind::Bool, lang_id, context);
+
     let root = context.root();
     let import_id = context.create(Import::import(Default::default(), lang_id.as_base()));
     context.link(root, import_id);
@@ -92,6 +95,34 @@ where
     context.link(parent, id);
 
     id
+}
+
+fn create_literal(
+    name: &'static str,
+    value_kind: ValueKind,
+    ty_kind: TyKind,
+    parent: Id<impl Component>,
+    context: &mut HirContext)
+{
+    let ty = Ty::new_unspanned(ty_kind);
+
+    let value = Value::new(
+        value_kind,
+        ty,
+        Span::default()
+    );
+
+    context.create_with_parent(parent, (
+        Constant::default(),
+        Symbol {
+            name: Name::internal(name),
+            visibility: Visibility::Public,
+            is_static: true,
+        },
+        HasValue {
+            value
+        }
+    ));
 }
 
 fn create_func(
