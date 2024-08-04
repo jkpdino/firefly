@@ -8,7 +8,7 @@ impl AstLowerer {
     pub fn lower_code_block(&mut self, code_block: &AstCodeBlock, parent: Id<Entity>, symbol_table: &mut SymbolTable) -> Id<HirCodeBlock> {
         symbol_table.push_scope();
 
-        let code_block_id = Id::<HirCodeBlock>::default();
+        let code_block_id = code_block.id;
 
         self.context.link(parent, code_block_id);
 

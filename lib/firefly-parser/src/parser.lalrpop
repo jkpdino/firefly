@@ -2,7 +2,7 @@ use firefly_ast::{
     Visibility,
     Path, PathSegment,
     ty::Ty,
-    value::{Value, IfStatement, ElseStatement},
+    value::{Value, IfStatement, ElseStatement, WhileStatement},
     stmt::{Stmt, CodeBlock},
     func::{Func, FuncParam},
     item::Item,
@@ -199,6 +199,7 @@ UnspannedValue: Value = {
 FlowExpr: Value = {
     TrailingExpr => <>,
     IfStatement => Value::If(Box::new(<>)),
+    WhileStatement => Value::While(Box::new(<>)),
     "return" <value: Value?> => Value::Return(value.map(Box::new))
 }
 
@@ -224,6 +225,19 @@ IfStatement: IfStatement = {
         condition,
         positive,
         negative,
+    }
+}
+
+WhileStatement: WhileStatement = {
+    "while" <condition: Value> <body: CodeBlock> => WhileStatement {
+        label: None,
+        condition,
+        body
+    },
+    <label: Name> ":" "while" <condition: Value> <body: CodeBlock> => WhileStatement {
+        label: Some(label),
+        condition,
+        body
     }
 }
 

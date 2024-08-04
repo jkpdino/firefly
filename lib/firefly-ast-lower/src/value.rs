@@ -1,6 +1,6 @@
 use crate::{errors::StringError, AstLowerer};
 use firefly_ast::value::{ElseStatement, IfStatement, Value as AstValue};
-use firefly_hir::{resolve::SymbolTable, ty::{Ty, TyKind}, value::{ElseValue, IfValue, LiteralValue, Value as HirValue, ValueKind as HirValueKind}, Entity, Id};
+use firefly_hir::{resolve::SymbolTable, ty::{Ty, TyKind}, value::{ElseValue, IfValue, LiteralValue, Value as HirValue, ValueKind as HirValueKind, WhileValue}, Entity, Id};
 use firefly_span::{Span, Spanned};
 use itertools::Itertools;
 
@@ -78,6 +78,23 @@ impl AstLowerer {
                 let if_value = self.lower_if_statement(&if_statement, parent, symbol_table);
 
                 (HirValueKind::If(Box::new(if_value)), Ty::new(TyKind::Unit, value.span))
+            }
+
+            AstValue::While(while_statement) => {
+                let label = while_statement.label.as_ref().map(|label| self.lower_name(label));
+                let condition = self.lower_value(&while_statement.condition, parent, symbol_table);
+
+                self.label_stack.push(label.clone(), while_statement.body.id);
+                let body = self.lower_code_block(&while_statement.body, parent, symbol_table);
+                self.label_stack.pop();
+
+                let while_value = WhileValue {
+                    label,
+                    condition,
+                    body,
+                };
+
+                (HirValueKind::While(Box::new(while_value)), Ty::new(TyKind::Unit, value.span))
             }
 
             AstValue::Error => unreachable!()

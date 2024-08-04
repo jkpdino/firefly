@@ -11,6 +11,7 @@ pub enum Value {
     Call(Box<Spanned<Value>>, Vec<Spanned<Value>>),
     Return(Option<Box<Spanned<Value>>>),
     If(Box<IfStatement>),
+    While(Box<WhileStatement>),
     Error,
 }
 
@@ -25,4 +26,11 @@ pub struct IfStatement {
 pub enum ElseStatement {
     Else(CodeBlock),
     ElseIf(Box<IfStatement>)
+}
+
+#[derive(Debug)]
+pub struct WhileStatement {
+    pub label: Option<Name>,
+    pub condition: Spanned<Value>,
+    pub body: CodeBlock,
 }

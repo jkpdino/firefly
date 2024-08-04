@@ -3,7 +3,7 @@ mod has_value;
 use std::fmt::Debug;
 use firefly_span::Span;
 use crate::{
-    entity::Id, func::Func, items::{Field, Global, StructDef}, stmt::{CodeBlock, Local}, ty::Ty
+    entity::Id, func::Func, items::{Field, Global, StructDef}, stmt::{CodeBlock, Local}, ty::Ty, Name
 };
 pub use has_value::*;
 
@@ -28,6 +28,13 @@ pub enum ElseValue {
 }
 
 #[derive(Debug, Clone)]
+pub struct WhileValue {
+    pub label:     Option<Name>,
+    pub condition: Value,
+    pub body:      Id<CodeBlock>,
+}
+
+#[derive(Debug, Clone)]
 pub enum ValueKind {
     Unit,
     Tuple(Vec<Value>),
@@ -43,6 +50,7 @@ pub enum ValueKind {
     Return(Box<Value>),
 
     If(Box<IfValue>),
+    While(Box<WhileValue>),
 
     Invoke(Box<Value>, Vec<Value>),
     Local(Id<Local>),
