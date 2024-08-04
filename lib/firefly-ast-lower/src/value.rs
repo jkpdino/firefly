@@ -1,4 +1,4 @@
-use crate::{errors::StringError, AstLowerer};
+use crate::{errors::StringError, labels::LoopLabel, AstLowerer};
 use firefly_ast::value::{ElseStatement, IfStatement, Value as AstValue};
 use firefly_hir::{resolve::SymbolTable, ty::{Ty, TyKind}, value::{ElseValue, IfValue, LiteralValue, Value as HirValue, ValueKind as HirValueKind, WhileValue}, Entity, Id};
 use firefly_span::{Span, Spanned};
@@ -95,6 +95,46 @@ impl AstLowerer {
                 };
 
                 (HirValueKind::While(Box::new(while_value)), Ty::new(TyKind::Unit, value.span))
+            }
+
+            AstValue::Break(label) => {
+                let found_label =
+                    if let Some(label) = label {
+                        self.label_stack.find(&label.item)
+                    }
+                    else {
+                        self.label_stack.last()
+                    };
+
+                match found_label {
+                    Some(LoopLabel { code_block, .. }) => {
+                        (HirValueKind::Break(*code_block), Ty::new(TyKind::Never, value.span))
+                    }
+                    None => {
+                        println!("error: label not found");
+                        (HirValueKind::Unit, Ty::new(TyKind::Never, value.span))
+                    }
+                }
+            }
+
+            AstValue::Continue(label) => {
+                let found_label =
+                    if let Some(label) = label {
+                        self.label_stack.find(&label.item)
+                    }
+                    else {
+                        self.label_stack.last()
+                    };
+
+                match found_label {
+                    Some(LoopLabel { code_block, .. }) => {
+                        (HirValueKind::Continue(*code_block), Ty::new(TyKind::Never, value.span))
+                    }
+                    None => {
+                        println!("error: label not found");
+                        (HirValueKind::Unit, Ty::new(TyKind::Never, value.span))
+                    }
+                }
             }
 
             AstValue::Error => unreachable!()

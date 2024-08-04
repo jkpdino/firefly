@@ -48,6 +48,8 @@ pub enum ValueKind {
     BuiltinFunc(&'static str),
 
     Return(Box<Value>),
+    Break(Id<CodeBlock>),
+    Continue(Id<CodeBlock>),
 
     If(Box<IfValue>),
     While(Box<WhileValue>),

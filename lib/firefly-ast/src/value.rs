@@ -12,6 +12,8 @@ pub enum Value {
     Return(Option<Box<Spanned<Value>>>),
     If(Box<IfStatement>),
     While(Box<WhileStatement>),
+    Break(Option<Name>),
+    Continue(Option<Name>),
     Error,
 }
 

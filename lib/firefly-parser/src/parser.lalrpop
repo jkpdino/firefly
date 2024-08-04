@@ -49,6 +49,9 @@ extern {
         "static" => Token::StaticKw,
 
         "return" => Token::ReturnKw,
+        "break" => Token::BreakKw,
+        "continue" => Token::ContinueKw,
+
         "if" => Token::IfKw,
         "else" => Token::ElseKw,
         "while" => Token::WhileKw,
@@ -212,6 +215,8 @@ AtomExpr: Value = {
     LiteralValue => <>,
     "(" <items: CommaList<Value>> ")" => Value::Tuple(items),
     <Path> => Value::Path(<>),
+    BreakValue => <>,
+    ContinueValue => <>,
 }
 
 LiteralValue: Value = {
@@ -244,6 +249,14 @@ WhileStatement: WhileStatement = {
 ElseStatement: ElseStatement = {
     "else" <negative: CodeBlock> => ElseStatement::Else(negative),
     "else" <negative: IfStatement> => ElseStatement::ElseIf(Box::new(negative)),
+}
+
+BreakValue: Value = {
+    "break" <label: Name?> => Value::Break(label)
+}
+
+ContinueValue: Value = {
+    "continue" <label: Name?> => Value::Continue(label)
 }
 
 // Types

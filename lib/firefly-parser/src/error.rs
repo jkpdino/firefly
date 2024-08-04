@@ -145,6 +145,9 @@ impl ParserErrorEnv<'_> {
             Token::StructKw => "keyword `struct`".to_string(),
 
             Token::ReturnKw => "keyword `return`".to_string(),
+			Token::BreakKw => "keyword `break`".to_string(),
+			Token::ContinueKw => "keyword `continue`".to_string(),
+
 			Token::IfKw => "keyword `if`".to_string(),
 			Token::ElseKw => "keyword `else`".to_string(),
 			Token::WhileKw => "keyword `while`".to_string(),

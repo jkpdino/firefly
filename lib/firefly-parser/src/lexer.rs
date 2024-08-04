@@ -44,6 +44,9 @@ pub enum Token<'a> {
     #[token("static")] StaticKw,
 
     #[token("return")] ReturnKw,
+    #[token("break")] BreakKw,
+    #[token("continue")] ContinueKw,
+
     #[token("if")] IfKw,
     #[token("else")] ElseKw,
     #[token("while")] WhileKw,
