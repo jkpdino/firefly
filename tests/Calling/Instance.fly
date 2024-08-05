@@ -6,7 +6,7 @@ struct Package {
     var version: string
 
     func format() -> string {
-        concat(
+        return concat(
             self.name,
             concat (
                 " ",

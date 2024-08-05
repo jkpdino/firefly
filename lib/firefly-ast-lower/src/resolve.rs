@@ -42,8 +42,7 @@ impl AstLowerer {
 
     fn resolve_instance_member(&mut self, value: Value, segment: PathSegment, from: Id<Entity>) -> Option<Value> {
         let Some(instance) = value.ty.references() else {
-            // todo: error
-            println!("error: not a reference type");
+            self.emit(SymbolError::NoMembersOf(value.clone()));
             return None;
         };
 
@@ -51,7 +50,7 @@ impl AstLowerer {
             .expect("internal compiler error: type doesn't have an instance member table");
 
         let Some(symbol) = instance_member_table.lookup(&segment.name.item) else {
-            println!("error: member not found: {:?}", segment.name.item);
+            self.emit(SymbolError::NoMemberOn(segment.name.clone(), value.clone()));
             return None;
         };
 
@@ -66,7 +65,9 @@ impl AstLowerer {
         }
 
         let Some(value_in) = self.context().try_get::<HasValueIn>(symbol) else {
-            println!("error: can't find value in");
+            let symbol_name = self.context.get(symbol).name.span;
+
+            self.emit(SymbolError::MemberNotAValue(segment.name.clone(), symbol_name));
             return None;
         };
 

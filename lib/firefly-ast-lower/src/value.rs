@@ -1,11 +1,11 @@
-use crate::{errors::StringError, AstLowerer};
-use firefly_ast::value::Value as AstValue;
-use firefly_hir::{resolve::SymbolTable, ty::{Ty, TyKind}, value::{LiteralValue, Value as HirValue, ValueKind as HirValueKind}, Entity, Id};
+use crate::{errors::{StringError, TypeError, ValueError}, labels::LoopLabel, AstLowerer};
+use firefly_ast::value::{ElseStatement, IfStatement, Value as AstValue};
+use firefly_hir::{resolve::SymbolTable, ty::{Ty, TyKind}, value::{ElseValue, IfValue, LiteralValue, Value as HirValue, ValueKind as HirValueKind, WhileValue}, Entity, Id};
 use firefly_span::{Span, Spanned};
 use itertools::Itertools;
 
 impl AstLowerer {
-    pub fn lower_value(&mut self, value: &Spanned<AstValue>, parent: Id<Entity>, symbol_table: &SymbolTable) -> HirValue  {
+    pub fn lower_value(&mut self, value: &Spanned<AstValue>, parent: Id<Entity>, symbol_table: &mut SymbolTable) -> HirValue  {
         let span = value.span;
         let (kind, ty) = match &value.item {
             AstValue::Tuple(items) => {
@@ -45,7 +45,9 @@ impl AstLowerer {
                 let function_value = self.lower_value(function, parent, symbol_table);
 
                 let TyKind::Func(_, return_ty) = &function_value.ty.kind else {
-                    panic!("error: called a non-callable value")
+                    self.emit(TypeError::CantCall(function_value.span));
+                    
+                    return HirValue::default();
                 };
                 let return_ty = return_ty.as_ref().clone();
 
@@ -63,10 +65,110 @@ impl AstLowerer {
                 None => (HirValueKind::Unit, Ty::new(TyKind::Unit, span))
             }
 
+            AstValue::Return(return_value) => {
+                let return_value = if let Some(return_value) = return_value {
+                    self.lower_value(return_value, parent, symbol_table)
+                } else {
+                    let span = value.span;
+                    HirValue::new(HirValueKind::Unit, Ty::new(TyKind::Unit, span), span)
+                };
+
+                (HirValueKind::Return(Box::new(return_value)), Ty::new(TyKind::Never, value.span))
+            }
+
+            AstValue::If(if_statement) => {
+                let if_value = self.lower_if_statement(&if_statement, parent, symbol_table);
+
+                (HirValueKind::If(Box::new(if_value)), Ty::new(TyKind::Unit, value.span))
+            }
+
+            AstValue::While(while_statement) => {
+                let label = while_statement.label.as_ref().map(|label| self.lower_name(label));
+                let condition = self.lower_value(&while_statement.condition, parent, symbol_table);
+
+                self.label_stack.push(label.clone(), while_statement.body.id);
+                let body = self.lower_code_block(&while_statement.body, parent, symbol_table);
+                self.label_stack.pop();
+
+                let while_value = WhileValue {
+                    label,
+                    condition,
+                    body,
+                };
+
+                (HirValueKind::While(Box::new(while_value)), Ty::new(TyKind::Unit, value.span))
+            }
+
+            AstValue::Break(label) => {
+                let found_label =
+                    if let Some(label) = label {
+                        self.label_stack.find(&label.item)
+                    }
+                    else {
+                        self.label_stack.last()
+                    };
+
+                match found_label {
+                    Some(LoopLabel { code_block, .. }) => {
+                        (HirValueKind::Break(*code_block), Ty::new(TyKind::Never, value.span))
+                    }
+                    None => {
+                        if let Some(label) = label {
+                            self.emit(ValueError::UndefinedBreakLabel(label.clone()));
+                        }
+                        else {
+                            self.emit(ValueError::BreakOutsideLoop(value.span));
+                        }
+                        (HirValueKind::Unit, Ty::new(TyKind::Never, value.span))
+                    }
+                }
+            }
+
+            AstValue::Continue(label) => {
+                let found_label =
+                    if let Some(label) = label {
+                        self.label_stack.find(&label.item)
+                    }
+                    else {
+                        self.label_stack.last()
+                    };
+
+                match found_label {
+                    Some(LoopLabel { code_block, .. }) => {
+                        (HirValueKind::Continue(*code_block), Ty::new(TyKind::Never, value.span))
+                    }
+                    None => {
+                        if let Some(label) = label {
+                            self.emit(ValueError::UndefinedContinueLabel(label.clone()));
+                        }
+                        else {
+                            self.emit(ValueError::ContinueOutsideLoop(value.span));
+                        }
+                        (HirValueKind::Unit, Ty::new(TyKind::Never, value.span))
+                    }
+                }
+            }
+
             AstValue::Error => unreachable!()
         };
 
         HirValue::new(kind, ty, span)
+    }
+
+    fn lower_if_statement(&mut self, if_stmt: &IfStatement, parent: Id<Entity>, symbol_table: &mut SymbolTable) -> IfValue {
+        let condition = self.lower_value(&if_stmt.condition, parent, symbol_table);
+
+        let positive = self.lower_code_block(&if_stmt.positive, parent, symbol_table);
+        let negative = if_stmt.negative.as_ref().map(|negative| match negative {
+            ElseStatement::Else(code_block) => {
+                ElseValue::Else(self.lower_code_block(code_block, parent, symbol_table))
+            }
+            ElseStatement::ElseIf(negative) => {
+                ElseValue::ElseIf(Box::new(self.lower_if_statement(&negative, parent, symbol_table)))
+            }
+        });
+
+        IfValue { condition, positive, negative }
     }
 
     fn sanitize_string(&self, s: &str, span: Span) -> String {

@@ -27,38 +27,29 @@ pub enum Token<'a> {
     LongStringLiteral(&'a str),
 
     // Keywords
-    #[token("public")]
-    PublicKw,
-    #[token("internal")]
-    InternalKw,
-    #[token("fileprivate")]
-    FilePrivateKw,
-    #[token("private")]
-    PrivateKw,
+    #[token("public")] PublicKw,
+    #[token("internal")] InternalKw,
+    #[token("fileprivate")] FilePrivateKw,
+    #[token("private")] PrivateKw,
 
-    #[token("module")]
-    ModuleKw,
-    #[token("import")]
-    ImportKw,
+    #[token("module")] ModuleKw,
+    #[token("import")] ImportKw,
 
-    #[token("func")]
-    FuncKw,
-    #[token("struct")]
-    StructKw,
-    #[token("init")]
-    InitKw,
+    #[token("as")] AsKw,
 
-    #[token("var")]
-    VarKw,
+    #[token("var")] VarKw,
+    #[token("func")] FuncKw,
+    #[token("struct")] StructKw,
 
-    #[token("static")]
-    StaticKw,
+    #[token("static")] StaticKw,
 
-    #[token("return")]
-    ReturnKw,
+    #[token("return")] ReturnKw,
+    #[token("break")] BreakKw,
+    #[token("continue")] ContinueKw,
 
-    #[token("as")]
-    AsKw,
+    #[token("if")] IfKw,
+    #[token("else")] ElseKw,
+    #[token("while")] WhileKw,
 
     // Symbols
     #[token("(")]

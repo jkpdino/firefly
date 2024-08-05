@@ -1,6 +1,6 @@
 use firefly_span::Spanned;
 
-use crate::{Name, Path};
+use crate::{stmt::CodeBlock, Name, Path};
 
 #[derive(Debug)]
 pub enum Value {
@@ -9,5 +9,30 @@ pub enum Value {
     StringLiteral(Name),
     Path(Path),
     Call(Box<Spanned<Value>>, Vec<Spanned<Value>>),
+    Return(Option<Box<Spanned<Value>>>),
+    If(Box<IfStatement>),
+    While(Box<WhileStatement>),
+    Break(Option<Name>),
+    Continue(Option<Name>),
     Error,
+}
+
+#[derive(Debug)]
+pub struct IfStatement {
+    pub condition: Spanned<Value>,
+    pub positive: CodeBlock,
+    pub negative: Option<ElseStatement>
+}
+
+#[derive(Debug)]
+pub enum ElseStatement {
+    Else(CodeBlock),
+    ElseIf(Box<IfStatement>)
+}
+
+#[derive(Debug)]
+pub struct WhileStatement {
+    pub label: Option<Name>,
+    pub condition: Spanned<Value>,
+    pub body: CodeBlock,
 }

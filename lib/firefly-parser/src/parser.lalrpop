@@ -2,7 +2,7 @@ use firefly_ast::{
     Visibility,
     Path, PathSegment,
     ty::Ty,
-    value::Value,
+    value::{Value, IfStatement, ElseStatement, WhileStatement},
     stmt::{Stmt, CodeBlock},
     func::{Func, FuncParam},
     item::Item,
@@ -35,20 +35,26 @@ extern {
         "fileprivate" => Token::FilePrivateKw,
         "private" => Token::PrivateKw,
 
+        "static" => Token::StaticKw,
+
         "module" => Token::ModuleKw,
         "import" => Token::ImportKw,
 
+        "as" => Token::AsKw,
+
+        "var" => Token::VarKw,
         "struct" => Token::StructKw,
         "func" => Token::FuncKw,
-        "init" => Token::InitKw,
 
         "static" => Token::StaticKw,
 
-        "var" => Token::VarKw,
-
         "return" => Token::ReturnKw,
+        "break" => Token::BreakKw,
+        "continue" => Token::ContinueKw,
 
-        "as" => Token::AsKw,
+        "if" => Token::IfKw,
+        "else" => Token::ElseKw,
+        "while" => Token::WhileKw,
 
         "integer" => Token::IntegerLiteral(<&'source str>),
         "string" => Token::StringLiteral(<&'source str>),
@@ -190,14 +196,67 @@ CodeBlock: CodeBlock = {
 // Values
 Value = { Spanned<UnspannedValue> }
 UnspannedValue: Value = {
+    FlowExpr => <>
+}
+
+FlowExpr: Value = {
+    TrailingExpr => <>,
+    IfStatement => Value::If(Box::new(<>)),
+    WhileStatement => Value::While(Box::new(<>)),
+    "return" <value: Value?> => Value::Return(value.map(Box::new))
+}
+
+TrailingExpr: Value = {
+    AtomExpr => <>,
+    <func: Spanned<AtomExpr>> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
+}
+
+AtomExpr: Value = {
+    LiteralValue => <>,
     "(" <items: CommaList<Value>> ")" => Value::Tuple(items),
+    <Path> => Value::Path(<>),
+    BreakValue => <>,
+    ContinueValue => <>,
+}
+
+LiteralValue: Value = {
     Spanned<"integer"> => Value::IntegerLiteral(Spanned::new(<>.item.into(), <>.span)),
     Spanned<"string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
     Spanned<"long_string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
-    <func: Value> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
-    <Path> => Value::Path(<>),
+}
 
-    ExpectValue => Value::Error,
+IfStatement: IfStatement = {
+    "if" <condition: Value> <positive: CodeBlock> <negative: ElseStatement?> => IfStatement {
+        condition,
+        positive,
+        negative,
+    }
+}
+
+WhileStatement: WhileStatement = {
+    "while" <condition: Value> <body: CodeBlock> => WhileStatement {
+        label: None,
+        condition,
+        body
+    },
+    <label: Name> ":" "while" <condition: Value> <body: CodeBlock> => WhileStatement {
+        label: Some(label),
+        condition,
+        body
+    }
+}
+
+ElseStatement: ElseStatement = {
+    "else" <negative: CodeBlock> => ElseStatement::Else(negative),
+    "else" <negative: IfStatement> => ElseStatement::ElseIf(Box::new(negative)),
+}
+
+BreakValue: Value = {
+    "break" <label: Name?> => Value::Break(label)
+}
+
+ContinueValue: Value = {
+    "continue" <label: Name?> => Value::Continue(label)
 }
 
 // Types
