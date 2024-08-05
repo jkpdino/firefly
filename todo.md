@@ -16,7 +16,7 @@
 - [x] Add function calls
 - [x] Add system functions
 - [x] Methods
-- [ ] Add control flow
+- [x] Add control flow
 
 # Testing framework
 
