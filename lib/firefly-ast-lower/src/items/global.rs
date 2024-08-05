@@ -1,7 +1,7 @@
 use firefly_ast::struct_def::Field;
 use firefly_hir::{items::{Field as HirField, Global, SourceFile}, resolve::SymbolTable, value::{HasValue, HasValueIn, Value, ValueKind}, Entity, Id};
 
-use crate::{AstLowerer, Lower, SymbolDesc};
+use crate::{errors::DeclarationError, AstLowerer, Lower, SymbolDesc};
 
 impl Lower for Field {
     fn id(&self) -> Id<Entity> {
@@ -55,7 +55,7 @@ impl Lower for Field {
         };
 
         let Some(default) = &self.default else {
-            println!("error: global does not have a default value");
+            lowerer.emit(DeclarationError::GlobalVarNoDefault(self.name.clone()));
             return;
         };
 

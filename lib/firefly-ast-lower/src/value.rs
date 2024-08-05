@@ -1,4 +1,4 @@
-use crate::{errors::StringError, labels::LoopLabel, AstLowerer};
+use crate::{errors::{StringError, TypeError, ValueError}, labels::LoopLabel, AstLowerer};
 use firefly_ast::value::{ElseStatement, IfStatement, Value as AstValue};
 use firefly_hir::{resolve::SymbolTable, ty::{Ty, TyKind}, value::{ElseValue, IfValue, LiteralValue, Value as HirValue, ValueKind as HirValueKind, WhileValue}, Entity, Id};
 use firefly_span::{Span, Spanned};
@@ -45,7 +45,9 @@ impl AstLowerer {
                 let function_value = self.lower_value(function, parent, symbol_table);
 
                 let TyKind::Func(_, return_ty) = &function_value.ty.kind else {
-                    panic!("error: called a non-callable value")
+                    self.emit(TypeError::CantCall(function_value.span));
+                    
+                    return HirValue::default();
                 };
                 let return_ty = return_ty.as_ref().clone();
 
@@ -111,7 +113,12 @@ impl AstLowerer {
                         (HirValueKind::Break(*code_block), Ty::new(TyKind::Never, value.span))
                     }
                     None => {
-                        println!("error: label not found");
+                        if let Some(label) = label {
+                            self.emit(ValueError::UndefinedBreakLabel(label.clone()));
+                        }
+                        else {
+                            self.emit(ValueError::BreakOutsideLoop(value.span));
+                        }
                         (HirValueKind::Unit, Ty::new(TyKind::Never, value.span))
                     }
                 }
@@ -131,7 +138,12 @@ impl AstLowerer {
                         (HirValueKind::Continue(*code_block), Ty::new(TyKind::Never, value.span))
                     }
                     None => {
-                        println!("error: label not found");
+                        if let Some(label) = label {
+                            self.emit(ValueError::UndefinedContinueLabel(label.clone()));
+                        }
+                        else {
+                            self.emit(ValueError::ContinueOutsideLoop(value.span));
+                        }
                         (HirValueKind::Unit, Ty::new(TyKind::Never, value.span))
                     }
                 }

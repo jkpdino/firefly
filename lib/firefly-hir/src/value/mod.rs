@@ -82,3 +82,9 @@ impl Debug for Value {
         self.kind.fmt(f)
     }
 }
+
+impl Default for Value {
+    fn default() -> Self {
+        Self { kind: ValueKind::Unit, ty: Ty::new_unspanned(crate::ty::TyKind::Unit), span: Default::default() }
+    }
+}

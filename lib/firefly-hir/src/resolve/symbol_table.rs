@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use itertools::Itertools;
 
-use crate::{ComputedComponent, Entity, HirContext, Id};
+use crate::{ComputedComponent, Entity, HirContext, Id, ImportError};
 
 use super::{Import, ImportRequest, Namespace, Symbol, VisibleWithin};
 
@@ -170,11 +170,11 @@ impl SymbolTable {
     fn add_specific_symbols(namespace_id: Id<Entity>, symbols: Vec<ImportRequest>, symbol_table: &mut SymbolTable, context: &mut HirContext) {
         // We need to match symbols to their import symbols
         // Create a map to do this on O(n) time
-        let mut symbol_map = HashMap::new();
+        let mut symbol_map = HashMap::<String, ImportRequest>::new();
 
         for symbol in symbols {
-            if symbol_map.contains_key(&symbol.name.name) {
-                println!("error: already imported {}", symbol.name.name);
+            if let Some(original) = symbol_map.get(&symbol.name.name) {
+                context.emit(ImportError::MultipleImports(original.name.clone(), symbol.name.clone()));
             }
 
             symbol_map.insert(symbol.name.name.clone(), symbol);
@@ -193,6 +193,7 @@ impl SymbolTable {
         // We support shadowing, so we don't need to check for duplicates
         for symbol_id in symbols.into_iter() {
             let symbol = context.get(symbol_id);
+            let symbol_name = symbol.name.clone();
             let mut name = symbol.name.name.clone();
 
             // Check if we are looking for that symbol
@@ -213,7 +214,7 @@ impl SymbolTable {
             // If we aren't in a scope where the symbol is visible,
             // don't add it
             if !ancestors.contains(&scope) {
-                println!("error: symbol {name} isn't visible in the current context");
+                context.emit(ImportError::NotVisible(symbol_name));
             }
 
             symbol_table.insert(name, symbol_id);
@@ -221,7 +222,7 @@ impl SymbolTable {
 
         // Check that we imported all requested symbols
         for ImportRequest { name, .. } in symbol_map.values() {
-            println!("error: couldn't find {} in import", &name.name);
+            context.emit(ImportError::NotFound(name.clone()));
         }
     }
 
