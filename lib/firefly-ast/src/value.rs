@@ -1,6 +1,6 @@
 use firefly_span::Spanned;
 
-use crate::{stmt::CodeBlock, Name, Path};
+use crate::{stmt::CodeBlock, Name, Path, PathSegment};
 
 #[derive(Debug)]
 pub enum Value {
@@ -14,6 +14,8 @@ pub enum Value {
     While(Box<WhileStatement>),
     Break(Option<Name>),
     Continue(Option<Name>),
+    Assign(Box<Spanned<Value>>, Box<Spanned<Value>>),
+    Member(Box<Spanned<Value>>, PathSegment),
     Error,
 }
 

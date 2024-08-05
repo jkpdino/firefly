@@ -65,6 +65,16 @@ impl AstLowerer {
                 None => (HirValueKind::Unit, Ty::new(TyKind::Unit, span))
             }
 
+            AstValue::Member(parent_val, member) => {
+                let parent_val = self.lower_value(parent_val, parent, symbol_table);
+
+                if let Some(member) = self.resolve_instance_member(parent_val, member.clone(), parent) {
+                    return member;
+                }
+
+                return HirValue::default();
+            }
+
             AstValue::Return(return_value) => {
                 let return_value = if let Some(return_value) = return_value {
                     self.lower_value(return_value, parent, symbol_table)
@@ -147,6 +157,17 @@ impl AstLowerer {
                         (HirValueKind::Unit, Ty::new(TyKind::Never, value.span))
                     }
                 }
+            }
+
+            AstValue::Assign(place, assignee) => {
+                let place = self.lower_value(place, parent, symbol_table);
+                let assignee = self.lower_value(assignee, parent, symbol_table);
+
+                if !place.is_mutable() {
+                    self.emit(ValueError::NotMutable(place.span));
+                }
+                
+                (HirValueKind::Assign(Box::new(place), Box::new(assignee)), Ty::new(TyKind::Unit, value.span))
             }
 
             AstValue::Error => unreachable!()

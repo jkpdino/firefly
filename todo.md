@@ -19,6 +19,7 @@
 - [x] Add control flow
 - [ ] Add mutability
 - [ ] Add floats
+- [ ] Destructure tuples
 
 # Testing framework
 

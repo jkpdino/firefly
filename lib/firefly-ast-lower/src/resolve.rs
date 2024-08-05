@@ -40,7 +40,7 @@ impl AstLowerer {
         return Some(value);
     }
 
-    fn resolve_instance_member(&mut self, value: Value, segment: PathSegment, from: Id<Entity>) -> Option<Value> {
+    pub fn resolve_instance_member(&mut self, value: Value, segment: PathSegment, from: Id<Entity>) -> Option<Value> {
         let Some(instance) = value.ty.references() else {
             self.emit(SymbolError::NoMembersOf(value.clone()));
             return None;
@@ -71,7 +71,9 @@ impl AstLowerer {
             return None;
         };
 
-        return Some(self.get_member_of(value, segment.name.span, value_in))
+        let span = value.span.to(segment.name.span);
+
+        return Some(self.get_member_of(value, span, value_in))
     }
 
     pub fn resolve_type(&mut self, path: &Path, from: Id<Entity>, symbol_table: &SymbolTable) -> Option<Ty> {

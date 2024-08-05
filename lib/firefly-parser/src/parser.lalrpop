@@ -99,7 +99,6 @@ UnspannedModule: Module = {
 }
 
 // Imports
-
 Import = { Spanned<UnspannedImport> };
 UnspannedImport: Import = {
     "import" <module: Path> <alias: Rename?> <symbol_list: ImportSymbolList?> ";"? => Import::new(
@@ -170,53 +169,70 @@ ReturnType: Spanned<Ty> = {
 
 // Statements
 BindStmt: Stmt = {
-    "var" <name: Name> ":" <ty: Type> "=" <value: Value> => Stmt::Bind(name, ty, value)
+    "var" <name: Name> ":" <ty: Type> "=" <value: Value> ";" => Stmt::Bind(name, ty, value)
 }
 
 Stmt = { Spanned<UnspannedStmt> }
 UnspannedStmt: Stmt = {
-    <Value> => Stmt::Value(<>),
-    <BindStmt> => <>,
+    BindStmt => <>,
+    Spanned<StatementLikeValue> => Stmt::Value(<>, false),
+    <value: NonStatementLikeValue> ";" => Stmt::Value(value, true),
+    ";" => Stmt::Semicolon,
 }
 
-Stmts: Vec<Spanned<Stmt>> = {
-    <mut v:(<Stmt> ";")*> <e:Stmt?> => match e {
-        None => v,
-        Some(e) => {
-            v.push(e);
-            v
-        }
+StmtList: Vec<Spanned<Stmt>> = {
+    <stmt: Stmt> => vec![stmt],
+    <mut original: StmtList> <new: Stmt> => {
+        original.push(new);
+        original
     }
 }
 
 CodeBlock: CodeBlock = {
-    "{" <stmts: Stmts> "}" => CodeBlock::new(stmts)
+    "{" <inner: CodeBlockInner> "}" => inner
+}
+
+CodeBlockInner: CodeBlock = {
+    <stmts: StmtList> <term: NonStatementLikeValue> => CodeBlock::new(stmts, Some(term)),
+    <stmts: StmtList> => CodeBlock::new(stmts, None),
+    NonStatementLikeValue => CodeBlock::new(vec![], Some(<>)),
+    () => CodeBlock::new(vec![], None)
 }
 
 // Values
-Value = { Spanned<UnspannedValue> }
-UnspannedValue: Value = {
-    FlowExpr => <>
-}
+Value = { Spanned<RestrictedValue<"L">> }
+NonStatementLikeValue = { Spanned<RestrictedValue<"">> }
 
-FlowExpr: Value = {
-    TrailingExpr => <>,
-    IfStatement => Value::If(Box::new(<>)),
-    WhileStatement => Value::While(Box::new(<>)),
+RestrictedValue<L>: Value = {
+    AssignValue<L> => <>,
     "return" <value: Value?> => Value::Return(value.map(Box::new))
 }
 
-TrailingExpr: Value = {
-    AtomExpr => <>,
-    <func: Spanned<AtomExpr>> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
+AssignValue<L>: Value = {
+    SuffixedValue<"P", L> => <>,
+    <lhs: Spanned<AssignValue<L>>> "=" <rhs: Spanned<SuffixedValue<"P", L>>> => Value::Assign(Box::new(lhs), Box::new(rhs)),
 }
 
-AtomExpr: Value = {
+SuffixedValue<P, L>: Value = {
+    AtomValue<P, L> => <>,
+    <func: Spanned<SuffixedValue<"P", L>>> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
+    <parent: Spanned<SuffixedValue<"", L>>> "." <member: PathSegment> => Value::Member(Box::new(parent), member),
+}
+
+AtomValue<P, L>: Value = {
     LiteralValue => <>,
     "(" <items: CommaList<Value>> ")" => Value::Tuple(items),
-    <Path> => Value::Path(<>),
-    BreakValue => <>,
-    ContinueValue => <>,
+    <Path> if P == "P" => Value::Path(<>),
+
+    StatementLikeValue if L != "" => <>,
+
+    "break" <label: Name?> => Value::Break(label),
+    "continue" <label: Name?> => Value::Continue(label),
+}
+
+StatementLikeValue: Value = {
+    IfStatement => Value::If(Box::new(<>)),
+    WhileStatement => Value::While(Box::new(<>)),
 }
 
 LiteralValue: Value = {
@@ -249,14 +265,6 @@ WhileStatement: WhileStatement = {
 ElseStatement: ElseStatement = {
     "else" <negative: CodeBlock> => ElseStatement::Else(negative),
     "else" <negative: IfStatement> => ElseStatement::ElseIf(Box::new(negative)),
-}
-
-BreakValue: Value = {
-    "break" <label: Name?> => Value::Break(label)
-}
-
-ContinueValue: Value = {
-    "continue" <label: Name?> => Value::Continue(label)
 }
 
 // Types

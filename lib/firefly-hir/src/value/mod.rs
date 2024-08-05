@@ -42,6 +42,8 @@ pub enum ValueKind {
 
     FieldOf(Box<Value>, Id<Field>),
 
+    Assign(Box<Value>, Box<Value>),
+
     StaticFunc(Id<Func>),
     InstanceFunc(Box<Value>, Id<Func>),
     InitFor(Id<StructDef>),
@@ -73,6 +75,20 @@ impl Value {
             kind,
             ty,
             span
+        }
+    }
+
+    /// Returns whether a value is mutable or not
+    /// 
+    /// Local and global variables are mutable, as well
+    /// as fields of mutable values
+    pub fn is_mutable(&self) -> bool {
+        match &self.kind {
+            ValueKind::FieldOf(parent, _) => parent.is_mutable(),
+            ValueKind::Local(_) => true,
+            ValueKind::Global(_) => true,
+
+            _ => false
         }
     }
 }
