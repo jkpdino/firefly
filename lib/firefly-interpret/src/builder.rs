@@ -52,7 +52,7 @@ impl<'a> Builder<'a> {
     /// Gets a local value
     pub fn get_local(&self, index: Id<Local>) -> &Local {
         let func_id = self.current_func_id();
-        let func = self.context.function(func_id);
+        let func = self.context.get_function(func_id);
 
         func.locals.get_by_id(index).expect("internal compiler error: local not found")
     }
@@ -60,7 +60,7 @@ impl<'a> Builder<'a> {
     /// Builds an assign operation in the selected basic block
     pub fn build_assign(&mut self, place: Place, imm: Immediate) {
         let id = self.current_basic_block_id();
-        let basic_block = self.context_mut().basic_block_mut(id);
+        let basic_block = self.context_mut().get_basic_block_mut(id);
 
         basic_block.append_assign(place, imm);
     }
@@ -68,7 +68,7 @@ impl<'a> Builder<'a> {
     /// Builds an evaluate operation in the selected basic block
     pub fn build_eval(&mut self, imm: Immediate) {
         let id = self.current_basic_block_id();
-        let basic_block = self.context_mut().basic_block_mut(id);
+        let basic_block = self.context_mut().get_basic_block_mut(id);
 
         basic_block.append_eval(imm);
     }
@@ -76,15 +76,12 @@ impl<'a> Builder<'a> {
     /// Builds a terminator operation for the selected basic block
     pub fn build_terminator(&mut self, terminator: Terminator) {
         let id = self.current_basic_block_id();
-        let basic_block = self.context_mut().basic_block_mut(id);
+        let basic_block = self.context_mut().get_basic_block_mut(id);
 
         basic_block.append_terminator(terminator);
 
         self.current_bb = None;
     }
-
-
-
 
     fn current_func_id(&self) -> Id<Function> {
         self.current_func.expect("internal compiler error: no vir id selected")

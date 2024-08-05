@@ -28,4 +28,5 @@ members = [
     "lib/firefly-errors",
     "lib/firefly-error-messages",
     "lib/firefly-interpret",
+    "lib/firefly-hir-lower",
 ]

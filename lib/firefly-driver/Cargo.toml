@@ -9,4 +9,6 @@ firefly-errors = { path = "../firefly-errors" }
 firefly-parser = { path = "../firefly-parser" }
 firefly-ast-lower = { path = "../firefly-ast-lower" }
 firefly-ast = { path = "../firefly-ast" }
+firefly-hir-lower = { path = "../firefly-hir-lower" }
+firefly-interpret = { path = "../firefly-interpret" }
 clap = { version = "^4.5", features = ["derive"] }

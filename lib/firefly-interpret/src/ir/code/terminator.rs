@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use crate::{ir::{value::Immediate, VirContext}, util::DisplayInContext};
 
 use super::BasicBlockId;
@@ -19,12 +17,12 @@ pub struct Terminator {
 }
 
 impl DisplayInContext for TerminatorKind {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>, context: &VirContext) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>, _: &VirContext) -> std::fmt::Result {
         match self {
             TerminatorKind::Branch(dest) => write!(f, "branch {}", dest.local_id),
             TerminatorKind::BranchIf(condition, positive, negative) => write!(f, "branch if {condition} ({} else {})", positive.local_id, negative.local_id),
             TerminatorKind::ReturnVoid => write!(f, "return"),
-            TerminatorKind::Return(_) => todo!(),
+            TerminatorKind::Return(value) => write!(f, "return {}", value)
         }
     }
 }

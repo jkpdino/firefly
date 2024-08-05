@@ -257,6 +257,8 @@ dependencies = [
  "firefly-ast",
  "firefly-ast-lower",
  "firefly-errors",
+ "firefly-hir-lower",
+ "firefly-interpret",
  "firefly-parser",
  "firefly-span",
 ]
@@ -284,6 +286,14 @@ dependencies = [
  "firefly-errors",
  "firefly-span",
  "itertools 0.13.0",
+]
+
+[[package]]
+name = "firefly-hir-lower"
+version = "0.1.0"
+dependencies = [
+ "firefly-hir",
+ "firefly-interpret",
 ]
 
 [[package]]

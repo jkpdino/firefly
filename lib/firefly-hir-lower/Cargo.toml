@@ -1,0 +1,8 @@
+[package]
+name = "firefly-hir-lower"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+firefly-hir = { path = "../firefly-hir" }
+firefly-interpret = { path = "../firefly-interpret" }

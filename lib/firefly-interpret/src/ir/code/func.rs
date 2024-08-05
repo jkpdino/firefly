@@ -25,17 +25,17 @@ impl DisplayInContext for Function {
         let parameters = self.signature.parameters
             .iter()
             .enumerate()
-            .map(|(i, param)| format!("%{i}: {param}"))
+            .map(|(i, param)| format!("%{i}: {}", context.display(param)))
             .format(", ");
 
-        writeln!(f, "def {}({parameters}) -> {} {{", self.name, self.signature.return_ty)?;
+        writeln!(f, "def {}({parameters}) -> {} {{", self.name, context.display(&self.signature.return_ty))?;
 
         for local in self.locals.iter() {
-            writeln!(f, "    {local}")?;
+            writeln!(f, "    {}", context.display(local))?;
         }
 
         for &bb in &self.basic_blocks {
-            let basic_block = context.basic_block(bb);
+            let basic_block = context.get_basic_block(bb);
 
             writeln!(f, "{basic_block}")?;
         }

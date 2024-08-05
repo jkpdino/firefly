@@ -34,11 +34,11 @@ pub struct LowerCodePass;
 
 impl ParallelPass for LowerCodePass {
     type Input = Vec<Item>;
-    type Output = Vec<Item>;
+    type Output = ();
 
     fn process(&self, input: Self::Input, context: &mut Context) -> Self::Output {
         context.ast_lowerer.lower_item_codes(&input);
 
-        return input;
+        return ();
     }
 }
