@@ -18,6 +18,8 @@
     - Have fields with visibilities
     - Have an initializer
     - Static methods
+    - Instance methods
+    - Static variables
 - Control Flow
     - Loop/Repeat
     - If
@@ -26,25 +28,29 @@
 # Version 0 Profile 2
 
 - Structs
-    - Static variables
-    - Instance methods
+    - Initializers
 - Functions
     - Parameter labels
+    - Overloading
 - Inference
     - Local bindings don't need an explicit type
+- Operators
+
+# Version 0 Profile 3
+
+- Type aliases
+- Protocols
+- Generic types and functions
 
 # By version 1
 
-- Generic types and functions
-- Function overloading
 - New lang library
 - Full type inference
 - Enums
-- Protocols
 - Classes
 - Pattern matching
 - For and Match
-- Operators
+- Closures
 
 
 Example code
@@ -56,16 +62,39 @@ module Fibonacci
 func fibonacci(n: int) -> int {
     var i: int = 1;
 
-    var n1 = 1
-    var n2 = 1
+    var n1: int = 1;
+    var n2: int = 1;
 
-    while lessThan(i, n) {
-        var n3 = add(n1, n2);
+    while lt_int(i, n) {
+        var n3: int = add(n1, n2);
 
         n1 = n2;
         n2 = n3;
 
         i = add(i, 1);
+    }
+
+    return n2;
+}
+```
+
+```firefly
+// Version 0 Profile 2
+module Fibonacci
+
+func fibonacci(n: int) -> int {
+    var i = 1;
+
+    var n1 = 1;
+    var n2 = 1;
+
+    while i < n {
+        var n3 = n1 + n2;
+
+        n1 = n2;
+        n2 = n3;
+
+        i += 1;
     }
 
     return n2;

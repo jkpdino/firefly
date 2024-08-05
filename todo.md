@@ -17,6 +17,8 @@
 - [x] Add system functions
 - [x] Methods
 - [x] Add control flow
+- [ ] Add mutability
+- [ ] Add floats
 
 # Testing framework
 
