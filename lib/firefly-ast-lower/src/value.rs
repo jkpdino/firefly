@@ -8,6 +8,14 @@ impl AstLowerer {
     pub fn lower_value(&mut self, value: &Spanned<AstValue>, parent: Id<Entity>, symbol_table: &mut SymbolTable) -> HirValue  {
         let span = value.span;
         let (kind, ty) = match &value.item {
+            AstValue::Tuple(items) if items.is_empty() => {
+                (HirValueKind::Unit, Ty::new(TyKind::Unit, span))
+            }
+            AstValue::Tuple(items) if items.len() == 1 => {
+                let HirValue { kind, ty, .. } = self.lower_value(&items[0], parent, symbol_table);
+
+                (kind, ty)
+            }
             AstValue::Tuple(items) => {
                 let items = items.iter()
                     .map(|item| self.lower_value(item, parent, symbol_table))
@@ -73,6 +81,26 @@ impl AstLowerer {
                 }
 
                 return HirValue::default();
+            }
+
+            AstValue::TupleMember(parent_val, index) => {
+                let parent_val = self.lower_value(parent_val, parent, symbol_table);
+
+                let index_num: usize = index.item.parse().expect("internal compiler error: digits aren't a number");
+
+                let TyKind::Tuple(items) = &parent_val.ty.kind else {
+                    // error
+                    return HirValue::default();
+                };
+
+                if index_num >= items.len() {
+                    // error
+                    return HirValue::default();
+                }
+
+                let ty = items[index_num].clone();
+
+                (HirValueKind::TupleMember(Box::new(parent_val), index_num), ty)
             }
 
             AstValue::Return(return_value) => {

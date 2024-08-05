@@ -209,20 +209,25 @@ RestrictedValue<L>: Value = {
 }
 
 AssignValue<L>: Value = {
-    SuffixedValue<"P", L> => <>,
-    <lhs: Spanned<AssignValue<L>>> "=" <rhs: Spanned<SuffixedValue<"P", L>>> => Value::Assign(Box::new(lhs), Box::new(rhs)),
+    SuffixedValue<L> => <>,
+    <lhs: Spanned<AssignValue<L>>> "=" <rhs: Spanned<SuffixedValue<L>>> => Value::Assign(Box::new(lhs), Box::new(rhs)),
 }
 
-SuffixedValue<P, L>: Value = {
-    AtomValue<P, L> => <>,
-    <func: Spanned<SuffixedValue<"P", L>>> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
-    <parent: Spanned<SuffixedValue<"", L>>> "." <member: PathSegment> => Value::Member(Box::new(parent), member),
+SuffixedValue<L>: Value = {
+    AtomValue<L> => <>,
+    <func: Spanned<SuffixedValue<L>>> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
+    <parent: Spanned<SuffixedValue<L>>> "." <member: PathSegment> => Value::member(Box::new(parent), member),
+    <parent: Spanned<SuffixedValue<L>>> "." <index: Spanned<Number>> => Value::TupleMember(Box::new(parent), index),
 }
 
-AtomValue<P, L>: Value = {
+Number: String = {
+    "integer" => <>.into()
+}
+
+AtomValue<L>: Value = {
     LiteralValue => <>,
     "(" <items: CommaList<Value>> ")" => Value::Tuple(items),
-    <Path> if P == "P" => Value::Path(<>),
+    SinglePath => Value::Path(<>),
 
     StatementLikeValue if L != "" => <>,
 
@@ -282,13 +287,16 @@ Path: Path = {
     <s: Spanned<PathSegments>> => Path::new(s.item, s.span)
 }
 
+SinglePath: Path = {
+    <s: Spanned<PathSegment>> => Path::new(vec![s.item], s.span)
+}
+
 PathSegments: Vec<PathSegment> = {
-    <s: PathSegment> => vec![s],
-    <mut v: PathSegments> "." <s: PathSegment> => {
-        v.push(s);
-        v
-    },
-    <v: PathSegments> "." Recover => vec![],
+    <first: PathSegment> <later: LaterSegment*> => [&[first][..], &later[..]].concat()
+}
+
+LaterSegment: PathSegment = {
+    "." <later: PathSegment> => later,
 }
 
 PathSegment: PathSegment = {

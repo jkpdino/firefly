@@ -39,6 +39,7 @@ pub enum ValueKind {
     Unit,
     Tuple(Vec<Value>),
     Literal(LiteralValue),
+    TupleMember(Box<Value>, usize),
 
     FieldOf(Box<Value>, Id<Field>),
 
