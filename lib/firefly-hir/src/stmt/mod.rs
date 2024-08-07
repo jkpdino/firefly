@@ -9,15 +9,13 @@ pub use code_block::CodeBlock;
 use firefly_span::Span;
 
 use crate::{
-    ty::Ty,
-    value::Value,
-    Name,
+    ty::Ty, value::Value, Id, Name
 };
 
 #[derive(Debug, Clone)]
 pub enum StmtKind {
     Value(Value),
-    Bind(Name, Ty, Value),
+    Bind(Name, Id<Local>, Ty, Value),
 }
 
 #[derive(Clone)]

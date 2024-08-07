@@ -4,6 +4,7 @@ use clap::Parser;
 use context::Context;
 use firefly_ast_lower::AstLowerer;
 use firefly_errors::emitter::{Destination, Emitter};
+use firefly_interpret::ir::VirContext;
 use firefly_span::{SourceFile, SourceMap};
 use pipeline::Pipeline;
 
@@ -16,6 +17,7 @@ pub struct Driver {
     source_map: Arc<SourceMap>,
     emitter: Arc<Emitter>,
     ast_lowerer: AstLowerer,
+    vir_context: VirContext,
 
     print_hir: bool,
 }
@@ -25,8 +27,9 @@ impl Driver {
         let source_map = SourceMap::new();
         let emitter = Arc::new(Emitter::new(Destination::stderr(), &source_map));
         let ast_lowerer = AstLowerer::new(emitter.clone());
+        let vir_context = VirContext::new();
 
-        Driver { source_map, emitter, ast_lowerer, print_hir: false }
+        Driver { source_map, emitter, ast_lowerer, vir_context, print_hir: false }
     }
 
     pub fn parse_args(&mut self) {
@@ -50,6 +53,7 @@ impl Driver {
             source_map: &self.source_map,
             emitter: &self.emitter,
             ast_lowerer: &mut self.ast_lowerer,
+            vir_context: &mut self.vir_context,
         };
 
         pipeline.run(self.source_map.files(), &mut context);

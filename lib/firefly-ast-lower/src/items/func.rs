@@ -41,7 +41,7 @@ impl AstLowerer {
         HirFuncParam { ty, bind_name }
     }
 
-    pub fn create_local(&mut self, parent: Id<Entity>, name: &Name, ty: &Ty) {
+    pub fn create_local(&mut self, parent: Id<Entity>, name: &Name, ty: &Ty) -> Id<Local> {
         let local = Id::default();
         
         self.context.create_with_parent(parent, (
@@ -57,7 +57,7 @@ impl AstLowerer {
             HasValue {
                 value: Value::new(ValueKind::Local(local), ty.clone(), Default::default()),
             }
-        ));
+        ))
     }
 }
 

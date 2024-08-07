@@ -12,7 +12,7 @@ impl DisplayInContext for StructDef {
     fn fmt(&self, f: &mut std::fmt::Formatter, context: &VirContext) -> std::fmt::Result {
         writeln!(f, "struct {} {{", self.name)?;
         for field in &self.fields {
-            writeln!(f, "{},", context.display(field))?;
+            writeln!(f, "  {},", context.display(field))?;
         }
         write!(f, "}}")
     }

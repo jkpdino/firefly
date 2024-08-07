@@ -2,10 +2,12 @@ use std::sync::Arc;
 
 use firefly_ast_lower::AstLowerer;
 use firefly_errors::emitter::Emitter;
+use firefly_interpret::ir::VirContext;
 use firefly_span::SourceMap;
 
 pub struct Context<'a> {
     pub source_map: &'a Arc<SourceMap>,
     pub emitter: &'a Emitter,
-    pub ast_lowerer: &'a mut AstLowerer
+    pub ast_lowerer: &'a mut AstLowerer,
+    pub vir_context: &'a mut VirContext,
 }

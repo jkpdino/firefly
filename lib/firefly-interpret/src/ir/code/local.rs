@@ -13,6 +13,9 @@ pub struct Local {
 }
 
 impl Local {
+    pub fn id(&self) -> Id<Local> {
+        self.id
+    }
     pub fn place_unspanned(&self) -> Place {
         Place { kind: Box::new(PlaceKind::Local(self.id)), ty: self.ty.clone(), span: Span::default() }
     }

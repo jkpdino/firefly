@@ -1,5 +1,4 @@
 use firefly_hir_lower::lower;
-use firefly_interpret::ir::VirContext;
 
 use crate::context::Context;
 
@@ -9,13 +8,13 @@ pub struct LowerHirPass;
 
 impl Pass for LowerHirPass {
     type Input = ();
-    type Output = VirContext;
+    type Output = ();
 
     fn process(&self, _: Self::Input, context: &mut Context) -> Self::Output {
-        let vir_context = lower(context.ast_lowerer.context());
+        lower(context.ast_lowerer.context(), context.vir_context);
 
-        println!("{}", vir_context);
+        println!("{}", context.vir_context);
 
-        return vir_context;
+        return ();
     }
 }

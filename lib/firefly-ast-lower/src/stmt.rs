@@ -42,11 +42,11 @@ impl AstLowerer {
                 let value = self.lower_value(&value, parent.as_base(), symbol_table);
 
                 // Create a local so we can reference the symbol
-                self.create_local(parent.as_base(), &name, &ty);
+                let id = self.create_local(parent.as_base(), &name, &ty);
 
                 // Now return a statement
                 HirStmt::new(
-                    HirStmtKind::Bind(name, ty, value),
+                    HirStmtKind::Bind(name, id, ty, value),
                     stmt.span
                 )
             }
