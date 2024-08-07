@@ -1,0 +1,9 @@
+module Test.Factorial;
+
+func factorial(n: int) -> int {
+    if leq_int(n, 1) {
+        return 1;
+    };
+
+    return mul(n, factorial(sub(n, 1)));
+}

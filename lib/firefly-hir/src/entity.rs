@@ -21,6 +21,8 @@ pub enum EntityKind {
     Value,
     Stmt,
     CodeBlock,
+    
+    Constant,
 
     SourceFile,
 

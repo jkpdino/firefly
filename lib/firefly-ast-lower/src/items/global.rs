@@ -1,7 +1,7 @@
 use firefly_ast::struct_def::Field;
-use firefly_hir::{items::{Field as HirField, Global, SourceFile}, resolve::SymbolTable, value::{HasValue, Value, ValueKind}, Entity, Id};
+use firefly_hir::{items::{Field as HirField, Global, SourceFile}, resolve::SymbolTable, value::{HasValue, HasValueIn, Value, ValueKind}, Entity, Id};
 
-use crate::{AstLowerer, Lower, SymbolDesc};
+use crate::{errors::DeclarationError, AstLowerer, Lower, SymbolDesc};
 
 impl Lower for Field {
     fn id(&self) -> Id<Entity> {
@@ -39,6 +39,7 @@ impl Lower for Field {
             let id = unsafe { self.id.cast::<HirField>() };
 
             lowerer.context_mut().create(HirField { id, ty });
+            lowerer.context_mut().add_component(id, HasValueIn::Field(id));
         }
     }
 
@@ -49,17 +50,17 @@ impl Lower for Field {
 
         let id = unsafe { self.id.cast::<Global>() };
 
-        let Some(symbol_table) = lowerer.context_mut().try_get_computed::<SymbolTable>(parent).cloned() else {
+        let Some(mut symbol_table) = lowerer.context_mut().try_get_computed::<SymbolTable>(parent).cloned() else {
             panic!("internal compiler error: parent is not a namespace")
         };
 
         let Some(default) = &self.default else {
-            println!("error: global does not have a default value");
+            lowerer.emit(DeclarationError::GlobalVarNoDefault(self.name.clone()));
             return;
         };
 
         let ty = lowerer.lower_ty(&self.ty, parent, &symbol_table);
-        let default_value = lowerer.lower_value(&default, parent, &symbol_table);
+        let default_value = lowerer.lower_value(&default, parent, &mut symbol_table);
 
         lowerer.context_mut().create(Global { id, ty, default_value });
     }

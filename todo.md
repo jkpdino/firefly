@@ -13,10 +13,13 @@
 - [x] Add global variables
 - [x] Add structs
 - [x] Add members
-- [ ] Add function calls
-- [ ] Add system functions
-- [ ] Tuples
-- [ ] Add control flow
+- [x] Add function calls
+- [x] Add system functions
+- [x] Methods
+- [x] Add control flow
+- [x] Add mutability
+- [ ] Add floats
+- [x] Destructure tuples
 
 # Testing framework
 

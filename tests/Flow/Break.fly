@@ -1,0 +1,41 @@
+module Test.WhileLoop
+
+func main() {
+    var i: int = 0;
+
+    // Test outside a loop
+    break;
+
+    // Test normal
+    while leq_int(i, 10) {
+        break;
+    };
+
+    // Test nested
+    while leq_int(i, 10) {
+        while leq_int(i, 10) {
+            break;
+        };
+    };
+
+    // Test labeled
+    outer: while leq_int(i, 10) {
+        break;
+    };
+
+    // Test nested labeled
+    outer: while leq_int(i, 10) {
+        inner: while leq_int(i, 10) {
+            break outer;
+        };
+    };
+
+    // Test shadowing
+    outer: while leq_int(i, 10) {
+        outer: while leq_int(i, 10) {
+            break outer;
+        };
+    };
+
+    break outer;
+}

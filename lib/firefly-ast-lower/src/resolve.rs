@@ -1,6 +1,7 @@
 use firefly_hir::{
-    items::Field, resolve::{InstanceMemberTable, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, ty::{HasType, Ty}, value::{HasValue, Value, ValueKind}, Entity, Id
+    func::Callable, resolve::{InstanceMemberTable, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, ty::{HasType, Ty}, value::{HasValue, HasValueIn, Value, ValueKind}, Entity, Id
 };
+use firefly_span::Span;
 
 use crate::{errors::SymbolError, AstLowerer};
 use firefly_ast::{Path, PathSegment};
@@ -9,17 +10,26 @@ impl AstLowerer {
     pub fn resolve_value(&mut self, path: &Path, from: Id<Entity>, symbol_table: &SymbolTable) -> Option<Value> {
         let (value_node, member_segments) = self.resolve_path(path, from, symbol_table)?;
 
-        let Some(has_value) = self.context.try_get::<HasValue>(value_node) else {
-            let symbol_name_span = self.context.try_get::<Symbol>(value_node)
-                .expect("internal compiler error: doesn't have a symbol")
-                .name.span;
+        let mut value =
+            if let Some(has_value) = self.context.try_get::<HasValue>(value_node) {
+                Value {
+                    span: path.span,
+                    ..has_value.value.clone()
+                }
+            }
+            else if let Some(has_value_in) = self.context.try_get::<HasValueIn>(value_node) {
+                let self_value = self.self_value.clone().unwrap(); // todo: error
 
-            self.emit(SymbolError::NotAValue(path.span, symbol_name_span));
-            return None;
-        };
+                self.get_member_of(self_value, path.span, has_value_in)
+            }
+            else {
+                let symbol_name_span = self.context.try_get::<Symbol>(value_node)
+                    .expect("internal compiler error: doesn't have a symbol")
+                    .name.span;
 
-        let mut value = has_value.value.clone();
-        value.span = path.span;
+                self.emit(SymbolError::NotAValue(path.span, symbol_name_span));
+                return None;
+            };
 
         for segment in member_segments {
             let child = self.resolve_instance_member(value, segment, from)?;
@@ -30,10 +40,9 @@ impl AstLowerer {
         return Some(value);
     }
 
-    fn resolve_instance_member(&mut self, value: Value, segment: PathSegment, from: Id<Entity>) -> Option<Value> {
+    pub fn resolve_instance_member(&mut self, value: Value, segment: PathSegment, from: Id<Entity>) -> Option<Value> {
         let Some(instance) = value.ty.references() else {
-            // todo: error
-            println!("error: not a reference type");
+            self.emit(SymbolError::NoMembersOf(value.clone()));
             return None;
         };
 
@@ -41,7 +50,7 @@ impl AstLowerer {
             .expect("internal compiler error: type doesn't have an instance member table");
 
         let Some(symbol) = instance_member_table.lookup(&segment.name.item) else {
-            println!("error: member not found: {:?}", segment.name.item);
+            self.emit(SymbolError::NoMemberOn(segment.name.clone(), value.clone()));
             return None;
         };
 
@@ -55,19 +64,16 @@ impl AstLowerer {
             return None;
         }
 
-        if let Some(field) = self.context().try_get::<Field>(symbol) {
-            let kind = ValueKind::FieldOf(Box::new(value), field.id);
-            let mut ty = field.ty.clone();
-            let span = segment.name.span;
+        let Some(value_in) = self.context().try_get::<HasValueIn>(symbol) else {
+            let symbol_name = self.context.get(symbol).name.span;
 
-            ty.span = span;
-            
+            self.emit(SymbolError::MemberNotAValue(segment.name.clone(), symbol_name));
+            return None;
+        };
 
-            Some(Value { kind, ty, span })
-        }
-        else {
-            return None
-        }
+        let span = value.span.to(segment.name.span);
+
+        return Some(self.get_member_of(value, span, value_in))
     }
 
     pub fn resolve_type(&mut self, path: &Path, from: Id<Entity>, symbol_table: &SymbolTable) -> Option<Ty> {
@@ -131,6 +137,33 @@ impl AstLowerer {
         }
 
         return Some((current_entity.as_base(), vec![]));
+    }
+
+    fn get_member_of(&self, value: Value, span: Span, value_in: &HasValueIn) -> Value {
+        match value_in {
+            HasValueIn::Field(field_id) => {
+                let field = self.context.get(*field_id);
+
+                let kind = ValueKind::FieldOf(Box::new(value), field.id);
+                let mut ty = field.ty.clone();
+
+                ty.span = span;
+                
+
+                Value { kind, ty, span }
+            }
+
+            HasValueIn::Method(method_id) => {
+                let signature = self.context.try_get::<Callable>(*method_id).unwrap();
+
+                let kind = ValueKind::InstanceFunc(Box::new(value), *method_id);
+
+                let mut ty = signature.ty();
+                ty.span = span;
+
+                Value { kind, ty, span }
+            }
+        }
     }
 
     fn has_ancestor(&self, entity: Id<Entity>, ancestor: Id<Entity>) -> bool {

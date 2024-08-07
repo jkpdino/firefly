@@ -1,0 +1,27 @@
+module Test
+
+struct Package {
+    var name: string
+    var description: string
+    var version: string
+
+    func format() -> string {
+        concat(
+            name,
+            concat (
+                " ",
+                concat (
+                    description,
+                    concat (
+                        " ",
+                        version
+                    )
+                )
+            )
+        )
+    }
+}
+
+func display(package: Package) {
+    print(package.format())
+}

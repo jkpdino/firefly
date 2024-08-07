@@ -1,0 +1,17 @@
+module Test;
+
+struct User {
+    var name: string;
+}
+
+func greet(name: string) {
+
+}
+
+func sayHi(user: User) {
+    greet(user.name)
+}
+
+func main() {
+    sayHi(User("John"))
+}

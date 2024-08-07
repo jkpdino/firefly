@@ -1,0 +1,17 @@
+module Test.Tuple
+
+func empty() -> () {
+    ()
+}
+
+func one() -> (int) {
+    (0)
+}
+
+func two() -> (int, int) {
+    (0, 0)
+}
+
+func extract(tuple: (int, int)) -> int {
+    return tuple.0
+}

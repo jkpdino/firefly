@@ -1,0 +1,12 @@
+module Test.WhileLoop
+
+func main() {
+    var i: int = 0;
+
+    while leq_int(i, 10) {
+
+    };
+
+    outer: while leq_int(i, 10) {
+    };
+}

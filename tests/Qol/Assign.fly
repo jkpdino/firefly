@@ -1,0 +1,16 @@
+module Test.Assign
+
+struct Fields {
+    var x: int
+}
+
+func main() {
+    var i: int = 0;
+
+    i = 1;
+
+    var foo: Fields = Fields(0);
+    foo.x = 1;
+
+    Fields(0).x = 1;
+}

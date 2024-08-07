@@ -2,7 +2,7 @@ use firefly_ast::{
     Visibility,
     Path, PathSegment,
     ty::Ty,
-    value::Value,
+    value::{Value, IfStatement, ElseStatement, WhileStatement},
     stmt::{Stmt, CodeBlock},
     func::{Func, FuncParam},
     item::Item,
@@ -35,20 +35,26 @@ extern {
         "fileprivate" => Token::FilePrivateKw,
         "private" => Token::PrivateKw,
 
+        "static" => Token::StaticKw,
+
         "module" => Token::ModuleKw,
         "import" => Token::ImportKw,
 
+        "as" => Token::AsKw,
+
+        "var" => Token::VarKw,
         "struct" => Token::StructKw,
         "func" => Token::FuncKw,
-        "init" => Token::InitKw,
 
         "static" => Token::StaticKw,
 
-        "var" => Token::VarKw,
-
         "return" => Token::ReturnKw,
+        "break" => Token::BreakKw,
+        "continue" => Token::ContinueKw,
 
-        "as" => Token::AsKw,
+        "if" => Token::IfKw,
+        "else" => Token::ElseKw,
+        "while" => Token::WhileKw,
 
         "integer" => Token::IntegerLiteral(<&'source str>),
         "string" => Token::StringLiteral(<&'source str>),
@@ -93,7 +99,6 @@ UnspannedModule: Module = {
 }
 
 // Imports
-
 Import = { Spanned<UnspannedImport> };
 UnspannedImport: Import = {
     "import" <module: Path> <alias: Rename?> <symbol_list: ImportSymbolList?> ";"? => Import::new(
@@ -164,40 +169,107 @@ ReturnType: Spanned<Ty> = {
 
 // Statements
 BindStmt: Stmt = {
-    "var" <name: Name> ":" <ty: Type> "=" <value: Value> => Stmt::Bind(name, ty, value)
+    "var" <name: Name> ":" <ty: Type> "=" <value: Value> ";" => Stmt::Bind(name, ty, value)
 }
 
 Stmt = { Spanned<UnspannedStmt> }
 UnspannedStmt: Stmt = {
-    <Value> => Stmt::Value(<>),
-    <BindStmt> => <>,
+    BindStmt => <>,
+    Spanned<StatementLikeValue> => Stmt::Value(<>, false),
+    <value: NonStatementLikeValue> ";" => Stmt::Value(value, true),
+    ";" => Stmt::Semicolon,
 }
 
-Stmts: Vec<Spanned<Stmt>> = {
-    <mut v:(<Stmt> ";")*> <e:Stmt?> => match e {
-        None => v,
-        Some(e) => {
-            v.push(e);
-            v
-        }
+StmtList: Vec<Spanned<Stmt>> = {
+    <stmt: Stmt> => vec![stmt],
+    <mut original: StmtList> <new: Stmt> => {
+        original.push(new);
+        original
     }
 }
 
 CodeBlock: CodeBlock = {
-    "{" <stmts: Stmts> "}" => CodeBlock::new(stmts)
+    "{" <inner: CodeBlockInner> "}" => inner
+}
+
+CodeBlockInner: CodeBlock = {
+    <stmts: StmtList> <term: NonStatementLikeValue> => CodeBlock::new(stmts, Some(term)),
+    <stmts: StmtList> => CodeBlock::new(stmts, None),
+    NonStatementLikeValue => CodeBlock::new(vec![], Some(<>)),
+    () => CodeBlock::new(vec![], None)
 }
 
 // Values
-Value = { Spanned<UnspannedValue> }
-UnspannedValue: Value = {
+Value = { Spanned<RestrictedValue<"L">> }
+NonStatementLikeValue = { Spanned<RestrictedValue<"">> }
+
+RestrictedValue<L>: Value = {
+    AssignValue<L> => <>,
+    "return" <value: Value?> => Value::Return(value.map(Box::new))
+}
+
+AssignValue<L>: Value = {
+    SuffixedValue<L> => <>,
+    <lhs: Spanned<AssignValue<L>>> "=" <rhs: Spanned<SuffixedValue<L>>> => Value::Assign(Box::new(lhs), Box::new(rhs)),
+}
+
+SuffixedValue<L>: Value = {
+    AtomValue<L> => <>,
+    <func: Spanned<SuffixedValue<L>>> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
+    <parent: Spanned<SuffixedValue<L>>> "." <member: PathSegment> => Value::member(Box::new(parent), member),
+    <parent: Spanned<SuffixedValue<L>>> "." <index: Spanned<Number>> => Value::TupleMember(Box::new(parent), index),
+}
+
+Number: String = {
+    "integer" => <>.into()
+}
+
+AtomValue<L>: Value = {
+    LiteralValue => <>,
     "(" <items: CommaList<Value>> ")" => Value::Tuple(items),
+    SinglePath => Value::Path(<>),
+
+    StatementLikeValue if L != "" => <>,
+
+    "break" <label: Name?> => Value::Break(label),
+    "continue" <label: Name?> => Value::Continue(label),
+}
+
+StatementLikeValue: Value = {
+    IfStatement => Value::If(Box::new(<>)),
+    WhileStatement => Value::While(Box::new(<>)),
+}
+
+LiteralValue: Value = {
     Spanned<"integer"> => Value::IntegerLiteral(Spanned::new(<>.item.into(), <>.span)),
     Spanned<"string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
     Spanned<"long_string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
-    <func: Value> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
-    <Path> => Value::Path(<>),
+}
 
-    ExpectValue => Value::Error,
+IfStatement: IfStatement = {
+    "if" <condition: Value> <positive: CodeBlock> <negative: ElseStatement?> => IfStatement {
+        condition,
+        positive,
+        negative,
+    }
+}
+
+WhileStatement: WhileStatement = {
+    "while" <condition: Value> <body: CodeBlock> => WhileStatement {
+        label: None,
+        condition,
+        body
+    },
+    <label: Name> ":" "while" <condition: Value> <body: CodeBlock> => WhileStatement {
+        label: Some(label),
+        condition,
+        body
+    }
+}
+
+ElseStatement: ElseStatement = {
+    "else" <negative: CodeBlock> => ElseStatement::Else(negative),
+    "else" <negative: IfStatement> => ElseStatement::ElseIf(Box::new(negative)),
 }
 
 // Types
@@ -215,13 +287,16 @@ Path: Path = {
     <s: Spanned<PathSegments>> => Path::new(s.item, s.span)
 }
 
+SinglePath: Path = {
+    <s: Spanned<PathSegment>> => Path::new(vec![s.item], s.span)
+}
+
 PathSegments: Vec<PathSegment> = {
-    <s: PathSegment> => vec![s],
-    <mut v: PathSegments> "." <s: PathSegment> => {
-        v.push(s);
-        v
-    },
-    <v: PathSegments> "." Recover => vec![],
+    <first: PathSegment> <later: LaterSegment*> => [&[first][..], &later[..]].concat()
+}
+
+LaterSegment: PathSegment = {
+    "." <later: PathSegment> => later,
 }
 
 PathSegment: PathSegment = {

@@ -1,3 +1,7 @@
+mod import;
+
+pub use import::*;
+
 use firefly_errors::diagnostic::Diagnostic;
 
 use crate::HirContext;

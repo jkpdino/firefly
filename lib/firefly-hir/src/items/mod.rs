@@ -46,3 +46,10 @@ pub struct Global {
 }
 
 component!(base(EntityKind::Global) globals: Global);
+
+#[derive(Clone, Debug, Default)]
+pub struct Constant {
+    pub id: Id<Constant>,
+}
+
+component!(base(EntityKind::Constant) constants: Constant);

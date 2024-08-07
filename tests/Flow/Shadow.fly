@@ -1,0 +1,23 @@
+module Test.Shadow
+
+func main(should_run: bool) {
+    var shadow: int = 0;
+
+    if should_run {
+        var shadow: string = "Hello, World";
+        print(shadow);
+    };
+
+    print(format_int(shadow));
+
+    var shadow: string = "Hello, World";
+    print(shadow);
+}
+
+func in_block(should_run: bool) {
+    if should_run {
+        var inner: string = "Hello, World";
+    };
+
+    print(inner);
+}
