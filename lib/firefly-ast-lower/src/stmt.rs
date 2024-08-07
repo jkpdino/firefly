@@ -58,7 +58,6 @@ impl AstLowerer {
                 let value = self.lower_value(&value, parent.as_base(), symbol_table);
 
                 // Create a local so we can reference the symbol
-                let id = self.create_local(parent.as_base(), &name, &ty);
                 let local = self.create_local(parent.as_base(), &name, &ty);
                 let local_symbol = self.context.cast_id::<Symbol>(local).expect("internal compiler error: local doesn't have a symbol");
 
@@ -66,7 +65,7 @@ impl AstLowerer {
 
                 // Now return a statement
                 HirStmt::new(
-                    HirStmtKind::Bind(name, id, ty, value),
+                    HirStmtKind::Bind(name, local, ty, value),
                     stmt.span
                 )
             }

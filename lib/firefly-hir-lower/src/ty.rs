@@ -8,11 +8,19 @@ impl HirLowerer<'_> {
         let kind =
         match &hir_ty.kind {
             HirTyKind::Unit => VirTyKind::Void,
+            HirTyKind::Never => VirTyKind::Void,
 
             HirTyKind::Integer => VirTyKind::Integer,
             HirTyKind::String => VirTyKind::String,
             HirTyKind::Bool => VirTyKind::Bool,
             HirTyKind::Float => VirTyKind::Float,
+
+            HirTyKind::Func(params, return_ty) => {
+                let params = params.iter().map(|p| self.lower_ty(p)).collect();
+                let return_ty = self.lower_ty(&return_ty);
+
+                VirTyKind::Func(params, return_ty)
+            }
 
             HirTyKind::Tuple(items) => {
                 let items = items.iter().map(|item| self.lower_ty(item)).collect();

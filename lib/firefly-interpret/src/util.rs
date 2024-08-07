@@ -1,4 +1,4 @@
-use std::{fmt::Display, marker::PhantomData, ops::{Deref, DerefMut}};
+use std::{fmt::{Debug, Display}, marker::PhantomData, ops::{Deref, DerefMut}};
 
 use crate::ir::VirContext;
 
@@ -81,6 +81,12 @@ impl<T> Clone for Id<T> {
 }
 
 impl<T> Copy for Id<T> { }
+
+impl<T> Debug for Id<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("Id").field(&self.0).finish()
+    }
+}
 
 pub trait DisplayInContext {
     fn fmt(&self, f: &mut std::fmt::Formatter, context: &VirContext) -> std::fmt::Result;

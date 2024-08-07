@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{ir::value::{Immediate, Place}, util::{Id, UniqueId}};
+use crate::{ir::{value::{Immediate, Place}, VirContext}, util::{DisplayInContext, Id, UniqueId}};
 
 use super::{Function, Instruction, InstructionKind, Terminator};
 
@@ -59,12 +59,16 @@ impl Display for Id<BasicBlock> {
     }
 }
 
-impl Display for BasicBlock {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl DisplayInContext for BasicBlock {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>, context: &VirContext) -> std::fmt::Result {
         writeln!(f, "{}:", self.id.local_id)?;
 
         for instruction in &self.instructions {
             writeln!(f, "    {}", instruction)?;
+        }
+
+        if let Some(terminator) = &self.terminator {
+            writeln!(f, "    {}", context.display(terminator))?;
         }
 
         Ok(())

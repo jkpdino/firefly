@@ -1,5 +1,5 @@
-use firefly_hir::{stmt::{CodeBlock, Stmt, StmtKind}, ty::{Ty as HirTy, TyKind as HirTyKind}, Id};
-use firefly_interpret::ir::ty::{Ty as VirTy, TyKind as VirTyKind};
+use firefly_hir::{stmt::{CodeBlock, Stmt, StmtKind}, Id};
+use firefly_interpret::ir::value::ImmediateKind;
 
 use crate::HirLowerer;
 
@@ -15,6 +15,10 @@ impl HirLowerer<'_> {
         match &stmt.kind {
             StmtKind::Value(value) => {
                 let imm = self.lower_immediate(value);
+
+                if let ImmediateKind::Void = imm.kind.as_ref() {
+                    return;
+                }
 
                 self.vir.build_eval(imm);
             }

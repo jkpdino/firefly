@@ -37,7 +37,7 @@ impl DisplayInContext for Function {
         for &bb in &self.basic_blocks {
             let basic_block = context.get_basic_block(bb);
 
-            writeln!(f, "{basic_block}")?;
+            writeln!(f, "{}", context.display(basic_block))?;
         }
 
         writeln!(f, "}}")

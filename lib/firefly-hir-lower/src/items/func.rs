@@ -8,7 +8,7 @@ impl HirLowerer<'_> {
         let Symbol { name, .. } = self.hir.try_get(func)
             .expect("internal compiler error: function doesn't have a symbol");
 
-        let Callable { params, return_ty } = self.hir.try_get(func)
+        let Callable { params, return_ty, .. } = self.hir.try_get(func)
             .expect("internal compiler error: function doesn't have a signature");
 
         let params = params.iter().map(|p| self.lower_ty(&p.ty)).collect();

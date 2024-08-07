@@ -1,6 +1,8 @@
 module Test.Vir
 
-func main() {
+func main() -> int {
     var x: int = 5;
-    x
+    var y: int = 6;
+
+    return add(x, y);
 }

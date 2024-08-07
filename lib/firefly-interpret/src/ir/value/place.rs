@@ -6,11 +6,13 @@ use crate::{ir::{code::Local, ty::Ty}, util::Id};
 
 use super::{Immediate, ImmediateKind};
 
+#[derive(Clone)]
 pub enum PlaceKind {
     /// A value local to a function
     Local(Id<Local>),
 }
 
+#[derive(Clone)]
 pub struct Place {
     pub kind: Box<PlaceKind>,
     pub ty:   Ty,
