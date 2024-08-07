@@ -25,11 +25,6 @@ pub enum IntegerBinaryOp {
 }
 
 #[derive(Clone)]
-pub enum IntegerUnaryOp {
-    BitNot,
-}
-
-#[derive(Clone)]
 pub enum BooleanBinaryOp {
     Or,
     And,
@@ -50,12 +45,14 @@ pub enum BinaryIntrinsic {
     String(StringBinaryOp)
 }
 
+#[derive(Clone)]
 pub enum UnaryIntrinsic {
     BitNot,
 
     Not,
 
     Print,
+    Len,
 
     Format,
     Parse,
@@ -116,6 +113,19 @@ impl Display for BinaryIntrinsic {
             BinaryIntrinsic::Integer(op) => write!(f, "{op}"),
             BinaryIntrinsic::Boolean(op) => write!(f, "{op}"),
             BinaryIntrinsic::String(op) => write!(f, "{op}"),
+        }
+    }
+}
+
+impl Display for UnaryIntrinsic {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UnaryIntrinsic::BitNot => write!(f, "bit_not"),
+            UnaryIntrinsic::Not => write!(f, "not"),
+            UnaryIntrinsic::Print => write!(f, "print"),
+            UnaryIntrinsic::Format => write!(f, "format"),
+            UnaryIntrinsic::Parse => write!(f, "parse"),
+            UnaryIntrinsic::Len => write!(f, "len"),
         }
     }
 }

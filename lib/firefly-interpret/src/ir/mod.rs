@@ -47,11 +47,13 @@ impl VirContext {
     pub fn create_field(
         &mut self,
         struct_def: Id<StructDef>,
-        ty: Ty)
+        ty: Ty) -> usize
     {
         let struct_def = self.get_struct_mut(struct_def);
 
         struct_def.fields.push(ty);
+
+        return struct_def.fields.len() - 1
     }
 
     /// Create a function in the VirContext

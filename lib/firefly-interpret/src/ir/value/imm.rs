@@ -5,7 +5,7 @@ use itertools::Itertools;
 
 use crate::{ir::{code::Function, ty::{Ty, TyKind}}, util::Id};
 
-use super::{intrinsics::BinaryIntrinsic, Place};
+use super::{intrinsics::BinaryIntrinsic, Place, UnaryIntrinsic};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ConstantValue {
@@ -28,6 +28,9 @@ pub enum ImmediateKind {
 
     /// Performs an intrinsic operation on two immediates 
     Binary(BinaryIntrinsic, Immediate, Immediate),
+
+    /// Performs a unary operation on an immediate
+    Unary(UnaryIntrinsic, Immediate),
 
     Void,
 }
@@ -63,6 +66,7 @@ impl Display for ImmediateKind {
             ImmediateKind::Move(place) => write!(f, "move {place}"),
             ImmediateKind::Call(function, args) => write!(f, "invoke {function:?} ({})", args.iter().format(", ")),
             ImmediateKind::Binary(func, left, right) => write!(f, "{func} ({left}, {right})"),
+            ImmediateKind::Unary(func, operand) => write!(f, "{func} ({operand})"),
             ImmediateKind::Void => write!(f, "void")
         }
     }

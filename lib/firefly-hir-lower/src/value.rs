@@ -1,5 +1,5 @@
 use firefly_hir::{ty::TyKind, value::{LiteralValue, Value, ValueKind}};
-use firefly_interpret::ir::{code::{Terminator, TerminatorKind}, ty::{Ty as VirTy, TyKind as VirTyKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, Immediate, ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp}};
+use firefly_interpret::ir::{code::{Terminator, TerminatorKind}, ty::{Ty as VirTy, TyKind as VirTyKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, Immediate, ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp, UnaryIntrinsic}};
 use firefly_span::Span;
 
 use crate::HirLowerer;
@@ -23,6 +23,15 @@ impl HirLowerer<'_> {
                 Immediate::void()
             }
 
+            ValueKind::Assign(place, value) => {
+                let place = self.lower_place(place);
+                let value = self.lower_immediate(value);
+
+                self.vir.build_assign(place, value);
+
+                Immediate::void()
+            }
+
             _ => self.lower_place(value).move_out(),
         }
     }
@@ -36,6 +45,27 @@ impl HirLowerer<'_> {
                 Place {
                     kind: Box::new(PlaceKind::Local(vir_local)),
                     ty: self.lower_ty(&local.ty),
+                    span: value.span,
+                }
+            }
+
+            ValueKind::FieldOf(place, field) => {
+                let place = self.lower_place(place);
+                let field = self.field_map[field];
+
+                Place {
+                    kind: Box::new(PlaceKind::Field(place, field)),
+                    ty: self.lower_ty(&value.ty),
+                    span: value.span,
+                }
+            }
+
+            ValueKind::TupleMember(tuple, index) => {
+                let tuple = self.lower_place(tuple);
+
+                Place {
+                    kind: Box::new(PlaceKind::Field(tuple, *index)),
+                    ty: self.lower_ty(&value.ty),
                     span: value.span,
                 }
             }
@@ -154,8 +184,29 @@ impl HirLowerer<'_> {
         }
     }
 
-    #[allow(unused_variables)]
     fn lower_unary_builtin(&self, builtin_name: &str, args: Vec<Immediate>, span: Span) -> Immediate {
-        todo!()
+        let (imm, ty) =
+        match builtin_name {
+            "not" => (UnaryIntrinsic::Not, VirTyKind::Bool),
+            "bitnot" => (UnaryIntrinsic::BitNot, VirTyKind::Integer),
+
+            "len" => (UnaryIntrinsic::Len, VirTyKind::Integer),
+
+            "parse_int" => (UnaryIntrinsic::Parse, VirTyKind::Integer),
+            "format_int" => (UnaryIntrinsic::Format, VirTyKind::String),
+
+            "parse_bool" => (UnaryIntrinsic::Parse, VirTyKind::Bool),
+            "format_bool" => (UnaryIntrinsic::Format, VirTyKind::String),
+
+            _ => panic!(),
+        };
+
+        let ty = VirTy::new(ty);
+
+        Immediate {
+            kind: Box::new(ImmediateKind::Unary(imm, args[0].clone())),
+            ty,
+            span
+        }
     }
 }

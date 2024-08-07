@@ -20,12 +20,13 @@ impl HirLowerer<'_> {
             .iter()
             .filter_map(|field| self.hir.cast_id::<Field>(*field));
 
-        for field in fields {
-            let field = self.hir.get(field);
-
+        for field_id in fields {
+            let field = self.hir.get(field_id);
             let field_ty = self.lower_ty(&field.ty);
 
-            self.vir.context_mut().create_field(vir_id, field_ty);
+            let field_idx = self.vir.context_mut().create_field(vir_id, field_ty);
+
+            self.field_map.insert(field_id, field_idx);
         }
     }
 }

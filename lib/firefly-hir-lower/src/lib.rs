@@ -5,7 +5,7 @@ mod code;
 
 use std::collections::HashMap;
 
-use firefly_hir::{func::Func as HirFunc, items::StructDef as HirStruct, stmt::Local as HirLocal, HirContext, Id as HirId};
+use firefly_hir::{func::Func as HirFunc, items::{Field, StructDef as HirStruct}, stmt::Local as HirLocal, HirContext, Id as HirId};
 use firefly_interpret::{builder::Builder, ir::{code::{Function as VirFunc, Local as VirLocal}, ty::struct_def::StructDef as VirStruct, VirContext}, util::Id as VirId};
 
 pub struct HirLowerer<'a> {
@@ -15,6 +15,7 @@ pub struct HirLowerer<'a> {
     struct_map: HashMap<HirId<HirStruct>, VirId<VirStruct>>,
     func_map: HashMap<HirId<HirFunc>, VirId<VirFunc>>,
     local_map: HashMap<HirId<HirLocal>, VirId<VirLocal>>,
+    field_map: HashMap<HirId<Field>, usize>,
 }
 
 pub fn lower<'a>(hir: &'a HirContext, vir: &'a mut VirContext) {
@@ -26,7 +27,8 @@ pub fn lower<'a>(hir: &'a HirContext, vir: &'a mut VirContext) {
 
         struct_map: HashMap::new(),
         func_map: HashMap::new(),
-        local_map: HashMap::new()
+        local_map: HashMap::new(),
+        field_map: HashMap::new(),
     };
 
     lowerer.hir.entities()

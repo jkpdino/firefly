@@ -10,6 +10,9 @@ use super::{Immediate, ImmediateKind};
 pub enum PlaceKind {
     /// A value local to a function
     Local(Id<Local>),
+
+    /// A field of a struct or a tuple
+    Field(Place, usize),
 }
 
 #[derive(Clone)]
@@ -32,7 +35,8 @@ impl Place {
 impl Display for PlaceKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PlaceKind::Local(local_id) => write!(f, "{local_id}")
+            PlaceKind::Local(local_id) => write!(f, "{local_id}"),
+            PlaceKind::Field(place, index) => write!(f, "{place}.{index}"),
         }
     }
 }
