@@ -79,10 +79,6 @@ impl VirContext {
 
         self.functions.push(func);
 
-        for param in &params {
-            self.create_local(id, param.clone());
-        }
-
         return id;
     }
 

@@ -1,5 +1,5 @@
-use firefly_hir::{ty::TyKind, value::{LiteralValue, Value, ValueKind}};
-use firefly_interpret::ir::{code::{Terminator, TerminatorKind}, ty::{Ty as VirTy, TyKind as VirTyKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, Immediate, ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp, UnaryIntrinsic}};
+use firefly_hir::{ty::TyKind, value::{ElseValue, IfValue, LiteralValue, Value, ValueKind}};
+use firefly_interpret::ir::{code::{BasicBlockId, Terminator, TerminatorKind}, ty::{Ty as VirTy, TyKind as VirTyKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, Immediate, ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp, UnaryIntrinsic}};
 use firefly_span::Span;
 
 use crate::HirLowerer;
@@ -13,6 +13,15 @@ impl HirLowerer<'_> {
 
             ValueKind::Invoke(function, args) => self.lower_call(function, args),
 
+            ValueKind::Assign(place, value) => {
+                let place = self.lower_place(place);
+                let value = self.lower_immediate(value);
+
+                self.vir.build_assign(place, value);
+
+                Immediate::void()
+            }
+
             ValueKind::Return(value) => {
                 let imm = self.lower_immediate(value);
 
@@ -23,11 +32,8 @@ impl HirLowerer<'_> {
                 Immediate::void()
             }
 
-            ValueKind::Assign(place, value) => {
-                let place = self.lower_place(place);
-                let value = self.lower_immediate(value);
-
-                self.vir.build_assign(place, value);
+            ValueKind::If(if_value) => {
+                self.lower_if(if_value, None);
 
                 Immediate::void()
             }
@@ -37,6 +43,7 @@ impl HirLowerer<'_> {
     }
 
     pub fn lower_place(&mut self, value: &Value) -> Place {
+        // Globals
         match &value.kind {
             ValueKind::Local(id) => {
                 let vir_local = self.local_map[id];
@@ -192,6 +199,8 @@ impl HirLowerer<'_> {
 
             "len" => (UnaryIntrinsic::Len, VirTyKind::Integer),
 
+            "print" => (UnaryIntrinsic::Print, VirTyKind::Void),
+
             "parse_int" => (UnaryIntrinsic::Parse, VirTyKind::Integer),
             "format_int" => (UnaryIntrinsic::Format, VirTyKind::String),
 
@@ -208,5 +217,37 @@ impl HirLowerer<'_> {
             ty,
             span
         }
+    }
+
+    fn lower_if(&mut self, if_value: &IfValue, after_block: Option<BasicBlockId>) {
+        let condition = self.lower_immediate(&if_value.condition);
+
+        let then_block = self.vir.append_basic_block();
+        let else_block = self.vir.append_basic_block();
+
+        let after_block = after_block.unwrap_or_else(|| self.vir.append_basic_block());
+
+        self.vir.build_terminator(Terminator {
+            kind: TerminatorKind::BranchIf(condition, then_block, else_block)
+        });
+
+        self.vir.select_basic_block(then_block);
+        self.lower_code_block(if_value.positive);
+        self.vir.build_terminator(Terminator {
+            kind: TerminatorKind::Branch(after_block)
+        });
+
+        self.vir.select_basic_block(else_block);
+        match &if_value.negative {
+            Some(ElseValue::Else(code_block)) => self.lower_code_block(*code_block),
+            Some(ElseValue::ElseIf(if_value)) => self.lower_if(if_value, Some(after_block)),
+
+            None => {}
+        }
+        self.vir.build_terminator(Terminator {
+            kind: TerminatorKind::Branch(after_block)
+        });
+
+        self.vir.select_basic_block(after_block);
     }
 }

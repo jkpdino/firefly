@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub enum Comparison {
     Equal,
     NotEqual,
@@ -10,7 +10,7 @@ pub enum Comparison {
     GreaterThanOrEqual,
 }
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub enum IntegerBinaryOp {
     Add,
     Sub,
@@ -24,19 +24,19 @@ pub enum IntegerBinaryOp {
     BitXor,
 }
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub enum BooleanBinaryOp {
     Or,
     And,
     Xor,
 }
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub enum StringBinaryOp {
     Concat,
 }
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub enum BinaryIntrinsic {
     Compare(Comparison),
 

@@ -1,18 +1,29 @@
-use super::value::Value;
+use super::value::{InnerValue, Value};
 
-#[allow(dead_code)]
 pub struct StackFrame {
     frame: Vec<Value>
 }
 
 impl StackFrame {
-    #[allow(dead_code, unused_variables)]
-    pub fn new(size: usize) -> Self {
-        todo!()
+    pub fn new(size: usize, params: Vec<Value>) -> Self {
+        assert!(size >= params.len());
+        
+        let param_len = params.len();
+
+        let mut frame = params;
+
+        for i in 0..size - param_len {
+            frame.push(Value::new(InnerValue::Undefined));
+        }
+
+        Self { frame }
     }
 
-    #[allow(dead_code, unused_variables)]
     pub fn get_value(&self, n: usize) -> &Value {
-        todo!()
+        self.frame.get(n).expect("internal error: stack frame access out of bounds")
+    }
+
+    pub fn get_value_mut(&mut self, n: usize) -> &mut Value {
+        self.frame.get_mut(n).expect("internal error: stack frame access out of bounds")
     }
 }

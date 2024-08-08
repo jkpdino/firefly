@@ -4,7 +4,7 @@ use clap::Parser;
 use context::Context;
 use firefly_ast_lower::AstLowerer;
 use firefly_errors::emitter::{Destination, Emitter};
-use firefly_interpret::ir::VirContext;
+use firefly_interpret::{engine::ExecutionEngine, ir::VirContext};
 use firefly_span::{SourceFile, SourceMap};
 use pipeline::Pipeline;
 
@@ -63,5 +63,9 @@ impl Driver {
         if self.print_hir {
             println!("{}", self.ast_lowerer.context().display())
         }
+
+        let mut execution_engine = ExecutionEngine::new(&self.vir_context);
+
+        execution_engine.execute();
     }
 }

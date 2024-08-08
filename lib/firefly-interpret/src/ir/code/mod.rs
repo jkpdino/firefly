@@ -18,7 +18,7 @@ pub enum InstructionKind {
 }
 
 pub struct Instruction {
-    kind: InstructionKind,
+    pub kind: InstructionKind,
 }
 
 impl Display for InstructionKind {

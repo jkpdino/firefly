@@ -16,11 +16,11 @@ pub struct BasicBlockId {
 /// Each basic block must be terminated by a terminator that either
 /// moves execution to another basic block or ends execution.
 pub struct BasicBlock {
-    id:           BasicBlockId,
+    pub(crate) id:           BasicBlockId,
 
-    instructions: Vec<Instruction>,
+    pub(crate) instructions: Vec<Instruction>,
 
-    terminator:   Option<Terminator>
+    pub(crate) terminator:   Option<Terminator>
 }
 
 impl BasicBlock {
@@ -46,7 +46,8 @@ impl BasicBlock {
 
     pub fn append_terminator(&mut self, terminator: Terminator) {
         if self.terminator.is_some() {
-            panic!();
+            return;
+            //panic!("{:?}", self.terminator);
         }
 
         self.terminator = Some(terminator);

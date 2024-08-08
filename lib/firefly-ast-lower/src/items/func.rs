@@ -28,9 +28,9 @@ impl AstLowerer {
         let ty = self.lower_ty(&param.item.ty, parent, symbol_table);
         let bind_name = self.lower_name(&param.item.name);
 
-        self.create_local(parent, &bind_name, &ty);
+        let id = self.create_local(parent, &bind_name, &ty);
 
-        HirFuncParam { ty, bind_name }
+        HirFuncParam { ty, bind_name, id }
     }
 
     pub fn create_local(&mut self, parent: Id<Entity>, name: &Name, ty: &Ty) -> Id<Local> {

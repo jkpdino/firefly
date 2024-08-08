@@ -37,7 +37,6 @@ impl<'a> Builder<'a> {
         let func_id = self.current_func_id();
 
         let bb_id = self.context_mut().create_basic_block(func_id);
-        self.current_bb = Some(bb_id);
 
         return bb_id;
     }
@@ -79,8 +78,6 @@ impl<'a> Builder<'a> {
         let basic_block = self.context_mut().get_basic_block_mut(id);
 
         basic_block.append_terminator(terminator);
-
-        self.current_bb = None;
     }
 
     fn current_func_id(&self) -> Id<Function> {
@@ -88,6 +85,6 @@ impl<'a> Builder<'a> {
     }
 
     fn current_basic_block_id(&self) -> BasicBlockId {
-        self.current_bb.expect("internal compiler error: no vir id selected")
+        self.current_bb.expect("internal compiler error: no basic block id selected")
     }
 }

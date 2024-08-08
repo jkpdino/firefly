@@ -31,8 +31,9 @@
 
 # VM
 
-- [ ] Lower HIR to VM
-- [ ] Run the VM
+- [ ] Lower while loops
+- [ ] Create structs
+- [ ] Create tuples
 
 # Bugs
 

@@ -1,3 +1,5 @@
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum InnerValue {
     Integer(u64),
     String(String),

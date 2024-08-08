@@ -11,10 +11,16 @@ impl HirLowerer<'_> {
         let Callable { params, return_ty, .. } = self.hir.try_get(func)
             .expect("internal compiler error: function doesn't have a signature");
 
-        let params = params.iter().map(|p| self.lower_ty(&p.ty)).collect();
+        let vir_params = params.iter().map(|p| self.lower_ty(&p.ty)).collect();
         let return_ty = self.lower_ty(return_ty);
 
-        let vir_id = self.vir.context_mut().create_function(&name.name, params, return_ty);
+        let vir_id = self.vir.context_mut().create_function(&name.name, vir_params, return_ty);
+
+        for param in params {
+            let ty = self.lower_ty(&param.ty);
+            let vir_local = self.vir.context_mut().create_local(vir_id, ty);
+            self.local_map.insert(param.id, vir_local.id());
+        }
 
         self.func_map.insert(func, vir_id);
     }
@@ -30,7 +36,6 @@ impl HirLowerer<'_> {
 
         let bb0 = self.vir.append_basic_block();
         self.vir.select_basic_block(bb0);
-
 
         self.lower_code_block(code_block);
     }

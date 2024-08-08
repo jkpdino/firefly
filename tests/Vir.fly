@@ -6,3 +6,8 @@ func main() -> int {
 
     return add(x, y);
 }
+
+func max(a: int, b: int) -> int {
+    if (gt_int(a, b)) { return a; }
+    else { return b; };
+}
