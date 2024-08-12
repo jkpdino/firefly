@@ -1,5 +1,5 @@
 use firefly_hir::{ty::TyKind, value::{ElseValue, IfValue, LiteralValue, Value, ValueKind}};
-use firefly_interpret::ir::{code::{BasicBlockId, Terminator, TerminatorKind}, ty::{Ty as VirTy, TyKind as VirTyKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, Immediate, ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp, UnaryIntrinsic}};
+use firefly_interpret::ir::{code::{BasicBlockId, Terminator, TerminatorKind}, ty::{Ty as VirTy, TyKind as VirTyKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, FloatBinaryOp, Immediate, ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp, UnaryIntrinsic}};
 use firefly_span::Span;
 
 use crate::HirLowerer;
@@ -10,6 +10,7 @@ impl HirLowerer<'_> {
             ValueKind::Literal(LiteralValue::Integer(num)) => self.lower_integer(num, value.span),
             ValueKind::Literal(LiteralValue::String(string)) => self.lower_string(string, value.span),
             ValueKind::Literal(LiteralValue::Boolean(boolean)) => self.lower_bool(*boolean, value.span),
+            ValueKind::Literal(LiteralValue::Float(float)) => self.lower_float(float, value.span),
 
             ValueKind::Invoke(function, args) => self.lower_call(function, args),
 
@@ -142,6 +143,16 @@ impl HirLowerer<'_> {
         }
     }
 
+    fn lower_float(&self, float: &str, span: Span) -> Immediate {
+        let float = float.parse().unwrap_or(f64::NAN);
+
+        Immediate {
+            kind: Box::new(ImmediateKind::Constant(ConstantValue::Float(float))),
+            ty: VirTy::new(VirTyKind::Float),
+            span,
+        }
+    }
+
     fn lower_builtin(&self, builtin_name: &str, args: Vec<Immediate>, span: Span) -> Immediate {
         // Check for binary
         let binary_kind = match builtin_name {
@@ -151,6 +162,7 @@ impl HirLowerer<'_> {
             "leq_int" => BinaryIntrinsic::Compare(Comparison::LessThanOrEqual),
             "gt_int" => BinaryIntrinsic::Compare(Comparison::GreaterThan),
             "geq_int" => BinaryIntrinsic::Compare(Comparison::GreaterThanOrEqual),
+
             "add" => BinaryIntrinsic::Integer(IntegerBinaryOp::Add),
             "sub" => BinaryIntrinsic::Integer(IntegerBinaryOp::Sub),
             "mul" => BinaryIntrinsic::Integer(IntegerBinaryOp::Mul),
@@ -161,6 +173,21 @@ impl HirLowerer<'_> {
             "bitand" => BinaryIntrinsic::Integer(IntegerBinaryOp::BitAnd),
             "bitor" => BinaryIntrinsic::Integer(IntegerBinaryOp::BitOr),
             "bitxor" => BinaryIntrinsic::Integer(IntegerBinaryOp::BitXor),
+
+            "eq_float" => BinaryIntrinsic::Compare(Comparison::Equal),
+            "neq_float" => BinaryIntrinsic::Compare(Comparison::NotEqual),
+            "lt_float" => BinaryIntrinsic::Compare(Comparison::LessThan),
+            "leq_float" => BinaryIntrinsic::Compare(Comparison::LessThanOrEqual),
+            "gt_float" => BinaryIntrinsic::Compare(Comparison::GreaterThan),
+            "geq_float" => BinaryIntrinsic::Compare(Comparison::GreaterThanOrEqual),
+
+            "fadd" => BinaryIntrinsic::Float(FloatBinaryOp::Add),
+            "fsub" => BinaryIntrinsic::Float(FloatBinaryOp::Sub),
+            "fmul" => BinaryIntrinsic::Float(FloatBinaryOp::Mul),
+            "fdiv" => BinaryIntrinsic::Float(FloatBinaryOp::Div),
+            "frem" => BinaryIntrinsic::Float(FloatBinaryOp::Rem),
+            "fpow" => BinaryIntrinsic::Float(FloatBinaryOp::Pow),
+
             "and" => BinaryIntrinsic::Boolean(BooleanBinaryOp::And),
             "or" => BinaryIntrinsic::Boolean(BooleanBinaryOp::Or),
             "xor" => BinaryIntrinsic::Boolean(BooleanBinaryOp::Xor),
@@ -175,6 +202,7 @@ impl HirLowerer<'_> {
 
         let ty = match binary_kind {
             BinaryIntrinsic::Compare(_) => VirTy::new(VirTyKind::Bool),
+            BinaryIntrinsic::Float(_) => VirTy::new(VirTyKind::Float),
             BinaryIntrinsic::Integer(_) => VirTy::new(VirTyKind::Integer),
             BinaryIntrinsic::Boolean(_) => VirTy::new(VirTyKind::Bool),
             BinaryIntrinsic::String(_) => VirTy::new(VirTyKind::String),
@@ -206,6 +234,13 @@ impl HirLowerer<'_> {
 
             "parse_bool" => (UnaryIntrinsic::Parse, VirTyKind::Bool),
             "format_bool" => (UnaryIntrinsic::Format, VirTyKind::String),
+
+            "parse_float" => (UnaryIntrinsic::Parse, VirTyKind::Float),
+            "format_float" => (UnaryIntrinsic::Format, VirTyKind::String),
+
+            "floor" => (UnaryIntrinsic::Floor, VirTyKind::Integer),
+            "ceil" => (UnaryIntrinsic::Ceil, VirTyKind::Integer),
+            "to_float" => (UnaryIntrinsic::ToFloat, VirTyKind::Float),
 
             _ => panic!(),
         };

@@ -25,6 +25,16 @@ pub enum IntegerBinaryOp {
 }
 
 #[derive(Copy, Clone)]
+pub enum FloatBinaryOp {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Rem,
+    Pow,
+}
+
+#[derive(Copy, Clone)]
 pub enum BooleanBinaryOp {
     Or,
     And,
@@ -41,6 +51,7 @@ pub enum BinaryIntrinsic {
     Compare(Comparison),
 
     Integer(IntegerBinaryOp),
+    Float(FloatBinaryOp),
     Boolean(BooleanBinaryOp),
     String(StringBinaryOp)
 }
@@ -56,6 +67,10 @@ pub enum UnaryIntrinsic {
 
     Format,
     Parse,
+
+    Floor,
+    Ceil,
+    ToFloat,
 }
 
 impl Display for Comparison {
@@ -88,6 +103,19 @@ impl Display for IntegerBinaryOp {
     }
 }
 
+impl Display for FloatBinaryOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FloatBinaryOp::Add => write!(f, "add"),
+            FloatBinaryOp::Sub => write!(f, "sub"),
+            FloatBinaryOp::Mul => write!(f, "mul"),
+            FloatBinaryOp::Div => write!(f, "div"),
+            FloatBinaryOp::Rem => write!(f, "rem"),
+            FloatBinaryOp::Pow => write!(f, "pow"),
+        }
+    }
+}
+
 impl Display for BooleanBinaryOp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -110,6 +138,7 @@ impl Display for BinaryIntrinsic {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             BinaryIntrinsic::Compare(comparison) => write!(f, "compare[{comparison}]"),
+            BinaryIntrinsic::Float(op) => write!(f, "{op}"),
             BinaryIntrinsic::Integer(op) => write!(f, "{op}"),
             BinaryIntrinsic::Boolean(op) => write!(f, "{op}"),
             BinaryIntrinsic::String(op) => write!(f, "{op}"),
@@ -126,6 +155,9 @@ impl Display for UnaryIntrinsic {
             UnaryIntrinsic::Format => write!(f, "format"),
             UnaryIntrinsic::Parse => write!(f, "parse"),
             UnaryIntrinsic::Len => write!(f, "len"),
+            UnaryIntrinsic::Floor => write!(f, "floor"),
+            UnaryIntrinsic::Ceil => write!(f, "ceil"),
+            UnaryIntrinsic::ToFloat => write!(f, "to_float"),
         }
     }
 }

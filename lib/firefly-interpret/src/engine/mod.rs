@@ -2,7 +2,7 @@ use action::Action;
 use stack_frame::StackFrame;
 use value::{InnerValue, Value};
 
-use crate::{ir::{code::{BasicBlockId, Function, InstructionKind, TerminatorKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, Immediate, ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp}, VirContext}, util::Id};
+use crate::{ir::{code::{BasicBlockId, Function, InstructionKind, TerminatorKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, FloatBinaryOp, Immediate, ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp}, VirContext}, util::Id};
 
 pub mod value;
 mod stack_frame;
@@ -103,7 +103,7 @@ impl<'a> ExecutionEngine<'a> {
             ImmediateKind::Constant(ConstantValue::Integer(i)) => InnerValue::Integer(*i),
             ImmediateKind::Constant(ConstantValue::Bool(b)) => InnerValue::Boolean(*b),
             ImmediateKind::Constant(ConstantValue::String(s)) => InnerValue::String(s.clone()),
-            ImmediateKind::Constant(ConstantValue::Float(f)) => todo!(),
+            ImmediateKind::Constant(ConstantValue::Float(f)) => InnerValue::Float(*f),
 
             ImmediateKind::Move(place) => return self.eval_place(place, frame).clone(),
 
@@ -131,6 +131,13 @@ impl<'a> ExecutionEngine<'a> {
                         };
 
                         return self.eval_int_op(*op, *left, *right);
+                    }
+                    BinaryIntrinsic::Float(op) => {
+                        let (InnerValue::Float(left), InnerValue::Float(right)) = (left.as_ref(), right.as_ref()) else {
+                            panic!();
+                        };
+
+                        return self.eval_float_op(*op, *left, *right);
                     }
                     BinaryIntrinsic::String(op) => {
                         let (InnerValue::String(left), InnerValue::String(right)) = (left.as_ref(), right.as_ref()) else {
@@ -233,6 +240,19 @@ impl<'a> ExecutionEngine<'a> {
         };
 
         Value::new(InnerValue::Integer(result))
+    }
+
+    fn eval_float_op(&mut self, float_op: FloatBinaryOp, left: f64, right: f64) -> Value {
+        let result = match float_op {
+            FloatBinaryOp::Add => left + right,
+            FloatBinaryOp::Sub => left - right,
+            FloatBinaryOp::Mul => left * right,
+            FloatBinaryOp::Div => left / right,
+            FloatBinaryOp::Rem => left % right,
+            FloatBinaryOp::Pow => left.powf(right),
+        };
+
+        Value::new(InnerValue::Float(result))
     }
 
     fn eval_string_op(&mut self, string_op: StringBinaryOp, left: &str, right: &str) -> Value {
