@@ -42,6 +42,8 @@ E0302: Can't find loop with label `` for break
 E0303: Continue outside of loop
 E0304: Can't find loop with label `` for continue
 
+E0310: Value isn't mutable
+
 E05xx: Type errors
 
 E0501: Can't call a value of type ...

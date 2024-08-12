@@ -17,8 +17,9 @@
 - [x] Add system functions
 - [x] Methods
 - [x] Add control flow
-- [ ] Add mutability
+- [x] Add mutability
 - [ ] Add floats
+- [x] Destructure tuples
 
 # Testing framework
 

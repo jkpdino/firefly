@@ -5,8 +5,9 @@ use crate::{ty::Ty, value::Value, Name};
 
 #[derive(Debug)]
 pub enum Stmt {
-    Value(Spanned<Value>),
+    Value(Spanned<Value>, bool),
     Bind(Name, Spanned<Ty>, Spanned<Value>),
+    Semicolon,
     Error
 }
 
@@ -14,13 +15,15 @@ pub enum Stmt {
 pub struct CodeBlock {
     pub id: Id<HirCodeBlock>,
     pub stmts: Vec<Spanned<Stmt>>,
+    pub yields: Option<Spanned<Value>>,
 }
 
 impl CodeBlock {
-    pub fn new(stmts: Vec<Spanned<Stmt>>) -> Self {
+    pub fn new(stmts: Vec<Spanned<Stmt>>, yields: Option<Spanned<Value>>) -> Self {
         Self {
             id: Default::default(),
-            stmts
+            stmts,
+            yields
         }
     }
 }

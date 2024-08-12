@@ -10,6 +10,7 @@ pub use has_value::*;
 #[derive(Debug, Clone)]
 pub enum LiteralValue {
     Integer(String),
+    Float(String),
     String(String),
     Boolean(bool),
 }
@@ -39,8 +40,11 @@ pub enum ValueKind {
     Unit,
     Tuple(Vec<Value>),
     Literal(LiteralValue),
+    TupleMember(Box<Value>, usize),
 
     FieldOf(Box<Value>, Id<Field>),
+
+    Assign(Box<Value>, Box<Value>),
 
     StaticFunc(Id<Func>),
     InstanceFunc(Box<Value>, Id<Func>),
@@ -73,6 +77,20 @@ impl Value {
             kind,
             ty,
             span
+        }
+    }
+
+    /// Returns whether a value is mutable or not
+    /// 
+    /// Local and global variables are mutable, as well
+    /// as fields of mutable values
+    pub fn is_mutable(&self) -> bool {
+        match &self.kind {
+            ValueKind::FieldOf(parent, _) => parent.is_mutable(),
+            ValueKind::Local(_) => true,
+            ValueKind::Global(_) => true,
+
+            _ => false
         }
     }
 }

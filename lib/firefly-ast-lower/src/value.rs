@@ -8,6 +8,14 @@ impl AstLowerer {
     pub fn lower_value(&mut self, value: &Spanned<AstValue>, parent: Id<Entity>, symbol_table: &mut SymbolTable) -> HirValue  {
         let span = value.span;
         let (kind, ty) = match &value.item {
+            AstValue::Tuple(items) if items.is_empty() => {
+                (HirValueKind::Unit, Ty::new(TyKind::Unit, span))
+            }
+            AstValue::Tuple(items) if items.len() == 1 => {
+                let HirValue { kind, ty, .. } = self.lower_value(&items[0], parent, symbol_table);
+
+                (kind, ty)
+            }
             AstValue::Tuple(items) => {
                 let items = items.iter()
                     .map(|item| self.lower_value(item, parent, symbol_table))
@@ -41,6 +49,15 @@ impl AstLowerer {
                 (str_kind, str_type)
             }
 
+            AstValue::FloatLiteral(num) => {
+                let sanitized_num = num.item.replace("_", "");
+
+                let float_kind = HirValueKind::Literal(LiteralValue::Float(sanitized_num));
+                let float_type = Ty::new(TyKind::Float, span);
+
+                (float_kind, float_type)
+            }
+
             AstValue::Call(function, args) => {
                 let function_value = self.lower_value(function, parent, symbol_table);
 
@@ -63,6 +80,36 @@ impl AstLowerer {
             AstValue::Path(path) => match self.resolve_value(path, parent, symbol_table) {
                 Some(value) => { return value },
                 None => (HirValueKind::Unit, Ty::new(TyKind::Unit, span))
+            }
+
+            AstValue::Member(parent_val, member) => {
+                let parent_val = self.lower_value(parent_val, parent, symbol_table);
+
+                if let Some(member) = self.resolve_instance_member(parent_val, member.clone(), parent) {
+                    return member;
+                }
+
+                return HirValue::default();
+            }
+
+            AstValue::TupleMember(parent_val, index) => {
+                let parent_val = self.lower_value(parent_val, parent, symbol_table);
+
+                let index_num: usize = index.item.parse().expect("internal compiler error: digits aren't a number");
+
+                let TyKind::Tuple(items) = &parent_val.ty.kind else {
+                    // error
+                    return HirValue::default();
+                };
+
+                if index_num >= items.len() {
+                    // error
+                    return HirValue::default();
+                }
+
+                let ty = items[index_num].clone();
+
+                (HirValueKind::TupleMember(Box::new(parent_val), index_num), ty)
             }
 
             AstValue::Return(return_value) => {
@@ -147,6 +194,17 @@ impl AstLowerer {
                         (HirValueKind::Unit, Ty::new(TyKind::Never, value.span))
                     }
                 }
+            }
+
+            AstValue::Assign(place, assignee) => {
+                let place = self.lower_value(place, parent, symbol_table);
+                let assignee = self.lower_value(assignee, parent, symbol_table);
+
+                if !place.is_mutable() {
+                    self.emit(ValueError::NotMutable(place.span));
+                }
+                
+                (HirValueKind::Assign(Box::new(place), Box::new(assignee)), Ty::new(TyKind::Unit, value.span))
             }
 
             AstValue::Error => unreachable!()

@@ -12,6 +12,10 @@ impl AstLowerer {
         let kind = match &ty.item {
             AstTy::Tuple(items) if items.is_empty() => HirTyKind::Unit,
 
+            AstTy::Tuple(items) if items.len() == 1 => {
+                self.lower_ty(&items[0], parent, symbol_table).kind
+            }
+
             AstTy::Tuple(items) => {
                 let items = items
                     .iter()

@@ -8,7 +8,9 @@ pub enum ValueError {
     BreakOutsideLoop(Span),
     UndefinedBreakLabel(Name),
     ContinueOutsideLoop(Span),
-    UndefinedContinueLabel(Name)
+    UndefinedContinueLabel(Name),
+
+    NotMutable(Span),
 }
 
 impl IntoDiagnostic for ValueError {
@@ -37,6 +39,12 @@ impl IntoDiagnostic for ValueError {
                     DiagnosticMessage::Str(format!("Use of undefined label `{}` in continue", name.item))
                 ).with_error_code(DiagnosticId::new("E0304"))
                  .with_source(name.span)
+            }
+            ValueError::NotMutable(value) => {
+                Diagnostic::new(Level::Error,
+                    DiagnosticMessage::Str(format!("Value is not mutable"))
+                ).with_error_code(DiagnosticId::new("E0310"))
+                 .with_source(*value)
             }
         }
     }

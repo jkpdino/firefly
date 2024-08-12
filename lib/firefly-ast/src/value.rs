@@ -1,11 +1,12 @@
 use firefly_span::Spanned;
 
-use crate::{stmt::CodeBlock, Name, Path};
+use crate::{stmt::CodeBlock, Name, Path, PathSegment};
 
 #[derive(Debug)]
 pub enum Value {
     Tuple(Vec<Spanned<Value>>),
     IntegerLiteral(Name),
+    FloatLiteral(Name),
     StringLiteral(Name),
     Path(Path),
     Call(Box<Spanned<Value>>, Vec<Spanned<Value>>),
@@ -14,6 +15,9 @@ pub enum Value {
     While(Box<WhileStatement>),
     Break(Option<Name>),
     Continue(Option<Name>),
+    Assign(Box<Spanned<Value>>, Box<Spanned<Value>>),
+    Member(Box<Spanned<Value>>, PathSegment),
+    TupleMember(Box<Spanned<Value>>, Name),
     Error,
 }
 
@@ -35,4 +39,21 @@ pub struct WhileStatement {
     pub label: Option<Name>,
     pub condition: Spanned<Value>,
     pub body: CodeBlock,
+}
+
+impl Value {
+    pub fn member(parent: Box<Spanned<Value>>, member: PathSegment) -> Value {
+        match &parent.item {
+            Value::Path(base) => {
+                let new_span = base.span.to(member.name.span);
+                let mut new_segments = base.segments.clone();
+                new_segments.push(member);
+
+                let new_base = Path::new(new_segments, new_span);
+
+                Value::Path(new_base)
+            }
+            _ => Value::Member(parent, member)
+        }
+    }
 }
