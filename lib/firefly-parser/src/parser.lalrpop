@@ -57,6 +57,7 @@ extern {
         "while" => Token::WhileKw,
 
         "integer" => Token::IntegerLiteral(<&'source str>),
+        "float" => Token::FloatLiteral(<&'source str>),
         "string" => Token::StringLiteral(<&'source str>),
         "long_string" => Token::LongStringLiteral(<&'source str>),
 
@@ -242,6 +243,7 @@ StatementLikeValue: Value = {
 
 LiteralValue: Value = {
     Spanned<"integer"> => Value::IntegerLiteral(Spanned::new(<>.item.into(), <>.span)),
+    Spanned<"float"> => Value::FloatLiteral(Spanned::new(<>.item.into(), <>.span)),
     Spanned<"string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
     Spanned<"long_string"> => Value::StringLiteral(Spanned::new(<>.item.into(), <>.span)),
 }

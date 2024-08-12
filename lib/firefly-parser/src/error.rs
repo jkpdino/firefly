@@ -124,6 +124,7 @@ impl ParserErrorEnv<'_> {
             Token::Ident(ident) => format!("identifier `{}`", ident),
 
             Token::IntegerLiteral(int) => format!("integer literal `{}`", int),
+			Token::FloatLiteral(float) => format!("float literal `{}`", float),
             Token::StringLiteral(string) => format!("string literal `{}`", string),
             Token::LongStringLiteral(string) => format!("string literal `{}`", string),
 

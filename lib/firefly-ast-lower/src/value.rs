@@ -49,6 +49,15 @@ impl AstLowerer {
                 (str_kind, str_type)
             }
 
+            AstValue::FloatLiteral(num) => {
+                let sanitized_num = num.item.replace("_", "");
+
+                let float_kind = HirValueKind::Literal(LiteralValue::Float(sanitized_num));
+                let float_type = Ty::new(TyKind::Float, span);
+
+                (float_kind, float_type)
+            }
+
             AstValue::Call(function, args) => {
                 let function_value = self.lower_value(function, parent, symbol_table);
 
