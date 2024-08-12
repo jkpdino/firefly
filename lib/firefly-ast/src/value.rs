@@ -6,6 +6,7 @@ use crate::{stmt::CodeBlock, Name, Path, PathSegment};
 pub enum Value {
     Tuple(Vec<Spanned<Value>>),
     IntegerLiteral(Name),
+    FloatLiteral(Name),
     StringLiteral(Name),
     Path(Path),
     Call(Box<Spanned<Value>>, Vec<Spanned<Value>>),

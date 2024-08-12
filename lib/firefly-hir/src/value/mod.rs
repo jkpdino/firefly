@@ -10,6 +10,7 @@ pub use has_value::*;
 #[derive(Debug, Clone)]
 pub enum LiteralValue {
     Integer(String),
+    Float(String),
     String(String),
     Boolean(bool),
 }

@@ -1,0 +1,25 @@
+module Test.Floats
+
+func main() {
+    var a: float = 3.14;
+    var b: float = 1_234.5678;
+    var c: float = 0.0;
+    var d: float = -42.0e+2;
+    var e: float = +1.2e-3;
+    var f: float = 12;
+    var g: float = 3.;
+    //var h: float = 3.14e;
+    //var i: float = 3.14e+;
+    //var j: float = 3.14e+a;
+    var k: float = 3.14_;
+    //var l: float = _3.14;
+    var m: float = 3_.14;
+    //var n: float = 3._14;
+    //var o: float = 3.14.;
+    //var p: float = 3.14e+2.0;
+    var q: float = 3.14e2_0;
+    var r: float = 3.14e+2_0;
+    var s: float = 3.14e-2_0;
+    //var t: float = 3.14e+2_0.0;
+    //var u: float = 3.14e+2_0.0;
+}

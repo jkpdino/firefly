@@ -30,6 +30,16 @@ pub fn create_lang_module(context: &mut HirContext) {
         "lt_int", "leq_int"
     ];
 
+    const FLOAT_OPERATORS: &[&str] = &[
+        "add", "sub", "mul", "div", "rem", "pow",
+    ];
+
+    const FLOAT_COMPARES: &[&str] = &[
+        "eq_float", "neq_float",
+        "gt_float", "geq_float",
+        "lt_float", "leq_float"
+    ];
+
     const BOOL_OPERATORS: &[&str] = &[
         "and", "or", "xor",
         "eq_bool", "neq_bool"
@@ -47,6 +57,21 @@ pub fn create_lang_module(context: &mut HirContext) {
 
     create_func("parse_int", &[TyKind::String], TyKind::Integer, lang_id, context);
     create_func("format_int", &[TyKind::Integer], TyKind::String, lang_id, context);
+
+    for name in FLOAT_OPERATORS {
+        create_func(name, &[TyKind::Float, TyKind::Float], TyKind::Float, lang_id, context)
+    }
+
+    for name in FLOAT_COMPARES {
+        create_func(name, &[TyKind::Float, TyKind::Float], TyKind::Bool, lang_id, context)
+    }
+
+    create_func("floor", &[TyKind::Float], TyKind::Integer, lang_id, context);
+    create_func("ceil", &[TyKind::Float], TyKind::Integer, lang_id, context);
+    create_func("to_float", &[TyKind::Integer], TyKind::Float, lang_id, context);
+
+    create_func("parse_float", &[TyKind::String], TyKind::Float, lang_id, context);
+    create_func("format_float", &[TyKind::Float], TyKind::String, lang_id, context);
 
     for name in BOOL_OPERATORS {
         create_func(name, &[TyKind::Bool, TyKind::Bool], TyKind::Bool, lang_id, context);

@@ -18,6 +18,10 @@ pub enum Token<'a> {
     #[regex("(0[bB][01_]+)")]
     IntegerLiteral(&'a str),
 
+    #[regex("[+-]?[0-9][_0-9]*[eE][+-]?[0-9][_0-9]*")]
+    #[regex("[+-]?[0-9][_0-9]*[.]([0-9][_0-9]*)?([eE][+-]?[0-9][_0-9]*)?")]
+    FloatLiteral(&'a str),
+
     #[regex(r#"raw""#, |lex| lex_string(lex, true))]
     #[regex(r#"""#, |lex| lex_string(lex, false))]
     StringLiteral(&'a str),
