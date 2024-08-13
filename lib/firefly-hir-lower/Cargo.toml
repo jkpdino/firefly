@@ -7,3 +7,4 @@ edition = "2021"
 firefly-hir = { path = "../firefly-hir" }
 firefly-span = { path = "../firefly-span" }
 firefly-mir = { path = "../firefly-mir" }
+itertools = "0.13.0"

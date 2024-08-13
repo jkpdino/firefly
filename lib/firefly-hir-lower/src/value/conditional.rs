@@ -24,7 +24,7 @@ impl HirLowerer<'_> {
         // Lower the negative block, if any
         self.mir.select_basic_block(else_block);
         match &if_value.negative {
-            Some(ElseValue::Else(code_block)) => self.lower_code_block(*code_block),
+            Some(ElseValue::Else(code_block)) => { self.lower_code_block(*code_block); },
             Some(ElseValue::ElseIf(if_value)) => { self.lower_if(if_value, Some(after_block)); },
 
             None => {}

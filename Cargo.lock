@@ -297,6 +297,7 @@ dependencies = [
  "firefly-hir",
  "firefly-mir",
  "firefly-span",
+ "itertools 0.13.0",
 ]
 
 [[package]]

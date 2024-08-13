@@ -1,6 +1,8 @@
 
+use firefly_hir::value::Value;
 use firefly_mir::{ty::{Ty as MirTy, TyKind as MirTyKind}, value::{ConstantValue, Immediate, ImmediateKind}};
 use firefly_span::Span;
+use itertools::Itertools;
 
 use crate::HirLowerer;
 
@@ -47,5 +49,16 @@ impl HirLowerer<'_> {
             ty: MirTy::new(MirTyKind::Float),
             span,
         }
+    }
+
+    pub(super) fn lower_tuple(&mut self, items: &Vec<Value>, span: Span) -> Immediate {
+        let items = items.iter().map(|item| self.lower_immediate(item)).collect_vec();
+
+        let item_types = items.iter().map(|item| item.ty.clone()).collect_vec();
+
+        let ty = MirTy::new(MirTyKind::Tuple(item_types));
+        let kind = Box::new(ImmediateKind::Tuple(items));
+
+        Immediate { kind, ty, span, }
     }
 }

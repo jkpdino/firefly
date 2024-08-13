@@ -1,4 +1,5 @@
 use action::Action;
+use itertools::Itertools;
 use stack_frame::StackFrame;
 use value::{InnerValue, Value};
 
@@ -108,6 +109,12 @@ impl<'a> ExecutionEngine<'a> {
             ImmediateKind::Constant(ConstantValue::Bool(b)) => InnerValue::Boolean(*b),
             ImmediateKind::Constant(ConstantValue::String(s)) => InnerValue::String(s.clone()),
             ImmediateKind::Constant(ConstantValue::Float(f)) => InnerValue::Float(*f),
+
+            ImmediateKind::Tuple(items) => {
+                let items = items.iter().map(|item| self.eval_immediate(item, frame)).collect_vec();
+
+                InnerValue::Struct(items)
+            }
 
             ImmediateKind::Move(place) => return self.eval_place(place, frame).clone(),
 

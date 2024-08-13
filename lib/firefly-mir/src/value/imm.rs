@@ -20,6 +20,9 @@ pub enum ImmediateKind {
     /// A constant immediate
     Constant(ConstantValue),
 
+    /// Constructs a tuple
+    Tuple(Vec<Immediate>),
+
     /// Takes the value currently in a place
     Move(Place),
 
@@ -63,6 +66,7 @@ impl DisplayInContext for ImmediateKind {
     fn fmt(&self, f: &mut Formatter<'_>, context: &MirContext) -> std::fmt::Result {
         match self {
             ImmediateKind::Constant(constant) => write!(f, "const {constant}"),
+            ImmediateKind::Tuple(items) => write!(f, "tuple ({})", items.iter().map(|item| context.display(item)).format(", ")),
             ImmediateKind::Move(place) => write!(f, "move {place}"),
             ImmediateKind::Call(function, args) => {
                 let func = context.get_function(*function);

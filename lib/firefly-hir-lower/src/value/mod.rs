@@ -16,6 +16,8 @@ impl HirLowerer<'_> {
             ValueKind::Literal(LiteralValue::Boolean(boolean)) => self.lower_bool(*boolean, value.span),
             ValueKind::Literal(LiteralValue::Float(float)) => self.lower_float(float, value.span),
 
+            ValueKind::Tuple(items) => self.lower_tuple(items, value.span),
+
             ValueKind::Unit => Immediate::void(),
 
             ValueKind::Invoke(function, args) => self.lower_call(function, args),
@@ -82,7 +84,7 @@ impl HirLowerer<'_> {
                 }
             }
 
-            _ => todo!(),
+            other => todo!("internal compiler error: can't lower {other:?}"),
         }
     }
 
