@@ -1,4 +1,4 @@
-use firefly_hir::value::WhileValue;
+use firefly_hir::{stmt::CodeBlock, value::WhileValue, Id};
 use firefly_interpret::ir::{code::{BasicBlockId, Terminator}, value::Immediate};
 
 use crate::HirLowerer;
@@ -9,7 +9,7 @@ pub struct LoopMarker {
 }
 
 impl HirLowerer<'_> {
-    pub fn lower_while(&mut self, while_value: &WhileValue) -> Immediate {
+    pub(super) fn lower_while(&mut self, while_value: &WhileValue) -> Immediate {
         let while_start = self.vir.append_basic_block();
         let body = self.vir.append_basic_block();
         let while_end = self.vir.append_basic_block();
@@ -36,6 +36,26 @@ impl HirLowerer<'_> {
         self.vir.select_basic_block(while_end);
 
         // Return void
+        Immediate::void()
+    }
+
+    pub(super) fn lower_break(&mut self, code_block: Id<CodeBlock>) -> Immediate {
+        let Some(LoopMarker { end, .. }) = self.loop_map.get(&code_block) else {
+            panic!("internal compiler error: expected code block to be tracked");
+        };
+
+        self.vir.build_terminator(Terminator::branch(*end));
+
+        Immediate::void()
+    }
+
+    pub(super) fn lower_continue(&mut self, code_block: Id<CodeBlock>) -> Immediate {
+        let Some(LoopMarker { start, .. }) = self.loop_map.get(&code_block) else {
+            panic!("internal compiler error: expected code block to be tracked");
+        };
+
+        self.vir.build_terminator(Terminator::branch(*start));
+
         Immediate::void()
     }
 }
