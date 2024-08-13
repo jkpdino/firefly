@@ -6,7 +6,7 @@ pub enum InnerValue {
     Boolean(bool),
     Float(f64),
 
-    Tuple(Vec<Value>),
+    Struct(Vec<Value>),
 
     Void,
 

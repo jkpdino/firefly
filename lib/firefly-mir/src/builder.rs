@@ -80,6 +80,14 @@ impl<'a> Builder<'a> {
         basic_block.append_terminator(terminator);
     }
 
+    /// Is the current basic block already terminated?
+    pub fn is_terminated(&self) -> bool {
+        let id = self.current_basic_block_id();
+        let basic_block = self.context.get_basic_block(id);
+
+        return basic_block.terminator.is_some()
+    }
+
     fn current_func_id(&self) -> Id<Function> {
         self.current_func.expect("internal compiler error: no mir id selected")
     }

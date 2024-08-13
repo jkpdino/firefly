@@ -47,7 +47,11 @@ impl DisplayInContext for TyKind {
             
             TyKind::Void => write!(f, "void"),
 
-            TyKind::Struct(_) => write!(f, "struct"),
+            TyKind::Struct(id) => {
+                let struct_def = context.get_struct(*id);
+
+                write!(f, "struct {}", struct_def.name)
+            }
 
             TyKind::Tuple(items) => write!(f, "({})", items.iter().map(|item| context.display(item)).format(", ")),
             TyKind::Func(params, return_ty) => write!(f, "func ({}) -> {}", params.iter().map(|item| context.display(item)).format(", "), context.display(return_ty))

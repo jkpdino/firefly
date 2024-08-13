@@ -7,5 +7,8 @@ pub struct Args {
 
     /// Print the HIR tree to the console
     #[arg(long)]
-    pub print_hir: bool
+    pub print_hir: bool,
+
+    #[arg(long)]
+    pub print_mir: bool
 }

@@ -43,12 +43,12 @@ impl Terminator {
 }
 
 impl DisplayInContext for TerminatorKind {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>, _: &MirContext) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>, context: &MirContext) -> std::fmt::Result {
         match self {
             TerminatorKind::Branch(dest) => write!(f, "branch {}", dest.local_id),
-            TerminatorKind::BranchIf(condition, positive, negative) => write!(f, "branch if {condition} ({} else {})", positive.local_id, negative.local_id),
+            TerminatorKind::BranchIf(condition, positive, negative) => write!(f, "branch if {} ({} else {})", context.display(condition), positive.local_id, negative.local_id),
             TerminatorKind::ReturnVoid => write!(f, "return"),
-            TerminatorKind::Return(value) => write!(f, "return {}", value)
+            TerminatorKind::Return(value) => write!(f, "return {}", context.display(value))
         }
     }
 }

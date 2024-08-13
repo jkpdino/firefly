@@ -152,6 +152,10 @@ impl MirContext {
             .expect("internal compiler error: function not found")
     }
 
+    pub fn functions(&self) -> &Vec<Function> {
+        &self.functions
+    }
+
     /// Gets a reference to a basic block by id
     pub fn get_basic_block(&self, id: BasicBlockId) -> &BasicBlock {
         self.basic_blocks

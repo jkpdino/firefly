@@ -1,4 +1,5 @@
 use firefly_hir::{func::Callable, resolve::Symbol, stmt::CodeBlock, Id};
+use firefly_mir::code::Terminator;
 
 use crate::HirLowerer;
 use firefly_hir::func::Func as HirFunc;
@@ -34,9 +35,14 @@ impl HirLowerer<'_> {
             return;
         };
 
+        // Lower the code
         let bb0 = self.mir.append_basic_block();
         self.mir.select_basic_block(bb0);
-
         self.lower_code_block(code_block);
+
+        // If the basic block isn't terminated, return void
+        if !self.mir.is_terminated() {
+            self.mir.build_terminator(Terminator::returns_void());
+        }
     }
 }

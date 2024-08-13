@@ -73,7 +73,7 @@ impl DisplayInContext for BasicBlock {
         writeln!(f, "{}:", self.id.local_id)?;
 
         for instruction in &self.instructions {
-            writeln!(f, "    {}", instruction)?;
+            writeln!(f, "    {}", context.display(instruction))?;
         }
 
         if let Some(terminator) = &self.terminator {

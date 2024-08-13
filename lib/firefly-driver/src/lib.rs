@@ -21,6 +21,7 @@ pub struct Driver {
     mir_context: MirContext,
 
     print_hir: bool,
+    print_mir: bool,
 }
 
 impl Driver {
@@ -30,7 +31,7 @@ impl Driver {
         let ast_lowerer = AstLowerer::new(emitter.clone());
         let mir_context = MirContext::new();
 
-        Driver { source_map, emitter, ast_lowerer, mir_context, print_hir: false }
+        Driver { source_map, emitter, ast_lowerer, mir_context, print_hir: false, print_mir: false }
     }
 
     pub fn parse_args(&mut self) {
@@ -41,6 +42,7 @@ impl Driver {
         }
 
         self.print_hir = args.print_hir;
+        self.print_mir = args.print_mir;
     }
 
     pub fn load_file(&self, path: &str) {
@@ -63,6 +65,10 @@ impl Driver {
     pub fn output(&self) {
         if self.print_hir {
             println!("{}", self.ast_lowerer.context().display())
+        }
+
+        if self.print_mir {
+            println!("{}", self.mir_context)
         }
 
         let mut execution_engine = ExecutionEngine::new(&self.mir_context);

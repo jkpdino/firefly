@@ -24,7 +24,9 @@ impl<'a> ExecutionEngine<'a> {
     }
 
     pub fn execute(&mut self) {
-        // todo: check if there is a function 
+        if self.context.functions().is_empty() {
+            return;
+        }
         self.execute_function(Id::new(0), Vec::new());
     }
 
@@ -216,7 +218,15 @@ impl<'a> ExecutionEngine<'a> {
             PlaceKind::Global(index) => {
                 return self.globals.get_value_mut(index.index());
             }
-            PlaceKind::Field(_, _) => todo!(),
+            PlaceKind::Field(parent, index) => {
+                let parent = self.eval_place(parent, frame);
+
+                match parent.as_mut() {
+                    InnerValue::Struct(values) => &mut values[*index],
+
+                    _ => panic!(),
+                }
+            }
         }
     }
 

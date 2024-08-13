@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use firefly_span::Span;
 use itertools::Itertools;
 
-use crate::{code::Function, ty::{Ty, TyKind}, util::Id};
+use crate::{code::Function, ty::{Ty, TyKind}, util::Id, DisplayInContext, MirContext};
 
 use super::{intrinsics::BinaryIntrinsic, Place, UnaryIntrinsic};
 
@@ -59,21 +59,27 @@ impl Display for ConstantValue {
     }
 }
 
-impl Display for ImmediateKind {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl DisplayInContext for ImmediateKind {
+    fn fmt(&self, f: &mut Formatter<'_>, context: &MirContext) -> std::fmt::Result {
         match self {
             ImmediateKind::Constant(constant) => write!(f, "const {constant}"),
             ImmediateKind::Move(place) => write!(f, "move {place}"),
-            ImmediateKind::Call(function, args) => write!(f, "invoke {function:?} ({})", args.iter().format(", ")),
-            ImmediateKind::Binary(func, left, right) => write!(f, "{func} ({left}, {right})"),
-            ImmediateKind::Unary(func, operand) => write!(f, "{func} ({operand})"),
+            ImmediateKind::Call(function, args) => {
+                let func = context.get_function(*function);
+
+                let func_name = &func.name;
+
+                write!(f, "invoke {func_name} ({})", args.iter().map(|arg| context.display(arg)).format(", "))
+            }
+            ImmediateKind::Binary(func, left, right) => write!(f, "{func} ({}, {})", context.display(left), context.display(right)),
+            ImmediateKind::Unary(func, operand) => write!(f, "{func} ({})", context.display(operand)),
             ImmediateKind::Void => write!(f, "void")
         }
     }
 }
 
-impl Display for Immediate {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.kind.fmt(f)
+impl DisplayInContext for Immediate {
+    fn fmt(&self, f: &mut Formatter<'_>, context: &MirContext) -> std::fmt::Result {
+        self.kind.fmt(f, context)
     }
 }
