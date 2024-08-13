@@ -47,9 +47,6 @@ impl<'a> ExecutionEngine<'a> {
                 Action::ReturnVoid => {
                     return Value::new(value::InnerValue::Undefined);
                 }
-                Action::Panic => {
-                    panic!("Panic");
-                }
             }
         }
 

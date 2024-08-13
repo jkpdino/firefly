@@ -16,6 +16,32 @@ pub struct Terminator {
     pub kind: TerminatorKind
 }
 
+impl Terminator {
+    pub fn branch(bb: BasicBlockId) -> Self {
+        Self {
+            kind: TerminatorKind::Branch(bb)
+        }
+    }
+
+    pub fn branch_if(condition: Immediate, positive: BasicBlockId, negative: BasicBlockId) -> Self {
+        Self {
+            kind: TerminatorKind::BranchIf(condition, positive, negative)
+        }
+    }
+
+    pub fn returns(value: Immediate) -> Self {
+        Self {
+            kind: TerminatorKind::Return(value)
+        }
+    }
+
+    pub fn returns_void() -> Self {
+        Self {
+            kind: TerminatorKind::ReturnVoid
+        }
+    }
+}
+
 impl DisplayInContext for TerminatorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>, _: &VirContext) -> std::fmt::Result {
         match self {

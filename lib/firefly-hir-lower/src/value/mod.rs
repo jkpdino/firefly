@@ -1,6 +1,9 @@
-use firefly_hir::{ty::TyKind, value::{ElseValue, IfValue, LiteralValue, Value, ValueKind}};
-use firefly_interpret::ir::{code::{BasicBlockId, Terminator, TerminatorKind}, ty::{Ty as VirTy, TyKind as VirTyKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, FloatBinaryOp, Immediate, ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp, UnaryIntrinsic}};
+pub mod loops;
+
+use firefly_hir::{stmt::CodeBlock, ty::TyKind, value::{ElseValue, IfValue, LiteralValue, Value, ValueKind}, Id};
+use firefly_interpret::ir::{code::{BasicBlockId, Terminator}, ty::{Ty as VirTy, TyKind as VirTyKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, FloatBinaryOp, Immediate, ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp, UnaryIntrinsic}};
 use firefly_span::Span;
+use loops::LoopMarker;
 
 use crate::HirLowerer;
 
@@ -12,32 +15,18 @@ impl HirLowerer<'_> {
             ValueKind::Literal(LiteralValue::Boolean(boolean)) => self.lower_bool(*boolean, value.span),
             ValueKind::Literal(LiteralValue::Float(float)) => self.lower_float(float, value.span),
 
+            ValueKind::Unit => Immediate::void(),
+
             ValueKind::Invoke(function, args) => self.lower_call(function, args),
+            ValueKind::Assign(place, value) => self.lower_assign(place, value),
 
-            ValueKind::Assign(place, value) => {
-                let place = self.lower_place(place);
-                let value = self.lower_immediate(value);
+            ValueKind::Return(value) => self.lower_return(value),
+            ValueKind::Break(code_block) => self.lower_break(*code_block),
+            ValueKind::Continue(code_block) => self.lower_continue(*code_block),
 
-                self.vir.build_assign(place, value);
+            ValueKind::If(if_value) => self.lower_if(if_value, None),
 
-                Immediate::void()
-            }
-
-            ValueKind::Return(value) => {
-                let imm = self.lower_immediate(value);
-
-                self.vir.build_terminator(Terminator {
-                    kind: TerminatorKind::Return(imm)
-                });
-
-                Immediate::void()
-            }
-
-            ValueKind::If(if_value) => {
-                self.lower_if(if_value, None);
-
-                Immediate::void()
-            }
+            ValueKind::While(while_value) => self.lower_while(while_value),
 
             ValueKind::StaticFunc(_) | ValueKind::InitFor(_) | ValueKind::InstanceFunc(..) | ValueKind::BuiltinFunc(_) => {
                 panic!("internal compiler error: first-class functions are not supported yet");
@@ -48,7 +37,6 @@ impl HirLowerer<'_> {
     }
 
     pub fn lower_place(&mut self, value: &Value) -> Place {
-        // Globals
         match &value.kind {
             ValueKind::Local(id) => {
                 let vir_local = self.local_map[id];
@@ -122,6 +110,49 @@ impl HirLowerer<'_> {
 
             _ => unreachable!(),
         }
+    }
+
+    fn lower_assign(&mut self, place: &Value, value: &Value) -> Immediate {
+        let place = self.lower_place(place);
+        let value = self.lower_immediate(value);
+
+        self.vir.build_assign(place, value);
+
+        Immediate::void()
+    }
+
+    fn lower_return(&mut self, value: &Value) -> Immediate {
+        let imm = self.lower_immediate(value);
+
+        if let ImmediateKind::Void = imm.kind.as_ref() {
+            self.vir.build_terminator(Terminator::returns_void());
+        }
+        else {
+            self.vir.build_terminator(Terminator::returns(imm));
+        }
+
+
+        Immediate::void()
+    }
+
+    fn lower_break(&mut self, code_block: Id<CodeBlock>) -> Immediate {
+        let Some(LoopMarker { end, .. }) = self.loop_map.get(&code_block) else {
+            panic!("internal compiler error: expected code block to be tracked");
+        };
+
+        self.vir.build_terminator(Terminator::branch(*end));
+
+        Immediate::void()
+    }
+
+    fn lower_continue(&mut self, code_block: Id<CodeBlock>) -> Immediate {
+        let Some(LoopMarker { start, .. }) = self.loop_map.get(&code_block) else {
+            panic!("internal compiler error: expected code block to be tracked");
+        };
+
+        self.vir.build_terminator(Terminator::branch(*start));
+
+        Immediate::void()
     }
 
     fn lower_integer(&self, value: &str, span: Span) -> Immediate {
@@ -269,7 +300,7 @@ impl HirLowerer<'_> {
         }
     }
 
-    fn lower_if(&mut self, if_value: &IfValue, after_block: Option<BasicBlockId>) {
+    fn lower_if(&mut self, if_value: &IfValue, after_block: Option<BasicBlockId>) -> Immediate {
         let condition = self.lower_immediate(&if_value.condition);
 
         let then_block = self.vir.append_basic_block();
@@ -277,27 +308,26 @@ impl HirLowerer<'_> {
 
         let after_block = after_block.unwrap_or_else(|| self.vir.append_basic_block());
 
-        self.vir.build_terminator(Terminator {
-            kind: TerminatorKind::BranchIf(condition, then_block, else_block)
-        });
+        // Branch to the correct block
+        self.vir.build_terminator(Terminator::branch_if(condition, then_block, else_block));
 
+        // Lower the positive block
         self.vir.select_basic_block(then_block);
         self.lower_code_block(if_value.positive);
-        self.vir.build_terminator(Terminator {
-            kind: TerminatorKind::Branch(after_block)
-        });
+        self.vir.build_terminator(Terminator::branch(after_block));
 
+        // Lower the negative block, if any
         self.vir.select_basic_block(else_block);
         match &if_value.negative {
             Some(ElseValue::Else(code_block)) => self.lower_code_block(*code_block),
-            Some(ElseValue::ElseIf(if_value)) => self.lower_if(if_value, Some(after_block)),
+            Some(ElseValue::ElseIf(if_value)) => { self.lower_if(if_value, Some(after_block)); },
 
             None => {}
         }
-        self.vir.build_terminator(Terminator {
-            kind: TerminatorKind::Branch(after_block)
-        });
+        self.vir.build_terminator(Terminator::branch(after_block));
 
         self.vir.select_basic_block(after_block);
+
+        Immediate::void()
     }
 }

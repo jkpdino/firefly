@@ -6,5 +6,4 @@ pub enum Action {
     Jump(BasicBlockId),
     Return(Value),
     ReturnVoid,
-    Panic,
 }

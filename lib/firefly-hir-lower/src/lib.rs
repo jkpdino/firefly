@@ -5,8 +5,9 @@ mod code;
 
 use std::collections::HashMap;
 
-use firefly_hir::{func::Func as HirFunc, items::{Field, Global as HirGlobal, StructDef as HirStruct}, stmt::Local as HirLocal, HirContext, Id as HirId};
+use firefly_hir::{func::Func as HirFunc, items::{Field, Global as HirGlobal, StructDef as HirStruct}, stmt::{CodeBlock, Local as HirLocal}, HirContext, Id as HirId};
 use firefly_interpret::{builder::Builder, ir::{code::{Function as VirFunc, Global as VirGlobal, Local as VirLocal}, ty::struct_def::StructDef as VirStruct, VirContext}, util::Id as VirId};
+use value::loops::LoopMarker;
 
 pub struct HirLowerer<'a> {
     vir: Builder<'a>,
@@ -17,6 +18,7 @@ pub struct HirLowerer<'a> {
     local_map: HashMap<HirId<HirLocal>, VirId<VirLocal>>,
     global_map: HashMap<HirId<HirGlobal>, VirId<VirGlobal>>,
     field_map: HashMap<HirId<Field>, usize>,
+    loop_map: HashMap<HirId<CodeBlock>, LoopMarker>
 }
 
 pub fn lower<'a>(hir: &'a HirContext, vir: &'a mut VirContext) {
@@ -26,6 +28,7 @@ pub fn lower<'a>(hir: &'a HirContext, vir: &'a mut VirContext) {
         vir,
         hir,
 
+        loop_map:   HashMap::new(),
         func_map:   HashMap::new(),
         local_map:  HashMap::new(),
         field_map:  HashMap::new(),
