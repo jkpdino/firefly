@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-use crate::{ir::{ty::Ty, VirContext}, util::{Container, DisplayInContext, IdFactory, UniqueId}};
+use crate::{ty::Ty, MirContext, util::{Container, DisplayInContext, IdFactory, UniqueId}};
 
 use super::{bb::BasicBlock, BasicBlockId, Local};
 
@@ -20,8 +20,18 @@ pub struct FunctionSignature {
     pub(crate) return_ty:  Ty
 }
 
+impl Function {
+    pub fn locals(&self) -> &Vec<Local> {
+        &self.locals
+    }
+
+    pub fn basic_blocks(&self) -> &Vec<BasicBlockId> {
+        &self.basic_blocks
+    }
+}
+
 impl DisplayInContext for Function {
-    fn fmt(&self, f: &mut std::fmt::Formatter, context: &VirContext) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter, context: &MirContext) -> std::fmt::Result {
         let parameters = self.signature.parameters
             .iter()
             .enumerate()

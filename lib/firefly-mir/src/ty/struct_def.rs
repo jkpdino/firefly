@@ -1,4 +1,4 @@
-use crate::{ir::VirContext, util::{DisplayInContext, UniqueId}};
+use crate::{MirContext, util::{DisplayInContext, UniqueId}};
 
 use super::Ty;
 
@@ -9,7 +9,7 @@ pub struct StructDef {
 }
 
 impl DisplayInContext for StructDef {
-    fn fmt(&self, f: &mut std::fmt::Formatter, context: &VirContext) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter, context: &MirContext) -> std::fmt::Result {
         writeln!(f, "struct {} {{", self.name)?;
         for field in &self.fields {
             writeln!(f, "  {},", context.display(field))?;

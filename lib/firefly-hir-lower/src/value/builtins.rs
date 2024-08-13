@@ -1,5 +1,5 @@
 
-use firefly_interpret::ir::{ty::{Ty as VirTy, TyKind as VirTyKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, FloatBinaryOp, Immediate, ImmediateKind, IntegerBinaryOp, StringBinaryOp, UnaryIntrinsic}};
+use firefly_mir::{ty::{Ty as MirTy, TyKind as MirTyKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, FloatBinaryOp, Immediate, ImmediateKind, IntegerBinaryOp, StringBinaryOp, UnaryIntrinsic}};
 use firefly_span::Span;
 
 use crate::HirLowerer;
@@ -53,11 +53,11 @@ impl HirLowerer<'_> {
         };
 
         let ty = match binary_kind {
-            BinaryIntrinsic::Compare(_) => VirTy::new(VirTyKind::Bool),
-            BinaryIntrinsic::Float(_) => VirTy::new(VirTyKind::Float),
-            BinaryIntrinsic::Integer(_) => VirTy::new(VirTyKind::Integer),
-            BinaryIntrinsic::Boolean(_) => VirTy::new(VirTyKind::Bool),
-            BinaryIntrinsic::String(_) => VirTy::new(VirTyKind::String),
+            BinaryIntrinsic::Compare(_) => MirTy::new(MirTyKind::Bool),
+            BinaryIntrinsic::Float(_) => MirTy::new(MirTyKind::Float),
+            BinaryIntrinsic::Integer(_) => MirTy::new(MirTyKind::Integer),
+            BinaryIntrinsic::Boolean(_) => MirTy::new(MirTyKind::Bool),
+            BinaryIntrinsic::String(_) => MirTy::new(MirTyKind::String),
         };
 
         let [lhs, rhs] = &args[..] else {
@@ -74,30 +74,30 @@ impl HirLowerer<'_> {
     fn lower_unary_builtin(&self, builtin_name: &str, args: Vec<Immediate>, span: Span) -> Immediate {
         let (imm, ty) =
         match builtin_name {
-            "not" => (UnaryIntrinsic::Not, VirTyKind::Bool),
-            "bitnot" => (UnaryIntrinsic::BitNot, VirTyKind::Integer),
+            "not" => (UnaryIntrinsic::Not, MirTyKind::Bool),
+            "bitnot" => (UnaryIntrinsic::BitNot, MirTyKind::Integer),
 
-            "len" => (UnaryIntrinsic::Len, VirTyKind::Integer),
+            "len" => (UnaryIntrinsic::Len, MirTyKind::Integer),
 
-            "print" => (UnaryIntrinsic::Print, VirTyKind::Void),
+            "print" => (UnaryIntrinsic::Print, MirTyKind::Void),
 
-            "parse_int" => (UnaryIntrinsic::Parse, VirTyKind::Integer),
-            "format_int" => (UnaryIntrinsic::Format, VirTyKind::String),
+            "parse_int" => (UnaryIntrinsic::Parse, MirTyKind::Integer),
+            "format_int" => (UnaryIntrinsic::Format, MirTyKind::String),
 
-            "parse_bool" => (UnaryIntrinsic::Parse, VirTyKind::Bool),
-            "format_bool" => (UnaryIntrinsic::Format, VirTyKind::String),
+            "parse_bool" => (UnaryIntrinsic::Parse, MirTyKind::Bool),
+            "format_bool" => (UnaryIntrinsic::Format, MirTyKind::String),
 
-            "parse_float" => (UnaryIntrinsic::Parse, VirTyKind::Float),
-            "format_float" => (UnaryIntrinsic::Format, VirTyKind::String),
+            "parse_float" => (UnaryIntrinsic::Parse, MirTyKind::Float),
+            "format_float" => (UnaryIntrinsic::Format, MirTyKind::String),
 
-            "floor" => (UnaryIntrinsic::Floor, VirTyKind::Integer),
-            "ceil" => (UnaryIntrinsic::Ceil, VirTyKind::Integer),
-            "to_float" => (UnaryIntrinsic::ToFloat, VirTyKind::Float),
+            "floor" => (UnaryIntrinsic::Floor, MirTyKind::Integer),
+            "ceil" => (UnaryIntrinsic::Ceil, MirTyKind::Integer),
+            "to_float" => (UnaryIntrinsic::ToFloat, MirTyKind::Float),
 
             _ => panic!(),
         };
 
-        let ty = VirTy::new(ty);
+        let ty = MirTy::new(ty);
 
         Immediate {
             kind: Box::new(ImmediateKind::Unary(imm, args[0].clone())),

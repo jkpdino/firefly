@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use firefly_span::Span;
 use itertools::Itertools;
 
-use crate::{ir::{code::Function, ty::{Ty, TyKind}}, util::Id};
+use crate::{code::Function, ty::{Ty, TyKind}, util::Id};
 
 use super::{intrinsics::BinaryIntrinsic, Place, UnaryIntrinsic};
 

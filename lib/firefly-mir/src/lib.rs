@@ -3,20 +3,22 @@ use std::fmt::Display;
 use code::{BasicBlock, BasicBlockId, Function, FunctionSignature, Global, Local};
 use ty::{struct_def::StructDef, Ty};
 
-use crate::util::{Container, Id, IdFactory, UniqueContainer, UniqueId};
-
 pub mod ty;
 pub mod value;
 pub mod code;
+pub mod builder;
+mod util;
 
-pub struct VirContext {
+pub use util::*;
+
+pub struct MirContext {
     pub(crate) basic_blocks: UniqueContainer<BasicBlock>,
     pub(crate) functions:    UniqueContainer<Function>,
     pub(crate) structs:      UniqueContainer<StructDef>,
     pub(crate) globals:      UniqueContainer<Global>,
 }
 
-impl VirContext {
+impl MirContext {
     pub fn new() -> Self {
         Self {
             basic_blocks: UniqueContainer::new(),
@@ -26,7 +28,7 @@ impl VirContext {
         }
     }
 
-    /// Create a struct in the VirContext
+    /// Create a struct in the MirContext
     pub fn create_struct(
         &mut self,
         name:   String,
@@ -58,7 +60,7 @@ impl VirContext {
         return struct_def.fields.len() - 1
     }
 
-    /// Create a function in the VirContext
+    /// Create a function in the MirContext
     pub fn create_function(
         &mut self,
         name:      &str,
@@ -191,9 +193,14 @@ impl VirContext {
             .get_mut_by_id(id)
             .expect("internal compiler error: global not found")
     }
+
+    /// Get a list of globals
+    pub fn globals(&self) -> &Vec<Global> {
+        &self.globals
+    }
 }
 
-impl Display for VirContext {
+impl Display for MirContext {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for global in self.globals.iter() {
             writeln!(f, "{}", self.display(global))?;

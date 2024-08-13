@@ -1,6 +1,6 @@
 use std::{fmt::{Debug, Display}, marker::PhantomData, ops::{Deref, DerefMut}};
 
-use crate::ir::VirContext;
+use crate::MirContext;
 
 pub struct Id<T>(usize, PhantomData<T>);
 
@@ -20,7 +20,7 @@ impl<T> Id<T> {
         Id(index, PhantomData)
     }
 
-    pub(crate) fn index(&self) -> usize {
+    pub fn index(&self) -> usize {
         self.0
     }
 }
@@ -89,15 +89,15 @@ impl<T> Debug for Id<T> {
 }
 
 pub trait DisplayInContext {
-    fn fmt(&self, f: &mut std::fmt::Formatter, context: &VirContext) -> std::fmt::Result;
+    fn fmt(&self, f: &mut std::fmt::Formatter, context: &MirContext) -> std::fmt::Result;
 }
 
 pub struct InContext<'a, T> {
-    context: &'a VirContext,
+    context: &'a MirContext,
     value:   &'a T
 }
 
-impl VirContext {
+impl MirContext {
     pub fn display<'a, T: DisplayInContext>(&'a self, value: &'a T) -> InContext<'a, T> {
         InContext {
             context: self,

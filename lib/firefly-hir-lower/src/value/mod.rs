@@ -4,7 +4,7 @@ mod builtins;
 mod conditional;
 
 use firefly_hir::{ty::TyKind, value::{LiteralValue, Value, ValueKind}};
-use firefly_interpret::ir::{code::Terminator, value::{Immediate, ImmediateKind, Place, PlaceKind}};
+use firefly_mir::{code::Terminator, value::{Immediate, ImmediateKind, Place, PlaceKind}};
 
 use crate::HirLowerer;
 
@@ -40,22 +40,22 @@ impl HirLowerer<'_> {
     pub fn lower_place(&mut self, value: &Value) -> Place {
         match &value.kind {
             ValueKind::Local(id) => {
-                let vir_local = self.local_map[id];
+                let mir_local = self.local_map[id];
                 let local = self.hir.get(*id);
 
                 Place {
-                    kind: Box::new(PlaceKind::Local(vir_local)),
+                    kind: Box::new(PlaceKind::Local(mir_local)),
                     ty: self.lower_ty(&local.ty),
                     span: value.span,
                 }
             }
 
             ValueKind::Global(id) => {
-                let vir_global = self.global_map[id];
+                let mir_global = self.global_map[id];
                 let global = self.hir.get(*id);
 
                 Place {
-                    kind: Box::new(PlaceKind::Global(vir_global)),
+                    kind: Box::new(PlaceKind::Global(mir_global)),
                     ty: self.lower_ty(&global.ty),
                     span: value.span
                 }
@@ -117,7 +117,7 @@ impl HirLowerer<'_> {
         let place = self.lower_place(place);
         let value = self.lower_immediate(value);
 
-        self.vir.build_assign(place, value);
+        self.mir.build_assign(place, value);
 
         Immediate::void()
     }
@@ -126,10 +126,10 @@ impl HirLowerer<'_> {
         let imm = self.lower_immediate(value);
 
         if let ImmediateKind::Void = imm.kind.as_ref() {
-            self.vir.build_terminator(Terminator::returns_void());
+            self.mir.build_terminator(Terminator::returns_void());
         }
         else {
-            self.vir.build_terminator(Terminator::returns(imm));
+            self.mir.build_terminator(Terminator::returns(imm));
         }
 
 

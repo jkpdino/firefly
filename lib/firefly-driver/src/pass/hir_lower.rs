@@ -11,9 +11,9 @@ impl Pass for LowerHirPass {
     type Output = ();
 
     fn process(&self, _: Self::Input, context: &mut Context) -> Self::Output {
-        lower(context.ast_lowerer.context(), context.vir_context);
+        lower(context.ast_lowerer.context(), context.mir_context);
 
-        println!("{}", context.vir_context);
+        println!("{}", context.mir_context);
 
         return ();
     }

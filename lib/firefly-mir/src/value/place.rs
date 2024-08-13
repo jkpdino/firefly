@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use firefly_span::Span;
 
-use crate::{ir::{code::{Global, Local}, ty::Ty}, util::{DisplayInContext, Id}};
+use crate::{code::{Global, Local}, ty::Ty, util::{DisplayInContext, Id}};
 
 use super::{Immediate, ImmediateKind};
 
@@ -46,7 +46,7 @@ impl Display for PlaceKind {
 }
 
 impl DisplayInContext for PlaceKind {
-    fn fmt(&self, f: &mut std::fmt::Formatter, context: &crate::ir::VirContext) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter, context: &crate::MirContext) -> std::fmt::Result {
         match self {
             PlaceKind::Local(local_id) => write!(f, "{local_id}"),
             PlaceKind::Global(global_id) => {

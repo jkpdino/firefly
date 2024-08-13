@@ -1,14 +1,14 @@
-use crate::{ir::{code::{BasicBlockId, Function, Local, Terminator}, ty::Ty, value::{Immediate, Place}, VirContext}, util::{Id, UniqueId}};
+use crate::{code::{BasicBlockId, Function, Local, Terminator}, ty::Ty, value::{Immediate, Place}, MirContext, util::{Id, UniqueId}};
 
 pub struct Builder<'a> {
-    context: &'a mut VirContext,
+    context: &'a mut MirContext,
 
     current_func: Option<UniqueId<Function>>,
     current_bb: Option<BasicBlockId>,
 }
 
 impl<'a> Builder<'a> {
-    pub fn new(context: &'a mut VirContext) -> Self {
+    pub fn new(context: &'a mut MirContext) -> Self {
         Self {
             context,
             current_func: None,
@@ -16,7 +16,7 @@ impl<'a> Builder<'a> {
         }
     }
 
-    pub fn context_mut(&mut self) -> &mut VirContext {
+    pub fn context_mut(&mut self) -> &mut MirContext {
         &mut self.context
     }
 
@@ -81,7 +81,7 @@ impl<'a> Builder<'a> {
     }
 
     fn current_func_id(&self) -> Id<Function> {
-        self.current_func.expect("internal compiler error: no vir id selected")
+        self.current_func.expect("internal compiler error: no mir id selected")
     }
 
     fn current_basic_block_id(&self) -> BasicBlockId {

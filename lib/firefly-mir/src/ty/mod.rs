@@ -7,7 +7,7 @@ use struct_def::StructDef;
 
 use crate::util::{DisplayInContext, UniqueId};
 
-use super::VirContext;
+use super::MirContext;
 
 #[derive(Clone)]
 pub enum TyKind {
@@ -38,7 +38,7 @@ impl Ty {
 }
 
 impl DisplayInContext for TyKind {
-    fn fmt(&self, f: &mut Formatter<'_>, context: &VirContext) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>, context: &MirContext) -> std::fmt::Result {
         match self {
             TyKind::Integer => write!(f, "int"),
             TyKind::String => write!(f, "string"),
@@ -56,7 +56,7 @@ impl DisplayInContext for TyKind {
 }
 
 impl DisplayInContext for Ty {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>, context: &VirContext) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>, context: &MirContext) -> std::fmt::Result {
         self.kind.fmt(f, context)
     }
 }

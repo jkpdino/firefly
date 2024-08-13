@@ -1,5 +1,5 @@
 
-use firefly_interpret::ir::{ty::{Ty as VirTy, TyKind as VirTyKind}, value::{ConstantValue, Immediate, ImmediateKind}};
+use firefly_mir::{ty::{Ty as MirTy, TyKind as MirTyKind}, value::{ConstantValue, Immediate, ImmediateKind}};
 use firefly_span::Span;
 
 use crate::HirLowerer;
@@ -18,7 +18,7 @@ impl HirLowerer<'_> {
 
         Immediate {
             kind: Box::new(ImmediateKind::Constant(ConstantValue::Integer(value))),
-            ty: VirTy::new(VirTyKind::Integer),
+            ty: MirTy::new(MirTyKind::Integer),
             span,
         }
     }
@@ -26,7 +26,7 @@ impl HirLowerer<'_> {
     pub(super) fn lower_string(&self, value: &str, span: Span) -> Immediate {
         Immediate {
             kind: Box::new(ImmediateKind::Constant(ConstantValue::String(value.to_string()))),
-            ty: VirTy::new(VirTyKind::String),
+            ty: MirTy::new(MirTyKind::String),
             span,
         }
     }
@@ -34,7 +34,7 @@ impl HirLowerer<'_> {
     pub(super) fn lower_bool(&self, boolean: bool, span: Span) -> Immediate {
         Immediate {
             kind: Box::new(ImmediateKind::Constant(ConstantValue::Bool(boolean))),
-            ty: VirTy::new(VirTyKind::Bool),
+            ty: MirTy::new(MirTyKind::Bool),
             span,
         }
     }
@@ -44,7 +44,7 @@ impl HirLowerer<'_> {
 
         Immediate {
             kind: Box::new(ImmediateKind::Constant(ConstantValue::Float(float))),
-            ty: VirTy::new(VirTyKind::Float),
+            ty: MirTy::new(MirTyKind::Float),
             span,
         }
     }

@@ -10,5 +10,6 @@ firefly-parser = { path = "../firefly-parser" }
 firefly-ast-lower = { path = "../firefly-ast-lower" }
 firefly-ast = { path = "../firefly-ast" }
 firefly-hir-lower = { path = "../firefly-hir-lower" }
+firefly-mir = { path = "../firefly-mir" }
 firefly-interpret = { path = "../firefly-interpret" }
 clap = { version = "^4.5", features = ["derive"] }

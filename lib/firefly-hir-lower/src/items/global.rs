@@ -12,6 +12,6 @@ impl HirLowerer<'_> {
 
         let global_ty = self.lower_ty(&global.ty);
 
-        self.vir.context_mut().create_global(&name.name, global_ty);
+        self.mir.context_mut().create_global(&name.name, global_ty);
     }
 }

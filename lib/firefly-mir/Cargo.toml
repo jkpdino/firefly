@@ -1,9 +1,8 @@
 [package]
-name = "firefly-interpret"
+name = "firefly-mir"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-firefly-mir = { path = "../firefly-mir" }
 firefly-span = { path = "../firefly-span" }
 itertools = "0.13.0"

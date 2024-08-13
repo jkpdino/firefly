@@ -1,5 +1,5 @@
 use firefly_hir::{stmt::{CodeBlock, Stmt, StmtKind}, Id};
-use firefly_interpret::ir::value::ImmediateKind;
+use firefly_mir::value::ImmediateKind;
 
 use crate::HirLowerer;
 
@@ -20,17 +20,17 @@ impl HirLowerer<'_> {
                     return;
                 }
 
-                self.vir.build_eval(imm);
+                self.mir.build_eval(imm);
             }
             StmtKind::Bind(_, local_id, ty, value) => {
                 let ty = self.lower_ty(ty);
-                let local = self.vir.build_local(ty);
+                let local = self.mir.build_local(ty);
                 self.local_map.insert(*local_id, local.id());
                 
                 let local_place = local.place_unspanned();
                 let imm = self.lower_immediate(value);
 
-                self.vir.build_assign(local_place, imm);
+                self.mir.build_assign(local_place, imm);
             }
         }
     }

@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 firefly-hir = { path = "../firefly-hir" }
 firefly-span = { path = "../firefly-span" }
-firefly-interpret = { path = "../firefly-interpret" }
+firefly-mir = { path = "../firefly-mir" }

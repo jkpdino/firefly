@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use firefly_span::Span;
 
-use crate::{ir::{ty::Ty, value::{Place, PlaceKind}, VirContext}, util::{DisplayInContext, Id}};
+use crate::{ty::Ty, value::{Place, PlaceKind}, MirContext, util::{DisplayInContext, Id}};
 
 /// Declares a local value within the function. This
 /// local doesn't have a value, but provides a place
@@ -29,7 +29,7 @@ impl Display for Id<Local> {
 
 
 impl DisplayInContext for Local {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>, context: &VirContext) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>, context: &MirContext) -> std::fmt::Result {
         write!(f, "local {}: {}", self.id, context.display(&self.ty))
     }
 }

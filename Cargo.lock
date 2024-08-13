@@ -259,6 +259,7 @@ dependencies = [
  "firefly-errors",
  "firefly-hir-lower",
  "firefly-interpret",
+ "firefly-mir",
  "firefly-parser",
  "firefly-span",
 ]
@@ -294,7 +295,7 @@ name = "firefly-hir-lower"
 version = "0.1.0"
 dependencies = [
  "firefly-hir",
- "firefly-interpret",
+ "firefly-mir",
  "firefly-span",
 ]
 
@@ -302,6 +303,7 @@ dependencies = [
 name = "firefly-interpret"
 version = "0.1.0"
 dependencies = [
+ "firefly-mir",
  "firefly-span",
  "itertools 0.13.0",
 ]
@@ -312,6 +314,14 @@ version = "0.1.0"
 dependencies = [
  "firefly-hir",
  "firefly-span",
+]
+
+[[package]]
+name = "firefly-mir"
+version = "0.1.0"
+dependencies = [
+ "firefly-span",
+ "itertools 0.13.0",
 ]
 
 [[package]]

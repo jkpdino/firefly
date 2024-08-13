@@ -1,4 +1,4 @@
-use crate::ir::code::BasicBlockId;
+use firefly_mir::code::BasicBlockId;
 
 use super::value::Value;
 

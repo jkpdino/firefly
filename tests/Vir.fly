@@ -1,4 +1,4 @@
-module Test.Vir
+module Test.Mir
 
 func main() -> int {
     var x: int = 5;

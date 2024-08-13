@@ -4,7 +4,8 @@ use clap::Parser;
 use context::Context;
 use firefly_ast_lower::AstLowerer;
 use firefly_errors::emitter::{Destination, Emitter};
-use firefly_interpret::{engine::ExecutionEngine, ir::VirContext};
+use firefly_interpret::ExecutionEngine;
+use firefly_mir::MirContext;
 use firefly_span::{SourceFile, SourceMap};
 use pipeline::Pipeline;
 
@@ -17,7 +18,7 @@ pub struct Driver {
     source_map: Arc<SourceMap>,
     emitter: Arc<Emitter>,
     ast_lowerer: AstLowerer,
-    vir_context: VirContext,
+    mir_context: MirContext,
 
     print_hir: bool,
 }
@@ -27,9 +28,9 @@ impl Driver {
         let source_map = SourceMap::new();
         let emitter = Arc::new(Emitter::new(Destination::stderr(), &source_map));
         let ast_lowerer = AstLowerer::new(emitter.clone());
-        let vir_context = VirContext::new();
+        let mir_context = MirContext::new();
 
-        Driver { source_map, emitter, ast_lowerer, vir_context, print_hir: false }
+        Driver { source_map, emitter, ast_lowerer, mir_context, print_hir: false }
     }
 
     pub fn parse_args(&mut self) {
@@ -53,7 +54,7 @@ impl Driver {
             source_map: &self.source_map,
             emitter: &self.emitter,
             ast_lowerer: &mut self.ast_lowerer,
-            vir_context: &mut self.vir_context,
+            mir_context: &mut self.mir_context,
         };
 
         pipeline.run(self.source_map.files(), &mut context);
@@ -64,7 +65,7 @@ impl Driver {
             println!("{}", self.ast_lowerer.context().display())
         }
 
-        let mut execution_engine = ExecutionEngine::new(&self.vir_context);
+        let mut execution_engine = ExecutionEngine::new(&self.mir_context);
 
         execution_engine.execute();
     }

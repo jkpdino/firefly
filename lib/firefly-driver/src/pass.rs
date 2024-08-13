@@ -1,6 +1,6 @@
 pub mod parse;
 pub mod lower;
-pub mod vir_lower;
+pub mod hir_lower;
 
 use std::marker::PhantomData;
 

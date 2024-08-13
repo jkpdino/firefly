@@ -6,26 +6,26 @@ mod code;
 use std::collections::HashMap;
 
 use firefly_hir::{func::Func as HirFunc, items::{Field, Global as HirGlobal, StructDef as HirStruct}, stmt::{CodeBlock, Local as HirLocal}, HirContext, Id as HirId};
-use firefly_interpret::{builder::Builder, ir::{code::{Function as VirFunc, Global as VirGlobal, Local as VirLocal}, ty::struct_def::StructDef as VirStruct, VirContext}, util::Id as VirId};
+use firefly_mir::{builder::Builder, code::{Function as MirFunc, Global as MirGlobal, Local as MirLocal}, ty::struct_def::StructDef as MirStruct, MirContext, Id as MirId};
 use value::loops::LoopMarker;
 
 pub struct HirLowerer<'a> {
-    vir: Builder<'a>,
+    mir: Builder<'a>,
     hir: &'a HirContext,
 
-    struct_map: HashMap<HirId<HirStruct>, VirId<VirStruct>>,
-    func_map: HashMap<HirId<HirFunc>, VirId<VirFunc>>,
-    local_map: HashMap<HirId<HirLocal>, VirId<VirLocal>>,
-    global_map: HashMap<HirId<HirGlobal>, VirId<VirGlobal>>,
+    struct_map: HashMap<HirId<HirStruct>, MirId<MirStruct>>,
+    func_map: HashMap<HirId<HirFunc>, MirId<MirFunc>>,
+    local_map: HashMap<HirId<HirLocal>, MirId<MirLocal>>,
+    global_map: HashMap<HirId<HirGlobal>, MirId<MirGlobal>>,
     field_map: HashMap<HirId<Field>, usize>,
     loop_map: HashMap<HirId<CodeBlock>, LoopMarker>
 }
 
-pub fn lower<'a>(hir: &'a HirContext, vir: &'a mut VirContext) {
-    let vir = Builder::new(vir);
+pub fn lower<'a>(hir: &'a HirContext, mir: &'a mut MirContext) {
+    let mir = Builder::new(mir);
 
     let mut lowerer = HirLowerer {
-        vir,
+        mir,
         hir,
 
         loop_map:   HashMap::new(),
