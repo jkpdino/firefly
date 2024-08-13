@@ -10,12 +10,16 @@ mod action;
 
 pub struct ExecutionEngine<'a> {
     context: &'a VirContext,
+    globals: StackFrame
 }
 
 impl<'a> ExecutionEngine<'a> {
     pub fn new(context: &'a VirContext) -> Self {
+        let globals = StackFrame::new(context.globals.len(), Vec::new());
+
         Self {
             context,
+            globals
         }
     }
 
@@ -206,10 +210,13 @@ impl<'a> ExecutionEngine<'a> {
         }
     }
     
-    fn eval_place<'b>(&mut self, place: &Place, frame: &'b mut StackFrame) -> &'b mut Value {
+    fn eval_place<'b>(&'b mut self, place: &Place, frame: &'b mut StackFrame) -> &'b mut Value {
         match place.kind.as_ref() {
             PlaceKind::Local(index) => {
                 return frame.get_value_mut(index.index())
+            }
+            PlaceKind::Global(index) => {
+                return self.globals.get_value_mut(index.index());
             }
             PlaceKind::Field(_, _) => todo!(),
         }

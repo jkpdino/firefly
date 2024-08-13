@@ -12,7 +12,7 @@ impl StackFrame {
 
         let mut frame = params;
 
-        for i in 0..size - param_len {
+        for _ in 0..size - param_len {
             frame.push(Value::new(InnerValue::Undefined));
         }
 

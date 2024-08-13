@@ -47,6 +47,10 @@ pub fn lower<'a>(hir: &'a HirContext, vir: &'a mut VirContext) {
 
     lowerer.hir.entities()
                .filter_map(|entity| lowerer.hir.cast_id(entity))
+               .for_each(|item| lowerer.create_global(item));
+
+    lowerer.hir.entities()
+               .filter_map(|entity| lowerer.hir.cast_id(entity))
                .for_each(|item|
     {
         lowerer.lower_struct(item);

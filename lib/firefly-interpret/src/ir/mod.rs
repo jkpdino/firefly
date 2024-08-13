@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use code::{BasicBlock, BasicBlockId, Function, FunctionSignature, Local};
+use code::{BasicBlock, BasicBlockId, Function, FunctionSignature, Global, Local};
 use ty::{struct_def::StructDef, Ty};
 
 use crate::util::{Container, Id, IdFactory, UniqueContainer, UniqueId};
@@ -13,6 +13,7 @@ pub struct VirContext {
     pub(crate) basic_blocks: UniqueContainer<BasicBlock>,
     pub(crate) functions:    UniqueContainer<Function>,
     pub(crate) structs:      UniqueContainer<StructDef>,
+    pub(crate) globals:      UniqueContainer<Global>,
 }
 
 impl VirContext {
@@ -21,6 +22,7 @@ impl VirContext {
             basic_blocks: UniqueContainer::new(),
             functions:    UniqueContainer::new(),
             structs:      UniqueContainer::new(),
+            globals:      UniqueContainer::new(),
         }
     }
 
@@ -115,6 +117,25 @@ impl VirContext {
         &function.locals[function.locals.len() - 1]
     }
 
+    /// Create a global variable
+    pub fn create_global(
+        &mut self,
+        name: &str,
+        ty: Ty) -> UniqueId<Global>
+    {
+        let id = self.globals.next();
+
+        let global = Global {
+            id,
+            name: name.to_string(),
+            ty
+        };
+
+        self.globals.push(global);
+
+        return id;
+    }
+
     /// Gets a reference to a function by id
     pub fn get_function(&self, id: UniqueId<Function>) -> &Function {
         self.functions
@@ -156,10 +177,28 @@ impl VirContext {
             .get_mut_by_id(id)
             .expect("internal compiler error: struct not found")
     }
+
+    /// Gets a reference to a global by id
+    pub fn get_global(&self, id: UniqueId<Global>) -> &Global {
+        self.globals
+            .get_by_id(id)
+            .expect("internal compiler error: global not found")
+    }
+
+    /// Gets a mutable reference to a global by id
+    pub fn get_global_mut(&mut self, id: UniqueId<Global>) -> &mut Global {
+        self.globals
+            .get_mut_by_id(id)
+            .expect("internal compiler error: global not found")
+    }
 }
 
 impl Display for VirContext {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for global in self.globals.iter() {
+            writeln!(f, "{}", self.display(global))?;
+        }
+
         for struct_def in self.structs.iter() {
             writeln!(f, "{}", self.display(struct_def))?;
         }

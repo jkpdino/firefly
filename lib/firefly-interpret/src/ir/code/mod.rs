@@ -2,6 +2,7 @@ mod local;
 mod bb;
 mod func;
 mod terminator;
+mod global;
 
 use std::fmt::Display;
 
@@ -9,6 +10,7 @@ pub use local::*;
 pub use bb::*;
 pub use func::*;
 pub use terminator::*;
+pub use global::*;
 
 use super::value::{Immediate, Place};
 

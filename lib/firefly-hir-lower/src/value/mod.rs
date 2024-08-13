@@ -39,6 +39,10 @@ impl HirLowerer<'_> {
                 Immediate::void()
             }
 
+            ValueKind::StaticFunc(_) | ValueKind::InitFor(_) | ValueKind::InstanceFunc(..) | ValueKind::BuiltinFunc(_) => {
+                panic!("internal compiler error: first-class functions are not supported yet");
+            }
+
             _ => self.lower_place(value).move_out(),
         }
     }
@@ -55,6 +59,10 @@ impl HirLowerer<'_> {
                     ty: self.lower_ty(&local.ty),
                     span: value.span,
                 }
+            }
+
+            ValueKind::Global(id) => {
+                
             }
 
             ValueKind::FieldOf(place, field) => {
