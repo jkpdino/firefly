@@ -62,7 +62,14 @@ impl HirLowerer<'_> {
             }
 
             ValueKind::Global(id) => {
-                
+                let vir_global = self.global_map[id];
+                let global = self.hir.get(*id);
+
+                Place {
+                    kind: Box::new(PlaceKind::Global(vir_global)),
+                    ty: self.lower_ty(&global.ty),
+                    span: value.span
+                }
             }
 
             ValueKind::FieldOf(place, field) => {
