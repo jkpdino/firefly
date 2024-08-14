@@ -231,7 +231,7 @@ impl<'a> ExecutionEngine<'a> {
                 match parent.as_mut() {
                     InnerValue::Struct(values) => &mut values[*index],
 
-                    _ => panic!(),
+                    parent => panic!("{parent:?} is not a struct"),
                 }
             }
         }

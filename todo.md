@@ -38,9 +38,10 @@
 
 # VM
 
-- [ ] Tuple creation
+- [x] Tuple creation
 - [ ] Struct initialization
 - [ ] Getting values
+- [ ] Global initialization
 
 # Bugs
 

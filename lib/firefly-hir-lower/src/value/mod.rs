@@ -5,6 +5,7 @@ mod conditional;
 
 use firefly_hir::{ty::TyKind, value::{LiteralValue, Value, ValueKind}};
 use firefly_mir::{code::Terminator, value::{Immediate, ImmediateKind, Place, PlaceKind}};
+use itertools::Itertools;
 
 use crate::HirLowerer;
 
@@ -89,7 +90,7 @@ impl HirLowerer<'_> {
     }
 
     pub fn lower_call(&mut self, func: &Value, args: &Vec<Value>) -> Immediate {
-        let args = args.iter().map(|arg| self.lower_immediate(arg)).collect();
+        let mut args = args.iter().map(|arg| self.lower_immediate(arg)).collect_vec();
 
         let TyKind::Func(_, return_ty) = &func.ty.kind else {
             panic!();
@@ -107,7 +108,19 @@ impl HirLowerer<'_> {
                     span: func.span,
                 }
             }
-            ValueKind::InstanceFunc(_, _) => todo!(),
+            ValueKind::InstanceFunc(receiver, instance_func) => {
+                let instance_func = self.func_map[instance_func];
+
+                let receiver = self.lower_immediate(&receiver);
+
+                args.insert(0, receiver);
+
+                Immediate {
+                    kind: Box::new(ImmediateKind::Call(instance_func, args)),
+                    ty: return_ty,
+                    span: func.span,
+                }
+            }
             ValueKind::InitFor(_) => todo!(),
             ValueKind::BuiltinFunc(builtin_name) => self.lower_builtin(builtin_name, args, func.span),
 

@@ -1,4 +1,5 @@
-use firefly_hir::{func::Callable, resolve::Symbol, stmt::CodeBlock, Id};
+use firefly_hir::{func::Callable, resolve::Symbol, stmt::CodeBlock, value::HasSelf, Id};
+use itertools::Itertools;
 
 use crate::HirLowerer;
 use firefly_hir::func::Func as HirFunc;
@@ -11,11 +12,28 @@ impl HirLowerer<'_> {
         let Callable { params, return_ty, .. } = self.hir.try_get(func)
             .expect("internal compiler error: function doesn't have a signature");
 
-        let mir_params = params.iter().map(|p| self.lower_ty(&p.ty)).collect();
+
+
+        // create the function
+        let mut mir_params = params.iter().map(|p| self.lower_ty(&p.ty)).collect_vec();
         let return_ty = self.lower_ty(return_ty);
+
+        if let Some(HasSelf { ty, .. }) = self.hir.try_get::<HasSelf>(func) {
+            let ty = self.lower_ty(ty);
+
+            mir_params.insert(0, ty);
+        }
 
         let mir_id = self.mir.context_mut().create_function(&name.name, mir_params, return_ty);
 
+        // add the self parameter to the function
+        if let Some(HasSelf { local, ty }) = self.hir.try_get::<HasSelf>(func) {
+            let ty = self.lower_ty(ty);
+            let mir_local = self.mir.context_mut().create_local(mir_id, ty);
+            self.local_map.insert(*local, mir_local.id());
+        }
+
+        // add locals to the function
         for param in params {
             let ty = self.lower_ty(&param.ty);
             let mir_local = self.mir.context_mut().create_local(mir_id, ty);

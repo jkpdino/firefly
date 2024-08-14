@@ -57,7 +57,7 @@ impl Display for ConstantValue {
             ConstantValue::Integer(integer) => write!(f, "{integer}"),
             ConstantValue::Bool(boolean) => write!(f, "{boolean}"),
             ConstantValue::Float(float) => write!(f, "{float}"),
-            ConstantValue::String(string) => write!(f, "{string}")
+            ConstantValue::String(string) => write!(f, "\"{string}\"")
         }
     }
 }
