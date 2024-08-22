@@ -110,7 +110,7 @@ impl<'a> ExecutionEngine<'a> {
             ImmediateKind::Constant(ConstantValue::String(s)) => InnerValue::String(s.clone()),
             ImmediateKind::Constant(ConstantValue::Float(f)) => InnerValue::Float(*f),
 
-            ImmediateKind::Tuple(items) => {
+            ImmediateKind::Tuple(items) | ImmediateKind::Struct(items) => {
                 let items = items.iter().map(|item| self.eval_immediate(item, frame)).collect_vec();
 
                 InnerValue::Struct(items)
@@ -138,14 +138,14 @@ impl<'a> ExecutionEngine<'a> {
                     }
                     BinaryIntrinsic::Integer(op) => {
                         let (InnerValue::Integer(left), InnerValue::Integer(right)) = (left.as_ref(), right.as_ref()) else {
-                            panic!();
+                            panic!("{op}");
                         };
 
                         return self.eval_int_op(*op, *left, *right);
                     }
                     BinaryIntrinsic::Float(op) => {
                         let (InnerValue::Float(left), InnerValue::Float(right)) = (left.as_ref(), right.as_ref()) else {
-                            panic!();
+                            panic!("{op}");
                         };
 
                         return self.eval_float_op(*op, *left, *right);
@@ -184,28 +184,17 @@ impl<'a> ExecutionEngine<'a> {
         let operand = self.eval_immediate(value, frame);
 
         match (operand.as_ref(), op) {
-            (InnerValue::Integer(i), UnaryIntrinsic::BitNot) => {
-                return InnerValue::Integer(!i);
-            }
+            (InnerValue::Integer(i), UnaryIntrinsic::BitNot) => InnerValue::Integer(!i),
+            (InnerValue::Boolean(b), UnaryIntrinsic::Not) => InnerValue::Boolean(!b),
+            (InnerValue::String(s), UnaryIntrinsic::Len) => InnerValue::Integer(s.len() as u64),
 
-            (InnerValue::Boolean(b), UnaryIntrinsic::Not) => {
-                return InnerValue::Boolean(!b);
-            }
-
-            (InnerValue::String(s), UnaryIntrinsic::Len) => {
-                return InnerValue::Integer(s.len() as u64);
-            }
-
-            (InnerValue::Integer(i), UnaryIntrinsic::Format) => {
-                return InnerValue::String(i.to_string());
-            }
+            (InnerValue::Integer(i), UnaryIntrinsic::Format) => InnerValue::String(i.to_string()),
+            (InnerValue::Boolean(b), UnaryIntrinsic::Format) => InnerValue::String(b.to_string()),
+            (InnerValue::Float(f), UnaryIntrinsic::Format) => InnerValue::String(f.to_string()),
 
             (InnerValue::String(s), UnaryIntrinsic::Parse) => {
-                return InnerValue::Integer(s.parse().unwrap());
-            }
-
-            (InnerValue::Boolean(b), UnaryIntrinsic::Format) => {
-                return InnerValue::String(b.to_string());
+                // todo: we should parse other stuff
+                InnerValue::Integer(s.parse().unwrap())
             }
 
             (InnerValue::String(s), UnaryIntrinsic::Print) => {
@@ -213,7 +202,11 @@ impl<'a> ExecutionEngine<'a> {
                 return InnerValue::Void;
             }
 
-            _ => unreachable!()
+            (InnerValue::Integer(i), UnaryIntrinsic::ToFloat) => InnerValue::Float(*i as f64),
+            (InnerValue::Float(f), UnaryIntrinsic::Ceil) => InnerValue::Integer(f.ceil() as u64),
+            (InnerValue::Float(f), UnaryIntrinsic::Floor) => InnerValue::Integer(f.floor() as u64),
+
+            _ => unreachable!("{op}")
         }
     }
     

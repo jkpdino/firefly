@@ -1,6 +1,10 @@
 module Test
 
-func main() {}
+func main() {
+    var package: Package = Package("instance", "a package", "1.0.0");
+
+    display(package)
+}
 
 struct Package {
     var name: string
@@ -11,11 +15,11 @@ struct Package {
         return concat(
             self.name,
             concat(
-                " ",
+                " - ",
                 concat(
                     self.description,
                     concat(
-                        " ",
+                        " - ",
                         self.version
                     )
                 )

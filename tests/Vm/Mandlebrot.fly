@@ -1,0 +1,71 @@
+module Test.Mandlebrot
+
+func main() {
+    var mandlebrot_size: int = 500;
+
+    var i: int = 0;
+
+    while lt_int(i, mandlebrot_size) {
+        var j: int = 0;
+        var line: string = "";
+
+        var y: float = fsub(fmul(4.0, fdiv(to_float(i), to_float(mandlebrot_size))), 2.0);
+
+
+        while lt_int(j, mandlebrot_size) {
+            var x: float = fsub(fmul(4.0, fdiv(to_float(j), to_float(mandlebrot_size))), 2.0);
+
+            var coord: int = mandlebrot(Complex(x, y));
+
+            if eq_int(coord, 2) { line = concat(line, ".") }
+            else if eq_int(coord, 3) { line = concat(line, ":") }
+            else if eq_int(coord, 4) { line = concat(line, "-") }
+            else if eq_int(coord, 5) { line = concat(line, "=") }
+            else if eq_int(coord, 6) { line = concat(line, "+") }
+            else if eq_int(coord, 7) { line = concat(line, "*") }
+            else if eq_int(coord, 8) { line = concat(line, "#") }
+            else if eq_int(coord, 9) { line = concat(line, "%") }
+            else if eq_int(coord, 10) { line = concat(line, "@") }
+
+            j = add(j, 1);
+        }
+
+        print(line);
+        i = add(i, 1);
+    }
+
+}
+
+struct Complex {
+    var real: float;
+    var imag: float;
+
+    func mul(other: Complex) -> Complex {
+        Complex(
+            fsub(fmul(self.real, other.real), fmul(self.imag, other.imag)),
+            fadd(fmul(self.real, other.imag), fmul(self.imag, other.real))
+        )
+    }
+
+    func add(other: Complex) -> Complex {
+        Complex(fadd(self.real, other.real), fadd(self.imag, other.imag))
+    }
+
+    func abs() -> float {
+        fadd(fmul(self.real, self.real), fmul(self.imag, self.imag))
+    }
+}
+
+func mandlebrot(c: Complex) -> int {
+    var z: Complex = Complex(0.0, 0.0);
+    var n: int = 0;
+
+    var maxIterations: int = 10;
+    
+    while and(leq_float(z.abs(), 4.0), lt_float(n, maxIterations)) {
+        z = z.mul(z).add(c);
+        n = add(n, 1);
+    }
+    
+    return n
+}

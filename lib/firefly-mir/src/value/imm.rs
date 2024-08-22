@@ -23,6 +23,9 @@ pub enum ImmediateKind {
     /// Constructs a tuple
     Tuple(Vec<Immediate>),
 
+    /// Constructs a struct
+    Struct(Vec<Immediate>),
+
     /// Takes the value currently in a place
     Move(Place),
 
@@ -67,6 +70,7 @@ impl DisplayInContext for ImmediateKind {
         match self {
             ImmediateKind::Constant(constant) => write!(f, "const {constant}"),
             ImmediateKind::Tuple(items) => write!(f, "tuple ({})", items.iter().map(|item| context.display(item)).format(", ")),
+            ImmediateKind::Struct(fields) => write!(f, "struct ({})", fields.iter().map(|field| context.display(field)).format(", ")),
             ImmediateKind::Move(place) => write!(f, "move {place}"),
             ImmediateKind::Call(function, args) => {
                 let func = context.get_function(*function);

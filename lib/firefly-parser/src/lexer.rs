@@ -1,7 +1,7 @@
 use std::ops::Range;
 
 use firefly_span::{BytePos, Span};
-use logos::Logos;
+use logos::{FilterResult, Logos};
 
 use crate::error::LexerError;
 
@@ -83,6 +83,7 @@ pub enum Token<'a> {
     Whitespace,
 
     #[regex("//[^\n]*", logos::skip)]
+    #[regex("/*", |lex| lex_long_comment(lex))]
     Comment,
 }
 
@@ -171,6 +172,40 @@ fn lex_long_string<'a>(lexer: &mut logos::Lexer<'a, Token<'a>>, raw: bool) -> Re
     }
 
     return Err(LexerError::UnclosedString)
+}
+
+fn lex_long_comment<'a>(lexer: &mut logos::Lexer<'a, Token<'a>>) -> FilterResult<(), LexerError> {
+    let mut level_of_comments = 1;
+
+    let mut remaining = lexer.remainder().chars().peekable();
+
+    while let Some(next) = remaining.next() {
+        lexer.bump(next.len_utf8());
+
+        match next {
+            '/' => {
+                if let Some('*') = remaining.peek() {
+                    level_of_comments += 1;
+                    lexer.bump('*'.len_utf8());
+                    remaining.next();
+                }
+            }
+            '*' => {
+                if let Some('/') = remaining.peek() {
+                    level_of_comments -= 1;
+                    lexer.bump('/'.len_utf8());
+                    remaining.next();
+                }
+            }
+            _ => {}
+        }
+
+        if level_of_comments == 0 {
+            return FilterResult::Skip
+        }
+    }
+
+    return FilterResult::Error(LexerError::UnclosedComment)
 }
 
 

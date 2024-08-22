@@ -13,6 +13,7 @@ pub enum LexerError {
     NewlineInString,
     UnclosedString,
     UnclosedEscape,
+	UnclosedComment,
 
     #[default]
     Other,
@@ -110,6 +111,13 @@ impl ParserErrorEnv<'_> {
                 Diagnostic::new(Level::Error, message)
 					.with_source(span)
             }
+			ParseError::User { error: (LexerError::UnclosedComment, span) } => {
+				let message = DiagnosticMessage::Str(format!(
+					"unclosed comment"
+				));
+				Diagnostic::new(Level::Error, message)
+					.with_source(span)
+			}
 		};
 
 		self.emitter().emit(diagnostic).unwrap();

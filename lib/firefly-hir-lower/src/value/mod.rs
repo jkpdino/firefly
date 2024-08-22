@@ -4,7 +4,7 @@ mod builtins;
 mod conditional;
 
 use firefly_hir::{ty::TyKind, value::{LiteralValue, Value, ValueKind}};
-use firefly_mir::{code::Terminator, value::{Immediate, ImmediateKind, Place, PlaceKind}};
+use firefly_mir::{ty::{Ty as MirTy, TyKind as MirTyKind}, code::Terminator, value::{Immediate, ImmediateKind, Place, PlaceKind}};
 use itertools::Itertools;
 
 use crate::HirLowerer;
@@ -28,7 +28,7 @@ impl HirLowerer<'_> {
             ValueKind::Break(code_block) => self.lower_break(*code_block),
             ValueKind::Continue(code_block) => self.lower_continue(*code_block),
 
-            ValueKind::If(if_value) => self.lower_if(if_value, None),
+            ValueKind::If(if_value) => self.lower_if(if_value),
 
             ValueKind::While(while_value) => self.lower_while(while_value),
 
@@ -54,6 +54,7 @@ impl HirLowerer<'_> {
             }
 
             ValueKind::Global(id) => {
+                // todo: globals dont work
                 let mir_global = self.global_map[id];
                 let global = self.hir.get(*id);
 
@@ -121,7 +122,16 @@ impl HirLowerer<'_> {
                     span: func.span,
                 }
             }
-            ValueKind::InitFor(_) => todo!(),
+            ValueKind::InitFor(struct_def) => {
+                let struct_def = self.struct_map[struct_def];
+                let ty = MirTy::new(MirTyKind::Struct(struct_def));
+
+                Immediate {
+                    kind: Box::new(ImmediateKind::Struct(args)),
+                    ty,
+                    span: func.span,
+                }
+            }
             ValueKind::BuiltinFunc(builtin_name) => self.lower_builtin(builtin_name, args, func.span),
 
             _ => unreachable!(),

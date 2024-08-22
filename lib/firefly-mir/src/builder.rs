@@ -92,7 +92,7 @@ impl<'a> Builder<'a> {
         self.current_func.expect("internal compiler error: no mir id selected")
     }
 
-    fn current_basic_block_id(&self) -> BasicBlockId {
+    pub fn current_basic_block_id(&self) -> BasicBlockId {
         self.current_bb.expect("internal compiler error: no basic block id selected")
     }
 }
