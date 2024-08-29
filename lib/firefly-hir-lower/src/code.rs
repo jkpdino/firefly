@@ -27,7 +27,7 @@ impl HirLowerer<'_> {
         }
     }
     fn lower_code_block_inner(&mut self, code_block: Id<CodeBlock>) -> Option<Immediate> {
-        let code_block = self.hir.get(code_block);
+        let code_block = self.hir.get(code_block).clone();
 
         for stmt in &code_block.stmts {
             self.lower_stmt(stmt);

@@ -1,4 +1,4 @@
-use firefly_hir::{func::Callable, resolve::Symbol, stmt::CodeBlock, value::HasSelf, Id};
+use firefly_hir::{func::Callable, items::mangle::MangledName, stmt::CodeBlock, value::HasSelf, Id};
 use itertools::Itertools;
 
 use crate::HirLowerer;
@@ -6,8 +6,8 @@ use firefly_hir::func::Func as HirFunc;
 
 impl HirLowerer<'_> {
     pub fn create_func(&mut self, func: Id<HirFunc>) {
-        let Symbol { name, .. } = self.hir.try_get(func)
-            .expect("internal compiler error: function doesn't have a symbol");
+        let MangledName { symbol } = self.hir.try_get_computed(func).cloned()
+            .expect("internal compiler error: function doesn't have a mangled name");
 
         let Callable { params, return_ty, .. } = self.hir.try_get(func)
             .expect("internal compiler error: function doesn't have a signature");
@@ -24,7 +24,7 @@ impl HirLowerer<'_> {
             mir_params.insert(0, ty);
         }
 
-        let mir_id = self.mir.context_mut().create_function(&name.name, mir_params, return_ty);
+        let mir_id = self.mir.context_mut().create_function(&symbol, mir_params, return_ty);
 
         // add the self parameter to the function
         if let Some(HasSelf { local, ty }) = self.hir.try_get::<HasSelf>(func) {

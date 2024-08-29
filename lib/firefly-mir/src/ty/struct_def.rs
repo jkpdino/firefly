@@ -1,10 +1,12 @@
+use firefly_mangle::SymbolName;
+
 use crate::{MirContext, util::{DisplayInContext, UniqueId}};
 
 use super::Ty;
 
 pub struct StructDef {
     pub id:     UniqueId<StructDef>,
-    pub name:   String,
+    pub name:   SymbolName,
     pub fields: Vec<Ty>
 }
 

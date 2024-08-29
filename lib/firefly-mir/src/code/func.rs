@@ -1,3 +1,4 @@
+use firefly_mangle::SymbolName;
 use itertools::Itertools;
 
 use crate::{ty::Ty, MirContext, util::{Container, DisplayInContext, IdFactory, UniqueId}};
@@ -6,7 +7,7 @@ use super::{bb::BasicBlock, BasicBlockId, Local};
 
 pub struct Function {
     pub(crate) id:           UniqueId<Function>,
-    pub(crate) name:         String,
+    pub(crate) name:         SymbolName,
 
     pub(crate) signature:    FunctionSignature,
     pub(crate) basic_blocks: Vec<BasicBlockId>,

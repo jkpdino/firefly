@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+use firefly_mangle::SymbolName;
 use firefly_span::Span;
 
 use crate::{ty::Ty, value::{Place, PlaceKind}, MirContext, util::{DisplayInContext, Id, UniqueId}};
@@ -8,9 +9,9 @@ use crate::{ty::Ty, value::{Place, PlaceKind}, MirContext, util::{DisplayInConte
 /// It is initialized at the start of the program and can be
 /// mutated at any time.
 pub struct Global {
-    pub(crate) id: UniqueId<Global>,
-    pub(crate) name: String,
-    pub(crate) ty: Ty,
+    pub(crate) id:   UniqueId<Global>,
+    pub(crate) name: SymbolName,
+    pub(crate) ty:   Ty,
 }
 
 impl Global {

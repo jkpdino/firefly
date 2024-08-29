@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use code::{BasicBlock, BasicBlockId, Function, FunctionSignature, Global, Local};
+use firefly_mangle::SymbolName;
 use ty::{struct_def::StructDef, Ty};
 
 pub mod ty;
@@ -31,14 +32,14 @@ impl MirContext {
     /// Create a struct in the MirContext
     pub fn create_struct(
         &mut self,
-        name:   String,
+        name: &SymbolName,
     ) -> UniqueId<StructDef>
     {
         let id = self.structs.next();
 
         let struct_def = StructDef {
             id,
-            name,
+            name: name.clone(),
             fields: Vec::new(),
         };
 
@@ -63,7 +64,7 @@ impl MirContext {
     /// Create a function in the MirContext
     pub fn create_function(
         &mut self,
-        name:      &str,
+        name:      &SymbolName,
         params:    Vec<Ty>,
         return_ty: Ty) -> UniqueId<Function>
     {
@@ -71,7 +72,7 @@ impl MirContext {
 
         let func = Function {
             id,
-            name: name.to_string(),
+            name: name.clone(),
             signature: FunctionSignature {
                 parameters: params.clone(),
                 return_ty,
@@ -122,14 +123,14 @@ impl MirContext {
     /// Create a global variable
     pub fn create_global(
         &mut self,
-        name: &str,
+        name: &SymbolName,
         ty: Ty) -> UniqueId<Global>
     {
         let id = self.globals.next();
 
         let global = Global {
             id,
-            name: name.to_string(),
+            name: name.clone(),
             ty
         };
 

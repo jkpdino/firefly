@@ -1,17 +1,16 @@
-use firefly_hir::{items::Global as HirGlobal, resolve::Symbol, Id};
+use firefly_hir::{items::{mangle::MangledName, Global as HirGlobal}, Id};
 
 use crate::HirLowerer;
 
 impl HirLowerer<'_> {
     pub fn create_global(&mut self, id: Id<HirGlobal>) {
-        let global = self.hir.get(id);
+        let MangledName { symbol } = self.hir.try_get_computed(id).cloned()
+            .expect("internal compiler error: function doesn't have a mangled name");
 
-        let Some(Symbol { name, .. }) = self.hir.try_get(id) else {
-            panic!("internal compiler error: expected global to have a symbol");
-        };
+        let global = self.hir.get(id);
 
         let global_ty = self.lower_ty(&global.ty);
 
-        self.mir.context_mut().create_global(&name.name, global_ty);
+        self.mir.context_mut().create_global(&symbol, global_ty);
     }
 }

@@ -1,14 +1,14 @@
-use firefly_hir::{items::Field, resolve::Symbol, Id};
+use firefly_hir::{items::{mangle::MangledName, Field}, Id};
 
 use crate::HirLowerer;
 use firefly_hir::items::StructDef as HirStructDef;
 
 impl HirLowerer<'_> {
     pub fn create_struct(&mut self, struct_def: Id<HirStructDef>) {
-        let Symbol { name, .. } = self.hir.try_get(struct_def)
-            .expect("internal compiler error: struct doesn't have a symbol");
+        let MangledName { symbol } = self.hir.try_get_computed(struct_def)
+            .expect("internal compiler error: function doesn't have a mangled name");
 
-        let mir_id = self.mir.context_mut().create_struct(name.name.clone());
+        let mir_id = self.mir.context_mut().create_struct(symbol);
 
         self.struct_map.insert(struct_def, mir_id);
     }

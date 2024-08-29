@@ -7,4 +7,5 @@ edition = "2021"
 firefly-errors = { path = "../firefly-errors" }
 firefly-error-messages = { path = "../firefly-error-messages" }
 firefly-span = { path = "../firefly-span" }
+firefly-mangle = { path = "../firefly-mangle" }
 itertools = "0.13.0"

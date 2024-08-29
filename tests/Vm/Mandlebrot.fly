@@ -1,7 +1,7 @@
 module Test.Mandlebrot
 
 func main() {
-    var mandlebrot_size: int = 500;
+    var mandlebrot_size: int = 100;
 
     var i: int = 0;
 
