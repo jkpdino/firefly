@@ -34,7 +34,8 @@
 
 # Mangling
 
-- [ ] Add name mangling
+- [x] Add name mangling
+- [ ] Refactor name mangling
 
 # VM
 
