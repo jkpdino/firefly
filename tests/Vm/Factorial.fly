@@ -1,0 +1,13 @@
+module Test.Factorial
+
+func main() -> int {
+    print(format_int(factorial(6)));
+}
+
+func factorial(i: int) -> int {
+    if leq_int(i, 1) {
+        return 1;
+    }
+
+    return mul(i, factorial(sub(i, 1)));
+}

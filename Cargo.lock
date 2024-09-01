@@ -223,6 +223,7 @@ dependencies = [
  "firefly-errors",
  "firefly-hir",
  "firefly-lang",
+ "firefly-mangle",
  "firefly-parser",
  "firefly-span",
  "itertools 0.13.0",
@@ -257,6 +258,9 @@ dependencies = [
  "firefly-ast",
  "firefly-ast-lower",
  "firefly-errors",
+ "firefly-hir-lower",
+ "firefly-interpret",
+ "firefly-mir",
  "firefly-parser",
  "firefly-span",
 ]
@@ -284,6 +288,26 @@ version = "0.1.0"
 dependencies = [
  "firefly-error-messages",
  "firefly-errors",
+ "firefly-mangle",
+ "firefly-span",
+ "itertools 0.13.0",
+]
+
+[[package]]
+name = "firefly-hir-lower"
+version = "0.1.0"
+dependencies = [
+ "firefly-hir",
+ "firefly-mir",
+ "firefly-span",
+ "itertools 0.13.0",
+]
+
+[[package]]
+name = "firefly-interpret"
+version = "0.1.0"
+dependencies = [
+ "firefly-mir",
  "firefly-span",
  "itertools 0.13.0",
 ]
@@ -294,6 +318,19 @@ version = "0.1.0"
 dependencies = [
  "firefly-hir",
  "firefly-span",
+]
+
+[[package]]
+name = "firefly-mangle"
+version = "0.1.0"
+
+[[package]]
+name = "firefly-mir"
+version = "0.1.0"
+dependencies = [
+ "firefly-mangle",
+ "firefly-span",
+ "itertools 0.13.0",
 ]
 
 [[package]]

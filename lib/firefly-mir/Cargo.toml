@@ -1,0 +1,9 @@
+[package]
+name = "firefly-mir"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+firefly-span = { path = "../firefly-span" }
+firefly-mangle = { path = "../firefly-mangle" }
+itertools = "0.13.0"

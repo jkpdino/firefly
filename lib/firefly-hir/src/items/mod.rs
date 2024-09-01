@@ -1,3 +1,5 @@
+pub mod mangle;
+
 use crate::{ty::Ty, value::Value, EntityKind, Id};
 
 #[derive(Clone, Debug)]

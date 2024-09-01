@@ -234,6 +234,11 @@ impl AstLowerer {
         let s = if is_raw { &s[3..] } else { s };
 
         let num_of_quotes = s.chars().take_while(|&c| c == '"').count();
+        let is_empty = num_of_quotes == s.len();
+
+        if is_empty {
+            return "".to_string();
+        }
 
         let mut inner = s[num_of_quotes..s.len() - num_of_quotes].to_string();
 
