@@ -4,14 +4,15 @@ use firefly_hir::{stmt::{Stmt, StmtKind}, ty::Ty, value::{IfValue, Value, ValueK
 
 mod context;
 mod errors;
+mod pass;
 
-pub struct Typecheck<'a> {
+pub struct Typecheck<'a, 'b> {
     return_type: Option<Ty>,
 
-    context: &'a TypecheckContext,
+    context: &'a TypecheckContext<'b>,
 }
 
-impl Typecheck<'_> {
+impl Typecheck<'_, '_> {
     pub fn typecheck_statement(&self, stmt: &Stmt) {
         match &stmt.kind {
             StmtKind::Bind(_, ty, value) => {

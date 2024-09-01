@@ -1,5 +1,6 @@
 pub mod parse;
 pub mod lower;
+pub mod tycheck;
 
 use crate::context::Context;
 

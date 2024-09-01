@@ -42,7 +42,8 @@ impl TypeCheckError<'_> {
                 Diagnostic::new(Level::Error, DiagnosticMessage::Str(format!(
                     "type of initial value doesn't match binding type"
                 )))
-                .with_highlight(source)
+                .with_message(ty.span, DiagnosticMessage::Str(format!("expected {}", self.format_type(ty, context))))
+                .with_message(value.span, DiagnosticMessage::Str(format!("found {}", self.format_type(&value.ty, context))))
             }
 
             _ => todo!(),
