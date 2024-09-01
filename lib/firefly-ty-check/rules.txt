@@ -1,0 +1,13 @@
+- If
+    - Condition must be a bool
+- While
+    - Condition must be a bool
+- Return
+    - Return type must match function return type
+- Invoke
+    - Parameters must match function signature
+- Assign
+    - LHS must be mutable
+    - RHS must match LHS type
+- Bind
+    - Type must match type of value

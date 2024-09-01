@@ -7,3 +7,4 @@ edition = "2021"
 firefly-span = { path = "../firefly-span" }
 firefly-error-messages = { path= "../firefly-error-messages" }
 termcolor = "1.4.1"
+itertools = "0.13.0"

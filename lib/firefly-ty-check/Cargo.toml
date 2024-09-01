@@ -1,0 +1,10 @@
+[package]
+name = "firefly-ty-check"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+firefly-hir = { path = "../firefly-hir" }
+firefly-errors = { path = "../firefly-errors" }
+firefly-error-messages = { path = "../firefly-error-messages" }
+itertools = "0.13.0"

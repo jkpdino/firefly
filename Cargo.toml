@@ -26,5 +26,5 @@ members = [
     "lib/firefly-driver",
     "lib/firefly-lang",
     "lib/firefly-errors",
-    "lib/firefly-error-messages",
+    "lib/firefly-error-messages", "lib/firefly-ty-check",
 ]

@@ -274,6 +274,7 @@ version = "0.1.0"
 dependencies = [
  "firefly-error-messages",
  "firefly-span",
+ "itertools 0.13.0",
  "termcolor",
 ]
 
@@ -312,6 +313,16 @@ dependencies = [
 [[package]]
 name = "firefly-span"
 version = "0.1.0"
+
+[[package]]
+name = "firefly-ty-check"
+version = "0.1.0"
+dependencies = [
+ "firefly-error-messages",
+ "firefly-errors",
+ "firefly-hir",
+ "itertools 0.13.0",
+]
 
 [[package]]
 name = "fixedbitset"

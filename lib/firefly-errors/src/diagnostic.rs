@@ -4,10 +4,13 @@ use firefly_error_messages::DiagnosticMessage;
 use firefly_span::Span;
 use termcolor::Color;
 
+use crate::annotation::{Annotation, AnnotationKind};
+
 pub struct DiagnosticId {
 	error: String,
 }
 
+#[derive(Copy, Clone)]
 pub enum Level {
 	Hint,
 	Warning,
@@ -39,9 +42,9 @@ pub struct Diagnostic {
 	pub source_location: DiagnosticLocation,
 
 	///
-	/// todo: Very temporary
-	///
-	pub source: Vec<Span>,
+	/// Messages attached to the source code
+	/// 
+	pub annotations: Vec<Annotation>,
 }
 
 pub struct DiagnosticLocation {
@@ -78,7 +81,7 @@ impl Diagnostic {
 			message,
 			code: None,
 			source_location: DiagnosticLocation::new(Location::caller()),
-			source: Vec::new(),
+			annotations: Vec::new()
 		}
 	}
 
@@ -88,7 +91,12 @@ impl Diagnostic {
 	}
 
 	pub fn with_source(mut self, source: Span) -> Self {
-		self.source.push(source);
+		self.annotations.push(Annotation {
+			kind: AnnotationKind::None,
+			message: DiagnosticMessage::Str(String::new()),
+			loc: source,
+		});
+
 		self
 	}
 }
