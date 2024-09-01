@@ -117,7 +117,7 @@ impl Emitter {
 		all_lines_to_print.sort_by_key(|line_info| line_info.line);
 		all_lines_to_print.dedup_by_key(|line_info| line_info.line);
 
-		let max_line_num_width = all_lines_to_print.iter().map(|line| line.line.to_string().len()).max().unwrap_or(0);
+		let max_line_num_width = all_lines_to_print.iter().map(|line| line.line.to_string().len()).max().unwrap_or(0).max(2);
 
 		// Write out each line
 		// If lines are consecutive, write them back to back
@@ -135,6 +135,7 @@ impl Emitter {
 
 			let is_new_section = is_first || (line_num - last_line_num > ELLIPSIS_GAP);
 			let fill_in_lines = line_num - last_line_num < FILL_IN_GAP;
+			let ellipsis_gap = !is_first && line_num != last_line_num + 1;
 
 			let annotations_on_line = annotations.iter().filter(|anno| {
 				let Some(anno_line) = source_map.line_info(anno.0.loc) else {
@@ -158,7 +159,7 @@ impl Emitter {
 					self.write_line(stream, &file, i, max_line_num_width)?;
 				}
 			}
-			else {
+			else if ellipsis_gap {
 				self.write_line_ellipsis(stream)?;
 			}
 
@@ -208,7 +209,7 @@ impl Emitter {
 
 	fn write_line_ellipsis(&self, stream: &mut StandardStreamLock) -> std::io::Result<()> {
 		self.set_color(stream, Some(Color::Blue), true);
-		writeln!(stream, "...")?;
+		writeln!(stream, " ...")?;
 		self.set_color(stream, None, false);
 
 		Ok(())
@@ -280,9 +281,10 @@ impl Emitter {
 
 		let default_color = level.color();
 		let (color, c) = match &annotation.kind {
-			AnnotationKind::Suggestion => (Color::Blue, ' '),
+			AnnotationKind::Suggestion => (Color::Blue, '-'),
 			AnnotationKind::Message => (default_color, '^'),
-			AnnotationKind::None => (Color::White, ' ')
+			AnnotationKind::Highlight => (default_color, '^'),
+			AnnotationKind::None => (Color::White, '^')
 		};
 
 		let message =

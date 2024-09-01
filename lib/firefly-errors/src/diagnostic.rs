@@ -90,10 +90,40 @@ impl Diagnostic {
 		self
 	}
 
-	pub fn with_source(mut self, source: Span) -> Self {
+	pub fn with_highlight(mut self, source: Span) -> Self {
 		self.annotations.push(Annotation {
-			kind: AnnotationKind::None,
+			kind: AnnotationKind::Highlight,
 			message: DiagnosticMessage::Str(String::new()),
+			loc: source,
+		});
+
+		self
+	}
+
+	pub fn with_message(mut self, source: Span, message: DiagnosticMessage) -> Self {
+		self.annotations.push(Annotation {
+			kind: AnnotationKind::Message,
+			message,
+			loc: source,
+		});
+
+		self
+	}
+
+	pub fn with_suggestion(mut self, source: Span, message: DiagnosticMessage) -> Self {
+		self.annotations.push(Annotation {
+			kind: AnnotationKind::Suggestion,
+			message,
+			loc: source,
+		});
+
+		self
+	}
+
+	pub fn with_info(mut self, source: Span, message: DiagnosticMessage) -> Self {
+		self.annotations.push(Annotation {
+			kind: AnnotationKind::Suggestion,
+			message,
 			loc: source,
 		});
 

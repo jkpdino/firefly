@@ -16,19 +16,19 @@ impl IntoDiagnostic for StringError {
                 Diagnostic::new(Level::Error,
                     DiagnosticMessage::Str(format!("Invalid escape sequence"))
                 ).with_error_code(DiagnosticId::new("E0201"))
-                 .with_source(*span)
+                 .with_highlight(*span)
             }
             StringError::NoHexSequence(span) => {
                 Diagnostic::new(Level::Error,
                     DiagnosticMessage::Str(format!("Hex code escape sequence has no hex code"))
                 ).with_error_code(DiagnosticId::new("E0202"))
-                .with_source(*span)
+                .with_highlight(*span)
             }
             StringError::InvalidHexSequence(seq, span) => {
                 Diagnostic::new(Level::Error,
                     DiagnosticMessage::Str(format!("Hex code {seq} is not a valid character"))
                 ).with_error_code(DiagnosticId::new("E0203"))
-                 .with_source(*span)
+                 .with_highlight(*span)
             }
         }
     }

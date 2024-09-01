@@ -4,8 +4,8 @@ use firefly_span::Span;
 pub enum AnnotationKind {
     Suggestion,
     Message,
+    Highlight,
     None,
-
 }
 
 pub struct Annotation {

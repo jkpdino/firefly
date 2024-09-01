@@ -14,7 +14,7 @@ impl IntoDiagnostic for TypeError {
                 Diagnostic::new(Level::Error,
                     DiagnosticMessage::Str(format!("Value can't be called",))
                 ).with_error_code(DiagnosticId::new("E0501"))
-                 .with_source(*span)
+                 .with_highlight(*span)
             }
         }
     }

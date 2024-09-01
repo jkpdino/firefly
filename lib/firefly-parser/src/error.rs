@@ -49,7 +49,7 @@ impl ParserErrorEnv<'_> {
 				let span = Span::new(location, location);
 
 				let message = DiagnosticMessage::Str("invalid token".into());
-				Diagnostic::new(Level::Error, message).with_source(span)
+				Diagnostic::new(Level::Error, message).with_highlight(span)
 			}
 			ParseError::UnrecognizedEof { location, expected } => {
 				let span = Span::new(location, location);
@@ -58,7 +58,7 @@ impl ParserErrorEnv<'_> {
 					"expected {}, found <EOF>",
 					expected_message(&expected)
 				));
-				Diagnostic::new(Level::Error, message).with_source(span)
+				Diagnostic::new(Level::Error, message).with_highlight(span)
 			}
 			ParseError::UnrecognizedToken {
 				token: (left, token, right),
@@ -71,7 +71,7 @@ impl ParserErrorEnv<'_> {
 					expected_message(&expected),
 					self.stringify_token(&token)
 				));
-				Diagnostic::new(Level::Error, message).with_source(span)
+				Diagnostic::new(Level::Error, message).with_highlight(span)
 			}
 			ParseError::ExtraToken { token } => {
 				let span = Span::new(token.0, token.2);
@@ -80,35 +80,35 @@ impl ParserErrorEnv<'_> {
 					"unexpected {:?}",
 					self.stringify_token(&token.1)
 				));
-				Diagnostic::new(Level::Error, message).with_source(span)
+				Diagnostic::new(Level::Error, message).with_highlight(span)
 			}
 			ParseError::User { error: (LexerError::NewlineInString, span) } => {
 				let message = DiagnosticMessage::Str(format!(
                     "found newline in string literal"
                 ));
 				Diagnostic::new(Level::Error, message)
-					.with_source(span)
+					.with_highlight(span)
 			}
             ParseError::User { error: (LexerError::UnclosedString, span) } => {
                 let message = DiagnosticMessage::Str(format!(
                     "unclosed string literal"
                 ));
                 Diagnostic::new(Level::Error, message)
-					.with_source(span)
+					.with_highlight(span)
             }
             ParseError::User { error: (LexerError::UnclosedEscape, span) } => {
                 let message = DiagnosticMessage::Str(format!(
                     "unclosed escape sequence"
                 ));
                 Diagnostic::new(Level::Error, message)
-					.with_source(span)
+					.with_highlight(span)
             }
             ParseError::User { error: (LexerError::Other, span) } => {
                 let message = DiagnosticMessage::Str(format!(
                     "unexpected error"
                 ));
                 Diagnostic::new(Level::Error, message)
-					.with_source(span)
+					.with_highlight(span)
             }
 		};
 

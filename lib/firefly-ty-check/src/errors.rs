@@ -42,7 +42,7 @@ impl TypeCheckError<'_> {
                 Diagnostic::new(Level::Error, DiagnosticMessage::Str(format!(
                     "type of initial value doesn't match binding type"
                 )))
-                .with_source(source)
+                .with_highlight(source)
             }
 
             _ => todo!(),

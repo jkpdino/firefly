@@ -14,7 +14,7 @@ impl IntoDiagnostic for DeclarationError {
                 Diagnostic::new(Level::Error,
                     DiagnosticMessage::Str(format!("Global variable `{}` has no default", name.item))
                 ).with_error_code(DiagnosticId::new("E0601"))
-                 .with_source(name.span)
+                 .with_highlight(name.span)
             }
         }
     }

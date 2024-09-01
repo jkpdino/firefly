@@ -20,31 +20,31 @@ impl IntoDiagnostic for ValueError {
                 Diagnostic::new(Level::Error,
                     DiagnosticMessage::Str(format!("Break outside of loop",))
                 ).with_error_code(DiagnosticId::new("E0301"))
-                 .with_source(*span)
+                 .with_highlight(*span)
             }
             ValueError::UndefinedBreakLabel(name) => {
                 Diagnostic::new(Level::Error,
                     DiagnosticMessage::Str(format!("Use of undefined label `{}` in break", name.item))
                 ).with_error_code(DiagnosticId::new("E0302"))
-                 .with_source(name.span)
+                 .with_highlight(name.span)
             }
             ValueError::ContinueOutsideLoop(span) => {
                 Diagnostic::new(Level::Error,
                     DiagnosticMessage::Str(format!("Continue outside of loop",))
                 ).with_error_code(DiagnosticId::new("E0303"))
-                 .with_source(*span)
+                 .with_highlight(*span)
             }
             ValueError::UndefinedContinueLabel(name) => {
                 Diagnostic::new(Level::Error,
                     DiagnosticMessage::Str(format!("Use of undefined label `{}` in continue", name.item))
                 ).with_error_code(DiagnosticId::new("E0304"))
-                 .with_source(name.span)
+                 .with_highlight(name.span)
             }
             ValueError::NotMutable(value) => {
                 Diagnostic::new(Level::Error,
                     DiagnosticMessage::Str(format!("Value is not mutable"))
                 ).with_error_code(DiagnosticId::new("E0310"))
-                 .with_source(*value)
+                 .with_highlight(*value)
             }
         }
     }
