@@ -47,12 +47,14 @@ E0310: Value isn't mutable
 E05xx: Type errors
 
 E0501: Can't call a value of type ...
-E0502: Cannot assign to this value
-E0503: Cannot assign to immutable value
-E0504: Type of initial value mismatches variable
+E0502: Mismatched return type
+E0504: Type of initial value doesn't match variable type
 E0505: Mismatched types
 E0506: If statement condition must be a boolean
 E0507: While statement condition must be a boolean
+E0508: Arguments are missing in invocation of function
+E0509: Extra arguments are found in invocation of function
+E0510: Invalid arguments found in invocation of function
 
 E06xx: Declaration errors
 

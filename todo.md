@@ -28,6 +28,7 @@
 
 # Error Handling
 
+- [ ] Type checking
 - [ ] Passes on HIR
 - [ ] Lower errors
 - [ ] Make list of rules

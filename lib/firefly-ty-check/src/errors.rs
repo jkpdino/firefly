@@ -4,7 +4,7 @@ use firefly_hir::{resolve::Symbol, ty::{Ty, TyKind}, value::Value, HirContext};
 use itertools::Itertools;
 
 pub enum TypeCheckError<'a> {
-    /// E0501
+    /// E0502
     /// Mismatched return type
     /// ^ expected ``, found ``
     /// ^ return type declared here
@@ -32,12 +32,12 @@ pub enum TypeCheckError<'a> {
     WhileConditionBool(&'a Value),
 
     /// E0508
-    /// n arguments are missing in invocation of function
+    /// n arguments missing in invocation of function
     /// -- n arguments of type are missing
     MissingFunctionArgs(&'a Value, &'a [Ty]),
 
     /// E0509
-    /// n extra arguments are found in invocation of function
+    /// n extra arguments found in invocation of function
     /// ^^^ hint: remove this argument
     ExtraFunctionArgs(&'a [Value]),
 
@@ -57,7 +57,7 @@ impl TypeCheckError<'_> {
                         "mismatched return type"
                     )
                 )
-                .with_error_code(DiagnosticId::new("E0501"))
+                .with_error_code(DiagnosticId::new("E0502"))
                 .with_message(value.span, DiagnosticMessage::Str(format!(
                     "expected {}, found {}",
                     self.format_type(return_ty, context),
@@ -136,7 +136,7 @@ impl TypeCheckError<'_> {
                 Diagnostic::new(
                     Level::Error,
                     DiagnosticMessage::Str(format!(
-                        "{} arguments are missing in invocation of function",
+                        "{} arguments missing in invocation of function",
                         missing_args.len()
                     ))
                 )
@@ -154,7 +154,7 @@ impl TypeCheckError<'_> {
                 Diagnostic::new(
                     Level::Error,
                     DiagnosticMessage::Str(format!(
-                        "{} extra arguments were found in invocation of function",
+                        "{} extra arguments found in invocation of function",
                         extra_args.len()
                     ))
                 )
@@ -173,7 +173,7 @@ impl TypeCheckError<'_> {
                 Diagnostic::new(
                     Level::Error,
                     DiagnosticMessage::from_str(
-                        "invalid arguments were found in invocation of function",
+                        "invalid arguments found in invocation of function",
                     )
                 )
                 .with_error_code(DiagnosticId::new("E0510"))
