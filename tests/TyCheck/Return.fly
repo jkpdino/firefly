@@ -1,0 +1,9 @@
+module Tests.TyCheck;
+
+func main() {
+    return 0;
+}
+
+func a() -> string {
+    return 0;
+}

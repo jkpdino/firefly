@@ -263,6 +263,7 @@ dependencies = [
  "firefly-mir",
  "firefly-parser",
  "firefly-span",
+ "firefly-ty-check",
 ]
 
 [[package]]

@@ -41,7 +41,7 @@ fn type_check_stmt(checker: &Typecheck, stmt: &Stmt, context: &HirContext) {
     checker.typecheck_statement(stmt);
 
     match &stmt.kind {
-        StmtKind::Value(value) | StmtKind::Bind(_, _, value) => {
+        StmtKind::Value(value) | StmtKind::Bind(_, _, _, value) => {
             type_check_value(checker, value, context);
         }
     }

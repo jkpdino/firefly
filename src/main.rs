@@ -1,4 +1,4 @@
-use firefly_driver::{pass::{lower::{LinkPass, LowerCodePass, LowerDefsPass}, parse::ParsePass, hir_lower::LowerHirPass, IgnorePass}, Driver};
+use firefly_driver::{pass::{hir_lower::LowerHirPass, lower::{LinkPass, LowerCodePass, LowerDefsPass}, parse::ParsePass, tycheck::TyCheckPass, IgnorePass}, Driver};
 
 fn main() {
     let mut driver = Driver::new();
@@ -10,6 +10,7 @@ fn main() {
         LowerDefsPass,
         LowerCodePass,
         IgnorePass::new(),
+        TyCheckPass,
         LowerHirPass,
     ));
     driver.output();

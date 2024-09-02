@@ -19,3 +19,10 @@ pub enum DiagnosticMessage {
 	///
 	Fluent(FluentId),
 }
+
+
+impl DiagnosticMessage {
+	pub fn from_str(s: &str) -> Self {
+		Self::Str(s.to_string())
+	}
+}

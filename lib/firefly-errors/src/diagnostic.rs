@@ -100,6 +100,12 @@ impl Diagnostic {
 		self
 	}
 
+	pub fn with_annotations(mut self, annotations: Vec<Annotation>) -> Self {
+		self.annotations.extend(annotations.into_iter());
+
+		self
+	}
+
 	pub fn with_message(mut self, source: Span, message: DiagnosticMessage) -> Self {
 		self.annotations.push(Annotation {
 			kind: AnnotationKind::Message,

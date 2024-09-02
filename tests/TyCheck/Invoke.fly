@@ -1,0 +1,8 @@
+module Test.TyCheck;
+
+func main() {
+    add(100);
+    add(100, 200, 300);
+    add("", "");
+    add("");
+}

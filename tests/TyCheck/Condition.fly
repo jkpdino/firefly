@@ -1,0 +1,14 @@
+module Tests.TyCheck;
+
+func main() {
+    if "" {
+
+    }
+    else if 0 {
+
+    }
+
+    while "" {
+
+    }
+}

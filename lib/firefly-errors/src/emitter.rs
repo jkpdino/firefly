@@ -209,7 +209,7 @@ impl Emitter {
 
 	fn write_line_ellipsis(&self, stream: &mut StandardStreamLock) -> std::io::Result<()> {
 		self.set_color(stream, Some(Color::Blue), true);
-		writeln!(stream, " ...")?;
+		writeln!(stream, "...")?;
 		self.set_color(stream, None, false);
 
 		Ok(())

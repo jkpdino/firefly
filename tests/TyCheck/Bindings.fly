@@ -1,0 +1,5 @@
+module Test.TyCheck;
+
+func main() {
+    var num: int = "Hello, World";
+}

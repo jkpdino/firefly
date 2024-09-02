@@ -116,7 +116,7 @@ impl ParserErrorEnv<'_> {
 					"unclosed comment"
 				));
 				Diagnostic::new(Level::Error, message)
-					.with_source(span)
+					.with_highlight(span)
 			}
 		};
 

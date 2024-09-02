@@ -87,6 +87,22 @@ impl Value {
     pub fn is_mutable(&self) -> bool {
         match &self.kind {
             ValueKind::FieldOf(parent, _) => parent.is_mutable(),
+            ValueKind::TupleMember(parent, _) => parent.is_mutable(),
+            ValueKind::Local(_) => true,
+            ValueKind::Global(_) => true,
+
+            _ => false
+        }
+    }
+
+    /// Returns whether a value can be assigned to
+    /// 
+    /// Note: An assignable value must also be mutable
+    /// to be assigned to
+    pub fn is_assignable(&self) -> bool {
+        match &self.kind {
+            ValueKind::FieldOf(parent, _) => parent.is_assignable(),
+            ValueKind::TupleMember(parent, _) => parent.is_assignable(),
             ValueKind::Local(_) => true,
             ValueKind::Global(_) => true,
 
