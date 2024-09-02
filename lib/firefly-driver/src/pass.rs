@@ -1,5 +1,8 @@
 pub mod parse;
 pub mod lower;
+pub mod hir_lower;
+
+use std::marker::PhantomData;
 
 use crate::context::Context;
 
@@ -28,5 +31,30 @@ impl<T: ParallelPass> Pass for T {
 
     fn process(&self, input: Self::Input, context: &mut Context) -> Self::Output {
         input.into_iter().map(|input| self.process(input, context)).collect()
+    }
+}
+
+pub struct IgnorePass<In, Out>
+{
+    _phantom: PhantomData<(In, Out)>
+}
+
+impl<In, Out> Pass for IgnorePass<In, Out>
+    where Out: Default
+{
+    type Input = In;
+
+    type Output = Out;
+
+    fn process(&self, _: Self::Input, _: &mut Context) -> Self::Output {
+        Out::default()
+    }
+}
+
+impl<In, Out> IgnorePass<In, Out> {
+    pub fn new() -> Self {
+        Self {
+            _phantom: PhantomData,
+        }
     }
 }

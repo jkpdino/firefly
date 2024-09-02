@@ -18,10 +18,13 @@
 - [x] Methods
 - [x] Add control flow
 - [x] Add mutability
-- [ ] Add floats
+- [x] Add floats
 - [x] Destructure tuples
 
 # Testing framework
+
+- [ ] Run each test
+- [ ] Expect specific errors
 
 # Error Handling
 
@@ -29,10 +32,17 @@
 - [ ] Lower errors
 - [ ] Make list of rules
 
+# Mangling
+
+- [x] Add name mangling
+- [ ] Refactor name mangling
+
 # VM
 
-- [ ] Lower HIR to VM
-- [ ] Run the VM
+- [x] Tuple creation
+- [x] Struct initialization
+- [x] Getting values
+- [ ] Global initialization
 
 # Bugs
 

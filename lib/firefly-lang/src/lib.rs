@@ -31,7 +31,7 @@ pub fn create_lang_module(context: &mut HirContext) {
     ];
 
     const FLOAT_OPERATORS: &[&str] = &[
-        "add", "sub", "mul", "div", "rem", "pow",
+        "fadd", "fsub", "fmul", "fdiv", "frem", "fpow",
     ];
 
     const FLOAT_COMPARES: &[&str] = &[

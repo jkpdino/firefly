@@ -65,7 +65,7 @@ impl AstLowerer {
 
                 // Now return a statement
                 HirStmt::new(
-                    HirStmtKind::Bind(name, ty, value),
+                    HirStmtKind::Bind(name, local, ty, value),
                     stmt.span
                 )
             }

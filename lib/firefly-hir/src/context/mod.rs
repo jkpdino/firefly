@@ -6,7 +6,7 @@ use std::{collections::HashMap, fmt::Debug};
 use display::DisplayContext;
 
 use crate::{
-    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{Constant, Field, Global, Module, SourceFile, StructDef, TypeAlias}, resolve::{Import, InstanceMemberTable, Namespace, Passthrough, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, stmt::{CodeBlock, Local}, ty::{HasType, Ty}, util::Root, value::{HasSelf, HasValue, HasValueIn}, AccessComponent, ComponentConstructor, ComputedComponent, Entity, EntityKind
+    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{mangle::MangledName, Constant, Field, Global, Module, SourceFile, StructDef, TypeAlias}, resolve::{Import, InstanceMemberTable, Namespace, Passthrough, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, stmt::{CodeBlock, Local}, ty::{HasType, Ty}, util::Root, value::{HasSelf, HasValue, HasValueIn}, AccessComponent, ComponentConstructor, ComputedComponent, Entity, EntityKind
 };
 
 // The HirContext keeps track of every entity in the system,
@@ -38,6 +38,7 @@ ecs! {
         has_self: HasSelf,
         callables: Callable,
         locals: Local,
+        mangled_names: MangledName,
 
         // Resolving
         symbols: Symbol,
@@ -270,6 +271,13 @@ impl HirContext {
     /// Iterates over all entities in the hir in a breadth-first order
     pub fn entities(&self) -> iter::HirContextEntityIter {
         iter::HirContextEntityIter::new(self)
+    }
+
+    /// Iterates over all entities in the hir that have a certain component
+    pub fn entities_with<C: Component>(&self) -> impl Iterator<Item = Id<C>> + '_
+        where Self: AccessComponent<C>
+    {
+        self.entities().filter_map(|entity_id| self.cast_id::<C>(entity_id))
     }
 
     /// Returns this entity's parent

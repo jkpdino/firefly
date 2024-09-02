@@ -12,6 +12,7 @@ firefly-ast-lower = { path = "lib/firefly-ast-lower" }
 firefly-lang = { path = "lib/firefly-lang" }
 firefly-errors = { path = "lib/firefly-errors" }
 firefly-driver = { path = "lib/firefly-driver" }
+firefly-mangle = { path = "lib/firefly-mangle" }
 itertools = "0.13.0"
 
 [workspace]
@@ -27,4 +28,6 @@ members = [
     "lib/firefly-lang",
     "lib/firefly-errors",
     "lib/firefly-error-messages",
+    "lib/firefly-interpret",
+    "lib/firefly-hir-lower", "lib/firefly-mir", "lib/firefly-mangle",
 ]

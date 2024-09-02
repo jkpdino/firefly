@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-use crate::{ty::{Ty, TyKind}, Name};
+use crate::{stmt::Local, ty::{Ty, TyKind}, Id, Name};
 
 /// Marks a symbol as callable and provides a signature
 /// for calling the symbol
@@ -15,6 +15,7 @@ pub struct Callable {
 pub struct FuncParam {
     pub bind_name: Name,
     pub ty: Ty,
+    pub id: Id<Local>,
 }
 
 component!(callables: Callable);

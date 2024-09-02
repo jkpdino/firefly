@@ -1,0 +1,18 @@
+module Test.IfElse
+
+func main() {
+    if false {
+        print("x")
+    }
+    else if true {
+        print("y")
+    }
+
+    print("z");
+}
+
+func if_stmt() {
+    if false {
+
+    }
+}
