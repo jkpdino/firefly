@@ -59,3 +59,12 @@ E0510: Invalid arguments found in invocation of function
 E06xx: Declaration errors
 
 E0601: Global variable must have a default value
+
+
+// error ideas
+static struct
+static func in main
+unterminated multi-line comment
+missing return
+missing function body
+literal overflows

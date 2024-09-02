@@ -29,6 +29,9 @@
 # Error Handling
 
 - [ ] Type checking
+- [ ] Exit analysis
+- [ ]
+ 
 - [ ] Passes on HIR
 - [ ] Lower errors
 - [ ] Make list of rules
