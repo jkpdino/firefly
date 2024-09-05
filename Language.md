@@ -42,15 +42,23 @@
 - Protocols
 - Generic types and functions
 
-# By version 1
+# Version 0 Profile 4
+
+- Classes
+- Closures
+- Immutable values
+
+# Version 0 Profile 5
+
+- Enums
+- Pattern matching
+- For and Match
+
+# Version 1
 
 - New lang library
 - Full type inference
-- Enums
-- Classes
-- Pattern matching
-- For and Match
-- Closures
+- Immutable values
 
 
 Example code
@@ -98,5 +106,16 @@ func fibonacci(n: int) -> int {
     }
 
     return n2;
+}
+```
+
+```firefly
+/// Version 1.0
+module Fibonacci
+
+func fibonacci(n: Int) -> Int {
+    0..<n.reduce(initial = (1, 1)) { _, (n1, n2) in
+        (n2, n2 + n1)
+    }.1
 }
 ```

@@ -1,49 +1,26 @@
-# HIR
+# Version 0 Profile 2
 
-- [x] Add type aliases
-- [x] Add Computed Properties
-- [x] Add signature to functions
-- [x] Add types
-- [x] Add values
-- [x] Rename bindings to locals
-- [x] Add modules
-- [x] Add visibilities
-- [x] Add imports
-- [x] Add strings
-- [x] Add global variables
-- [x] Add structs
-- [x] Add members
-- [x] Add function calls
-- [x] Add system functions
-- [x] Methods
-- [x] Add control flow
-- [x] Add mutability
-- [x] Add floats
-- [x] Destructure tuples
+## Highlight Features
 
-# Testing framework
+- [ ] Local variable inference
+    - [ ] Change parse to make type optional
+    - [ ] Copy the type from the value if needed
+- [ ] Operators
+    - [ ] Make a list of allowed operators
+    - [ ] Parse operators with precedence
+    - [ ] Allow methods for intrinsics
+    - [ ] Replace operators with method calls
+- [ ] Parameter Labels
+    - [ ] Parse parameter labels
+    - [ ] Add parameters to signatures
+    - [ ] Figure out whether to use = or :
+    - [ ] Parse argument labels
+- [ ] Function overloading
+    - [ ] Error for more than one
+    - [ ] Select overloads from a path
+    - [ ] Select overloads in scope
+- [ ] Struct Initializers
+    - [ ] Add overload for initializers
+- [ ] Style guide
+    - [ ] Capitalization
 
-- [ ] Run each test
-- [ ] Expect specific errors
-
-# Error Handling
-
-- [ ] Passes on HIR
-- [ ] Lower errors
-- [ ] Make list of rules
-
-# Mangling
-
-- [x] Add name mangling
-- [ ] Refactor name mangling
-
-# VM
-
-- [x] Tuple creation
-- [x] Struct initialization
-- [x] Getting values
-- [ ] Global initialization
-
-# Bugs
-
-- [ ] Add invisible items to a namespace but mark them as such
