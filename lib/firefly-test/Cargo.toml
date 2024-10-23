@@ -1,0 +1,19 @@
+[package]
+name = "firefly-test"
+version = "0.1.0"
+edition = "2021"
+
+[[test]]
+name = "firefly-test"
+path = "src/main.rs"
+harness = false
+
+[dependencies]
+console = "0.15.8"
+indicatif = "0.17.8"
+walkdir = "2.5.0"
+libtest-mimic = "0.7.3"
+
+firefly-span = { path = "../firefly-span" }
+firefly-errors = { path = "../firefly-errors" }
+firefly-parser = { path = "../firefly-parser" }
