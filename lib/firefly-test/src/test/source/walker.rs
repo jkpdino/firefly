@@ -37,10 +37,6 @@ impl TestWalker<'_> {
 		let without_ext = relative_path.to_str()?.replace(".fly", "");
 		let name = without_ext.replace("/", ".");
 
-		Some(Test {
-			index: 0,
-			path: path.to_path_buf(),
-			name,
-		})
+		Some(Test::new(0, path.to_path_buf(), name))
 	}
 }

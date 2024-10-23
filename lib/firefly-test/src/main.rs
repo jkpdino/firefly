@@ -18,6 +18,7 @@ use test::{run::run_test, source::{walker::TestWalker, TestSource}};
     let tests = test_suite
         .into_tests()
         .into_iter()
+        .filter(|test| test.directives.is_test)
         .map(|test| Trial::test(&test.name.clone(), move || run_test(&test).into()))
         .collect();
 
