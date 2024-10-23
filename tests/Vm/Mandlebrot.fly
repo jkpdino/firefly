@@ -1,7 +1,20 @@
 module Test.Mandlebrot
 
+/* @expect
+.         
+......    
+..:::.... 
+::-+@-... 
+:**@@%:.. 
+@@@@@@*:..
+:**@@%:.. 
+::-+@-... 
+.:::...   
+......    
+*/
+
 func main() {
-    var mandlebrot_size: int = 100;
+    var mandlebrot_size: int = 10;
 
     var i: int = 0;
 

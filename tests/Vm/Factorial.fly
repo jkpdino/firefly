@@ -1,5 +1,7 @@
 module Test.Factorial
 
+/* @expect 720 */
+
 func main() -> int {
     print(format_int(factorial(6)));
 }

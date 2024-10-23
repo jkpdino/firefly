@@ -1,5 +1,10 @@
 module Test.IfElse
 
+/* @expect
+y
+z
+*/
+
 func main() {
     if false {
         print("x")
