@@ -207,6 +207,14 @@ impl AstLowerer {
                 (HirValueKind::Assign(Box::new(place), Box::new(assignee)), Ty::new(TyKind::Unit, value.span))
             }
 
+            AstValue::Prefix(op, value) => {
+                todo!()
+            }
+
+            AstValue::Infix(lhs, op, rhs) => {
+                todo!()
+            }
+
             AstValue::Error => unreachable!()
         };
 

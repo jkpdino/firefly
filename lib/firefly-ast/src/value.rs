@@ -18,6 +18,8 @@ pub enum Value {
     Assign(Box<Spanned<Value>>, Box<Spanned<Value>>),
     Member(Box<Spanned<Value>>, PathSegment),
     TupleMember(Box<Spanned<Value>>, Name),
+    Prefix(String, Box<Spanned<Value>>),
+    Infix(Box<Spanned<Value>>, String, Box<Spanned<Value>>),
     Error,
 }
 

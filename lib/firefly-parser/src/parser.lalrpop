@@ -75,6 +75,40 @@ extern {
 
         "=" => Token::Equals,
 
+        "!" => Token::Invert,
+        "+" => Token::Plus,
+        "-" => Token::Minus,
+        "<<" => Token::ShiftLeft,
+        ">>" => Token::ShiftRight,
+
+        "*" => Token::Multiply,
+        "/" => Token::Divide,
+        "%" => Token::Modulo,
+        "&" => Token::BitAnd,
+        "|" => Token::BitOr,
+        "^" => Token::BitXor,
+
+        "<" => Token::LessThan,
+        ">" => Token::GreaterThan,
+        "<=" => Token::LessThanOrEqual,
+        ">=" => Token::GreaterThanOrEqual,
+        "==" => Token::EqualEqual,
+        "!=" => Token::NotEquals,
+
+        "&&" => Token::LogicalAnd,
+        "||" => Token::LogicalOr,
+
+        "+=" => Token::PlusEquals,
+        "-=" => Token::MinusEquals,
+        "*=" => Token::MultiplyEquals,
+        "/=" => Token::DivideEquals,
+        "%=" => Token::ModuloEquals,
+        "&=" => Token::BitAndEquals,
+        "|=" => Token::BitOrEquals,
+        "^=" => Token::BitXorEquals,
+        "<<=" => Token::ShiftLeftEquals,
+        ">>=" => Token::ShiftRightEquals,
+
         "whitespace" => Token::Whitespace,
     }
 }
@@ -205,13 +239,18 @@ Value = { Spanned<RestrictedValue<"L">> }
 NonStatementLikeValue = { Spanned<RestrictedValue<"">> }
 
 RestrictedValue<L>: Value = {
-    AssignValue<L> => <>,
+    InfixValue<L> => <>,
     "return" <value: Value?> => Value::Return(value.map(Box::new))
 }
 
-AssignValue<L>: Value = {
+InfixValue<L>: Value = {
+    PrefixedValue<L> => <>,
+    <lhs: Spanned<InfixValue<L>>> <op: InfixOperator> <rhs: Spanned<PrefixedValue<L>>> => Value::Infix(Box::new(lhs), op, Box::new(rhs)),
+}
+
+PrefixedValue<L>: Value = {
     SuffixedValue<L> => <>,
-    <lhs: Spanned<AssignValue<L>>> "=" <rhs: Spanned<SuffixedValue<L>>> => Value::Assign(Box::new(lhs), Box::new(rhs)),
+    <op: PrefixOperator> <rhs: Spanned<PrefixedValue<L>>> => Value::Prefix(op, Box::new(rhs)),
 }
 
 SuffixedValue<L>: Value = {
@@ -254,6 +293,23 @@ IfStatement: IfStatement = {
         positive,
         negative,
     }
+}
+
+PrefixOperator = { "!", "+", "-" }
+
+InfixOperator = {
+    "+", "-",
+    "<<", ">>",
+    "*", "/", "%",
+    "&", "|", "^",
+    "<", ">", "<=", ">=", "==", "!=",
+    "&&", "||",
+
+    "+=", "-=", "*=", "/=", "%=",
+    "<<=", ">>=",
+    "&=", "|=", "^=",
+
+    "="
 }
 
 WhileStatement: WhileStatement = {

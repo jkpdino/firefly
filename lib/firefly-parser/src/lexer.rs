@@ -79,11 +79,46 @@ pub enum Token<'a> {
     #[token("=")]
     Equals,
 
+    #[token("!")] Invert,
+    #[token("+")] Plus,
+    #[token("-")] Minus,
+    #[token("<<")] ShiftLeft,
+    #[token(">>")] ShiftRight,
+    
+    #[token("*")] Multiply,
+    #[token("/")] Divide,
+    #[token("%")] Modulo,
+    #[token("&")] BitAnd,
+    #[token("|")] BitOr,
+    #[token("^")] BitXor,
+
+    #[token("<")] LessThan,
+    #[token(">")] GreaterThan,
+    #[token("<=")] LessThanOrEqual,
+    #[token(">=")] GreaterThanOrEqual,
+    #[token("==")] EqualEqual,
+    #[token("!=")] NotEquals,
+
+    #[token("&&")] LogicalAnd,
+    #[token("||")] LogicalOr,
+
+    #[token("+=")] PlusEquals,
+    #[token("-=")] MinusEquals,
+    #[token("*=")] MultiplyEquals,
+    #[token("/=")] DivideEquals,
+    #[token("%=")] ModuloEquals,
+    #[token("&=")] BitAndEquals,
+    #[token("|=")] BitOrEquals,
+    #[token("^=")] BitXorEquals,
+    #[token("<<=")] ShiftLeftEquals,
+    #[token(">>=")] ShiftRightEquals,
+
+
     #[regex("[\n\r\t ]", logos::skip)]
     Whitespace,
 
-    #[regex("//[^\n]*", logos::skip)]
     #[regex("/*", |lex| lex_long_comment(lex))]
+    #[regex("//[^\n]*", logos::skip)]
     Comment,
 }
 

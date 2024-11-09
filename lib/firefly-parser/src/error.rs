@@ -129,31 +129,31 @@ impl ParserErrorEnv<'_> {
 
 	fn stringify_token(&self, t: &Token<'_>) -> String {
 		match t {
-            Token::Ident(ident) => format!("identifier `{}`", ident),
+      Token::Ident(ident) => format!("identifier `{}`", ident),
 
-            Token::IntegerLiteral(int) => format!("integer literal `{}`", int),
+      Token::IntegerLiteral(int) => format!("integer literal `{}`", int),
 			Token::FloatLiteral(float) => format!("float literal `{}`", float),
-            Token::StringLiteral(string) => format!("string literal `{}`", string),
-            Token::LongStringLiteral(string) => format!("string literal `{}`", string),
+			Token::StringLiteral(string) => format!("string literal `{}`", string),
+			Token::LongStringLiteral(string) => format!("string literal `{}`", string),
 
-            // Keywords
-            Token::PublicKw => "keyword `public`".to_string(),
-            Token::InternalKw => "keyword `internal`".to_string(),
-            Token::FilePrivateKw => "keyword `fileprivate`".to_string(),
-            Token::PrivateKw => "keyword `private`".to_string(),
+			// Keywords
+			Token::PublicKw => "keyword `public`".to_string(),
+			Token::InternalKw => "keyword `internal`".to_string(),
+			Token::FilePrivateKw => "keyword `fileprivate`".to_string(),
+			Token::PrivateKw => "keyword `private`".to_string(),
 
 			Token::StaticKw => "keyword `static`".to_string(),
 
-            Token::ModuleKw => "keyword `module`".to_string(),
-            Token::ImportKw => "keyword `import`".to_string(),
+			Token::ModuleKw => "keyword `module`".to_string(),
+			Token::ImportKw => "keyword `import`".to_string(),
 
 			Token::AsKw => "keyword `as`".to_string(),
 
 			Token::VarKw => "keyword `var`".to_string(),
-            Token::FuncKw => "keyword `func`".to_string(),
-            Token::StructKw => "keyword `struct`".to_string(),
+			Token::FuncKw => "keyword `func`".to_string(),
+			Token::StructKw => "keyword `struct`".to_string(),
 
-            Token::ReturnKw => "keyword `return`".to_string(),
+			Token::ReturnKw => "keyword `return`".to_string(),
 			Token::BreakKw => "keyword `break`".to_string(),
 			Token::ContinueKw => "keyword `continue`".to_string(),
 
@@ -161,23 +161,61 @@ impl ParserErrorEnv<'_> {
 			Token::ElseKw => "keyword `else`".to_string(),
 			Token::WhileKw => "keyword `while`".to_string(),
 
-            // Symbols
-            Token::OpenParen => "symbol `(`".to_string(),
-            Token::CloseParen => "symbol `)`".to_string(),
-            Token::OpenBrace => "symbol `{`".to_string(),
-            Token::CloseBrace => "symbol `}`".to_string(),
+			// Symbols
+			Token::OpenParen => "symbol `(`".to_string(),
+			Token::CloseParen => "symbol `)`".to_string(),
+			Token::OpenBrace => "symbol `{`".to_string(),
+			Token::CloseBrace => "symbol `}`".to_string(),
 
-            Token::Period => "symbol `.`".to_string(),
-            Token::Comma => "symbol `,`".to_string(),
-            Token::Semicolon => "symbol `;`".to_string(),
-            Token::Colon => "symbol `:`".to_string(),
-            Token::Arrow => "symbol `->`".to_string(),
+			Token::Period => "symbol `.`".to_string(),
+			Token::Comma => "symbol `,`".to_string(),
+			Token::Semicolon => "symbol `;`".to_string(),
+			Token::Colon => "symbol `:`".to_string(),
+			Token::Arrow => "symbol `->`".to_string(),
 
-            Token::Equals => "symbol `=`".to_string(),
+			Token::Equals => "symbol `=`".to_string(),
 
-            Token::Whitespace => "whitespace".to_string(),
+			// Operators
+			Token::Invert => "operator `!`".to_string(),
+			Token::Plus => "operator `+`".to_string(),
+			Token::Minus => "operator `-`".to_string(),
+			Token::Multiply => "operator `*`".to_string(),
+			Token::Divide => "operator `/`".to_string(),
+			Token::Modulo => "operator `%`".to_string(),
 
-            Token::Comment => "comment".to_string(),
+			Token::ShiftLeft => "operator `<<`".to_string(),
+			Token::ShiftRight => "operator `>>`".to_string(),
+
+			Token::BitAnd => "operator `&`".to_string(),
+			Token::BitOr => "operator `|`".to_string(),
+			Token::BitXor => "operator `^`".to_string(),
+
+			Token::LessThan => "operator `<`".to_string(),
+			Token::LessThanOrEqual => "operator `<=`".to_string(),
+			Token::GreaterThan => "operator `>`".to_string(),
+			Token::GreaterThanOrEqual => "operator `>=`".to_string(),
+			Token::EqualEqual => "operator `==`".to_string(),
+			Token::NotEquals => "operator `!=`".to_string(),
+
+			Token::LogicalAnd => "operator `&&`".to_string(),
+			Token::LogicalOr => "operator `||`".to_string(),
+
+			Token::PlusEquals => "operator `+=`".to_string(),
+			Token::MinusEquals => "operator `-=`".to_string(),
+			Token::MultiplyEquals => "operator `*=`".to_string(),
+			Token::DivideEquals => "operator `/=`".to_string(),
+			Token::ModuloEquals => "operator `%=`".to_string(),
+			Token::ShiftLeftEquals => "operator `<<=`".to_string(),
+			Token::ShiftRightEquals => "operator `>>=`".to_string(),
+			Token::BitAndEquals => "operator `&=`".to_string(),
+			Token::BitOrEquals => "operator `|=`".to_string(),
+			Token::BitXorEquals => "operator `^=`".to_string(),
+
+
+
+			Token::Whitespace => "whitespace".to_string(),
+
+			Token::Comment => "comment".to_string(),
 		}
 	}
 }
