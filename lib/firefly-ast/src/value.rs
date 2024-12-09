@@ -1,6 +1,6 @@
 use firefly_span::Spanned;
 
-use crate::{stmt::CodeBlock, Name, Path, PathSegment};
+use crate::{operator::{InfixOperator, PrefixOperator}, stmt::CodeBlock, Name, Path, PathSegment};
 
 #[derive(Debug)]
 pub enum Value {
@@ -18,8 +18,8 @@ pub enum Value {
     Assign(Box<Spanned<Value>>, Box<Spanned<Value>>),
     Member(Box<Spanned<Value>>, PathSegment),
     TupleMember(Box<Spanned<Value>>, Name),
-    Prefix(String, Box<Spanned<Value>>),
-    Infix(Box<Spanned<Value>>, String, Box<Spanned<Value>>),
+    Prefix(PrefixOperator, Box<Spanned<Value>>),
+    Infix(Box<Spanned<Value>>, InfixOperator, Box<Spanned<Value>>),
     Error,
 }
 

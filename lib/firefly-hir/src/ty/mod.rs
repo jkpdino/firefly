@@ -52,7 +52,7 @@ impl Ty {
         }
     }
 
-    pub fn references(&self) -> Option<Id<Entity>> {
+    pub fn defined_by(&self) -> Option<Id<Entity>> {
         match self.kind {
             TyKind::StructDef(id) => Some(id.as_base()),
 

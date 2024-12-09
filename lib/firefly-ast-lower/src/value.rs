@@ -1,5 +1,5 @@
 use crate::{errors::{StringError, TypeError, ValueError}, labels::LoopLabel, AstLowerer};
-use firefly_ast::value::{ElseStatement, IfStatement, Value as AstValue};
+use firefly_ast::{operator::InfixOperator, value::{ElseStatement, IfStatement, Value as AstValue}, PathSegment};
 use firefly_hir::{resolve::SymbolTable, ty::{Ty, TyKind}, value::{ElseValue, IfValue, LiteralValue, Value as HirValue, ValueKind as HirValueKind, WhileValue}, Entity, Id};
 use firefly_span::{Span, Spanned};
 use itertools::Itertools;
@@ -208,11 +208,50 @@ impl AstLowerer {
             }
 
             AstValue::Prefix(op, value) => {
-                todo!()
+                let unit = self.lower_value(value, parent, symbol_table);
+
+                if let Some(operator_func) = self.resolve_instance_member(
+                    unit,
+                    PathSegment::new(Spanned::new(op.get_verb().into(), value.span)),
+                    parent)
+                {
+                    let return_type = match &operator_func.ty.kind {
+                        TyKind::Func(_, return_type) => return_type.as_ref().clone(),
+                        _ => operator_func.ty.clone()
+                    };
+
+                    (HirValueKind::Invoke(Box::new(operator_func), vec![]), return_type)
+                }
+                else {
+                    todo!()
+                }
             }
 
             AstValue::Infix(lhs, op, rhs) => {
-                todo!()
+                let left = self.lower_value(lhs, parent, symbol_table);
+                let right = self.lower_value(rhs, parent, symbol_table);
+
+                if let InfixOperator::Assign = op {
+                    (HirValueKind::Assign(Box::new(left), Box::new(right)), Ty::new(TyKind::Unit, value.span))
+                }
+                else if let TyKind::Integer = left.ty.kind {
+                    return self.get_integer_operator(op, left, right, span).unwrap();
+                }
+                else if let Some(operator_func) = self.resolve_instance_member(
+                    left,
+                    PathSegment::new(Spanned::new(op.get_verb().into(), value.span)),
+                    parent)
+                {
+                    let return_type = match &operator_func.ty.kind {
+                        TyKind::Func(_, return_type) => return_type.as_ref().clone(),
+                        _ => operator_func.ty.clone()
+                    };
+
+                    (HirValueKind::Invoke(Box::new(operator_func), vec![right]), return_type)
+                }
+                else {
+                    todo!()
+                }
             }
 
             AstValue::Error => unreachable!()

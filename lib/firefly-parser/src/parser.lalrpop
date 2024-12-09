@@ -8,7 +8,8 @@ use firefly_ast::{
     item::Item,
     struct_def::{StructDef, Field},
     module::Module,
-    import::{Import, ImportSymbolList, ImportSymbol}
+    import::{Import, ImportSymbolList, ImportSymbol},
+    operator::{PrefixOperator, InfixOperator}
 };
 use crate::{
     error::{LexerError, ParserErrorEnv, Expecting},
@@ -295,21 +296,51 @@ IfStatement: IfStatement = {
     }
 }
 
-PrefixOperator = { "!", "+", "-" }
+PrefixOperator: PrefixOperator = {
+    "!" => PrefixOperator::Invert,
+    "+" => PrefixOperator::Identity,
+    "-" => PrefixOperator::Negate
+}
 
-InfixOperator = {
-    "+", "-",
-    "<<", ">>",
-    "*", "/", "%",
-    "&", "|", "^",
-    "<", ">", "<=", ">=", "==", "!=",
-    "&&", "||",
+InfixOperator: InfixOperator = {
+    "+" => InfixOperator::Add,
+    "-" => InfixOperator::Subtract,
 
-    "+=", "-=", "*=", "/=", "%=",
-    "<<=", ">>=",
-    "&=", "|=", "^=",
+    "*" => InfixOperator::Multiply,
+    "/" => InfixOperator::Divide,
+    "%" => InfixOperator::Modulo,
 
-    "="
+    "<<" => InfixOperator::ShiftLeft,
+    ">>" => InfixOperator::ShiftRight,
+    
+    "&" => InfixOperator::BitAnd,
+    "|" => InfixOperator::BitOr,
+    "^" => InfixOperator::BitXor,
+
+    "<" => InfixOperator::CompareLessThan,
+    ">" => InfixOperator::CompareGreaterThan,
+    "<=" => InfixOperator::CompareLessThanOrEqual,
+    ">=" => InfixOperator::CompareGreaterThanOrEqual,
+    "==" => InfixOperator::CompareEqual,
+    "!=" => InfixOperator::CompareNotEqual,
+
+    "&&" => InfixOperator::LogicalAnd,
+    "||" => InfixOperator::LogicalOr,
+
+    "+=" => InfixOperator::AddAssign,
+    "-=" => InfixOperator::SubtractAssign,
+    "*=" => InfixOperator::MultiplyAssign,
+    "/=" => InfixOperator::DivideAssign,
+    "%=" => InfixOperator::ModuloAssign,
+
+    "<<=" => InfixOperator::ShiftLeftAssign,
+    ">>=" => InfixOperator::ShiftRightAssign,
+
+    "&=" => InfixOperator::BitAndAssign,
+    "|=" => InfixOperator::BitOrAssign,
+    "^=" => InfixOperator::BitXorAssign,
+
+    "=" => InfixOperator::Assign,
 }
 
 WhileStatement: WhileStatement = {

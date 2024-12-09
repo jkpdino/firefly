@@ -1,10 +1,10 @@
 use firefly_hir::{
-    func::Callable, resolve::{InstanceMemberTable, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, ty::{HasType, Ty}, value::{HasValue, HasValueIn, Value, ValueKind}, Entity, Id
+    func::Callable, resolve::{InstanceMemberTable, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, ty::{HasType, Ty, TyKind}, value::{HasValue, HasValueIn, Value, ValueKind}, Entity, Id
 };
 use firefly_span::Span;
 
 use crate::{errors::SymbolError, AstLowerer};
-use firefly_ast::{Path, PathSegment};
+use firefly_ast::{operator::InfixOperator, Path, PathSegment};
 
 impl AstLowerer {
     pub fn resolve_value(&mut self, path: &Path, from: Id<Entity>, symbol_table: &SymbolTable) -> Option<Value> {
@@ -40,8 +40,58 @@ impl AstLowerer {
         return Some(value);
     }
 
+    pub fn get_integer_operator(&mut self, operator: &InfixOperator, left: Value, right: Value, span: Span) -> Option<Value> {
+        let (builtin_name, return_type_kind) =
+        match operator {
+            InfixOperator::Add => ("add", TyKind::Integer),
+            InfixOperator::Subtract => ("sub", TyKind::Integer),
+            InfixOperator::Multiply => ("mul", TyKind::Integer),
+            InfixOperator::Divide => ("div", TyKind::Integer),
+            InfixOperator::Modulo => ("rem", TyKind::Integer),
+            InfixOperator::ShiftLeft => ("left_shift", TyKind::Integer),
+            InfixOperator::ShiftRight => ("right_shift", TyKind::Integer),
+            InfixOperator::BitAnd => ("bitand", TyKind::Integer),
+            InfixOperator::BitXor => ("bitxor", TyKind::Integer),
+            InfixOperator::BitOr => ("bitor", TyKind::Integer),
+            InfixOperator::CompareLessThan => ("lt_int", TyKind::Bool),
+            InfixOperator::CompareGreaterThan => ("gt_int", TyKind::Bool),
+            InfixOperator::CompareLessThanOrEqual => ("leq_int", TyKind::Bool),
+            InfixOperator::CompareGreaterThanOrEqual => ("geq_int", TyKind::Bool),
+            InfixOperator::CompareEqual => ("eq_int", TyKind::Bool),
+            InfixOperator::CompareNotEqual => ("neq_int", TyKind::Bool),
+            InfixOperator::LogicalAnd => return None,
+            InfixOperator::LogicalOr => return None,
+            InfixOperator::AddAssign => return None,
+            InfixOperator::SubtractAssign => return None,
+            InfixOperator::MultiplyAssign => return None,
+            InfixOperator::DivideAssign => return None,
+            InfixOperator::ModuloAssign => return None,
+            InfixOperator::ShiftLeftAssign => return None,
+            InfixOperator::ShiftRightAssign => return None,
+            InfixOperator::BitAndAssign => return None,
+            InfixOperator::BitOrAssign => return None,
+            InfixOperator::BitXorAssign => return None,
+            InfixOperator::Assign => return None,
+        };
+
+        let op_func_kind = TyKind::Func(vec![
+            Ty::new_unspanned(TyKind::Integer),
+            Ty::new_unspanned(TyKind::Integer),
+        ], Box::new(Ty::new_unspanned(return_type_kind.clone())));
+
+        return Some(Value::new(
+            ValueKind::Invoke(Box::new(Value::new(
+                ValueKind::BuiltinFunc(builtin_name),
+                Ty::new(op_func_kind, span),
+                span
+            )), vec![ left, right ]),
+            Ty::new(return_type_kind, span),
+            span
+        ));
+    }
+
     pub fn resolve_instance_member(&mut self, value: Value, segment: PathSegment, from: Id<Entity>) -> Option<Value> {
-        let Some(instance) = value.ty.references() else {
+        let Some(instance) = value.ty.defined_by() else {
             self.emit(SymbolError::NoMembersOf(value.clone()));
             return None;
         };
