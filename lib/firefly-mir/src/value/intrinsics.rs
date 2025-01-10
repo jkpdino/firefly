@@ -53,7 +53,7 @@ pub enum BinaryIntrinsic {
     Integer(IntegerBinaryOp),
     Float(FloatBinaryOp),
     Boolean(BooleanBinaryOp),
-    String(StringBinaryOp)
+    String(StringBinaryOp),
 }
 
 #[derive(Clone)]
@@ -71,6 +71,9 @@ pub enum UnaryIntrinsic {
     Floor,
     Ceil,
     ToFloat,
+
+    Identity,
+    Negate,
 }
 
 impl Display for Comparison {
@@ -129,7 +132,7 @@ impl Display for BooleanBinaryOp {
 impl Display for StringBinaryOp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            StringBinaryOp::Concat => write!(f, "concat")
+            StringBinaryOp::Concat => write!(f, "concat"),
         }
     }
 }
@@ -158,6 +161,8 @@ impl Display for UnaryIntrinsic {
             UnaryIntrinsic::Floor => write!(f, "floor"),
             UnaryIntrinsic::Ceil => write!(f, "ceil"),
             UnaryIntrinsic::ToFloat => write!(f, "to_float"),
+            UnaryIntrinsic::Identity => write!(f, "identity"),
+            UnaryIntrinsic::Negate => write!(f, "negate"),
         }
     }
 }

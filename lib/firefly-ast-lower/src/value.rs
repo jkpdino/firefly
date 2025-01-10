@@ -1,7 +1,7 @@
 use crate::{
     errors::{StringError, TypeError, ValueError},
     labels::LoopLabel,
-    AstLowerer, Lower,
+    AstLowerer,
 };
 use firefly_ast::{
     operator::InfixOperator,
@@ -266,7 +266,13 @@ impl AstLowerer {
             AstValue::Prefix(op, value) => {
                 let unit = self.lower_value(value, parent, symbol_table, context.reset());
 
-                if let Some(operator_func) = self.resolve_instance_member(
+                if let TyKind::Integer = unit.ty.kind {
+                    return self.get_integer_prefix_operator(&op, unit, span).unwrap();
+                } else if let TyKind::Float = unit.ty.kind {
+                    return self.get_float_prefix_operator(&op, unit, span).unwrap();
+                } else if let TyKind::Bool = unit.ty.kind {
+                    return self.get_boolean_prefix_operator(&op, unit, span).unwrap();
+                } else if let Some(operator_func) = self.resolve_instance_member(
                     unit,
                     PathSegment::new(Spanned::new(op.get_verb().into(), value.span)),
                     parent,
@@ -300,9 +306,9 @@ impl AstLowerer {
                 } else if let TyKind::Integer = left.ty.kind {
                     return self.get_integer_operator(&op, left, right, span).unwrap();
                 } else if let TyKind::Float = left.ty.kind {
-                    return self.get_boolean_operator(&op, left, right, span).unwrap();
+                    return self.get_float_operator(&op, left, right, span).unwrap();
                 } else if let TyKind::Bool = left.ty.kind {
-                    todo!()
+                    return self.get_boolean_operator(&op, left, right, span).unwrap();
                 } else if let Some(operator_func) = self.resolve_instance_member(
                     left,
                     PathSegment::new(Spanned::new(op.get_verb().into(), span)),

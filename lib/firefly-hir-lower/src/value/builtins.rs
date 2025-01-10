@@ -1,11 +1,21 @@
-
-use firefly_mir::{ty::{Ty as MirTy, TyKind as MirTyKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, FloatBinaryOp, Immediate, ImmediateKind, IntegerBinaryOp, StringBinaryOp, UnaryIntrinsic}};
+use firefly_mir::{
+    ty::{Ty as MirTy, TyKind as MirTyKind},
+    value::{
+        BinaryIntrinsic, BooleanBinaryOp, Comparison, FloatBinaryOp, Immediate, ImmediateKind,
+        IntegerBinaryOp, StringBinaryOp, UnaryIntrinsic,
+    },
+};
 use firefly_span::Span;
 
 use crate::HirLowerer;
 
 impl HirLowerer<'_> {
-    pub(super) fn lower_builtin(&self, builtin_name: &str, args: Vec<Immediate>, span: Span) -> Immediate {
+    pub(super) fn lower_builtin(
+        &self,
+        builtin_name: &str,
+        args: Vec<Immediate>,
+        span: Span,
+    ) -> Immediate {
         // Check for binary
         let binary_kind = match builtin_name {
             "eq_int" => BinaryIntrinsic::Compare(Comparison::Equal),
@@ -60,9 +70,7 @@ impl HirLowerer<'_> {
             BinaryIntrinsic::String(_) => MirTy::new(MirTyKind::String),
         };
 
-        let [lhs, rhs] = &args[..] else {
-            panic!()
-        };
+        let [lhs, rhs] = &args[..] else { panic!() };
 
         Immediate {
             kind: Box::new(ImmediateKind::Binary(binary_kind, lhs.clone(), rhs.clone())),
@@ -71,9 +79,13 @@ impl HirLowerer<'_> {
         }
     }
 
-    fn lower_unary_builtin(&self, builtin_name: &str, args: Vec<Immediate>, span: Span) -> Immediate {
-        let (imm, ty) =
-        match builtin_name {
+    fn lower_unary_builtin(
+        &self,
+        builtin_name: &str,
+        args: Vec<Immediate>,
+        span: Span,
+    ) -> Immediate {
+        let (imm, ty) = match builtin_name {
             "not" => (UnaryIntrinsic::Not, MirTyKind::Bool),
             "bitnot" => (UnaryIntrinsic::BitNot, MirTyKind::Integer),
 
@@ -94,6 +106,11 @@ impl HirLowerer<'_> {
             "ceil" => (UnaryIntrinsic::Ceil, MirTyKind::Integer),
             "to_float" => (UnaryIntrinsic::ToFloat, MirTyKind::Float),
 
+            "identity" => (UnaryIntrinsic::Identity, MirTyKind::Integer),
+            "identity_float" => (UnaryIntrinsic::Identity, MirTyKind::Float),
+            "negate" => (UnaryIntrinsic::Negate, MirTyKind::Integer),
+            "negate_float" => (UnaryIntrinsic::Negate, MirTyKind::Float),
+
             _ => panic!(),
         };
 
@@ -102,7 +119,7 @@ impl HirLowerer<'_> {
         Immediate {
             kind: Box::new(ImmediateKind::Unary(imm, args[0].clone())),
             ty,
-            span
+            span,
         }
     }
 }

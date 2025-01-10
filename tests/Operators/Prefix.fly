@@ -1,0 +1,21 @@
+module Test.Operators
+
+struct Int {
+  var inner: int
+
+  func identity() -> Int {
+    self
+  }
+
+  func fmt() -> string {
+    return format_int(self.inner)
+  }
+}
+
+func main() {
+  var n = Int(10);
+
+  print((+n).fmt());
+
+  print(format_int(+10));
+}

@@ -8,7 +8,10 @@ use firefly_hir::{
 use firefly_span::Span;
 
 use crate::{errors::SymbolError, AstLowerer};
-use firefly_ast::{operator::InfixOperator, Path, PathSegment};
+use firefly_ast::{
+    operator::{InfixOperator, PrefixOperator},
+    Path, PathSegment,
+};
 
 impl AstLowerer {
     pub fn resolve_value(
@@ -47,6 +50,99 @@ impl AstLowerer {
         }
 
         return Some(value);
+    }
+
+    pub fn get_integer_prefix_operator(
+        &mut self,
+        operator: &PrefixOperator,
+        value: Value,
+        span: Span,
+    ) -> Option<Value> {
+        let (builtin_name, return_type_kind) = match operator {
+            PrefixOperator::Identity => ("identity", TyKind::Integer),
+            PrefixOperator::Invert => ("bitnot", TyKind::Integer),
+            PrefixOperator::Negate => ("negate", TyKind::Integer),
+        };
+
+        let op_func_kind = TyKind::Func(
+            vec![Ty::new_unspanned(TyKind::Integer)],
+            Box::new(Ty::new_unspanned(return_type_kind.clone())),
+        );
+
+        return Some(Value::new(
+            ValueKind::Invoke(
+                Box::new(Value::new(
+                    ValueKind::BuiltinFunc(builtin_name),
+                    Ty::new(op_func_kind, span),
+                    span,
+                )),
+                vec![value],
+            ),
+            Ty::new(return_type_kind, span),
+            span,
+        ));
+    }
+
+    pub fn get_float_prefix_operator(
+        &mut self,
+        operator: &PrefixOperator,
+        value: Value,
+        span: Span,
+    ) -> Option<Value> {
+        let (builtin_name, return_type_kind) = match operator {
+            PrefixOperator::Identity => ("identity_float", TyKind::Float),
+            PrefixOperator::Invert => return None,
+            PrefixOperator::Negate => ("identity_negate", TyKind::Float),
+        };
+
+        let op_func_kind = TyKind::Func(
+            vec![Ty::new_unspanned(TyKind::Float)],
+            Box::new(Ty::new_unspanned(return_type_kind.clone())),
+        );
+
+        return Some(Value::new(
+            ValueKind::Invoke(
+                Box::new(Value::new(
+                    ValueKind::BuiltinFunc(builtin_name),
+                    Ty::new(op_func_kind, span),
+                    span,
+                )),
+                vec![value],
+            ),
+            Ty::new(return_type_kind, span),
+            span,
+        ));
+    }
+
+    pub fn get_boolean_prefix_operator(
+        &mut self,
+        operator: &PrefixOperator,
+        value: Value,
+        span: Span,
+    ) -> Option<Value> {
+        let (builtin_name, return_type_kind) = match operator {
+            PrefixOperator::Identity => return None,
+            PrefixOperator::Invert => ("not", TyKind::Integer),
+            PrefixOperator::Negate => return None,
+        };
+
+        let op_func_kind = TyKind::Func(
+            vec![Ty::new_unspanned(TyKind::Integer)],
+            Box::new(Ty::new_unspanned(return_type_kind.clone())),
+        );
+
+        return Some(Value::new(
+            ValueKind::Invoke(
+                Box::new(Value::new(
+                    ValueKind::BuiltinFunc(builtin_name),
+                    Ty::new(op_func_kind, span),
+                    span,
+                )),
+                vec![value],
+            ),
+            Ty::new(return_type_kind, span),
+            span,
+        ));
     }
 
     pub fn get_integer_operator(
@@ -151,8 +247,8 @@ impl AstLowerer {
 
         let op_func_kind = TyKind::Func(
             vec![
-                Ty::new_unspanned(TyKind::Integer),
-                Ty::new_unspanned(TyKind::Integer),
+                Ty::new_unspanned(TyKind::Float),
+                Ty::new_unspanned(TyKind::Float),
             ],
             Box::new(Ty::new_unspanned(return_type_kind.clone())),
         );

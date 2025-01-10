@@ -70,6 +70,22 @@ pub fn create_lang_module(context: &mut HirContext) {
         context,
     );
 
+    create_func(
+        "identity",
+        &[TyKind::Integer],
+        TyKind::Integer,
+        lang_id,
+        context,
+    );
+
+    create_func(
+        "negate",
+        &[TyKind::Integer],
+        TyKind::Integer,
+        lang_id,
+        context,
+    );
+
     for name in INT_COMPARES {
         create_func(
             name,
@@ -136,6 +152,21 @@ pub fn create_lang_module(context: &mut HirContext) {
         "format_float",
         &[TyKind::Float],
         TyKind::String,
+        lang_id,
+        context,
+    );
+
+    create_func(
+        "identity_float",
+        &[TyKind::Float],
+        TyKind::Float,
+        lang_id,
+        context,
+    );
+    create_func(
+        "negate_float",
+        &[TyKind::Float],
+        TyKind::Float,
         lang_id,
         context,
     );
