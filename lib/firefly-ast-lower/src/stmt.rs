@@ -1,4 +1,4 @@
-use crate::{value::LowerValueContext, AstLowerer};
+use crate::AstLowerer;
 use firefly_ast::stmt::{CodeBlock as AstCodeBlock, Stmt as AstStmt};
 use firefly_hir::{
     resolve::{Symbol, SymbolTable},
