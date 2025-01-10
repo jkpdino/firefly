@@ -6,7 +6,7 @@ use crate::{ty::Ty, value::Value, Name};
 #[derive(Debug)]
 pub enum Stmt {
     Value(Spanned<Value>, bool),
-    Bind(Name, Spanned<Ty>, Spanned<Value>),
+    Bind(Name, Option<Spanned<Ty>>, Spanned<Value>),
     Semicolon,
     Error
 }

@@ -1,0 +1,10 @@
+module Test.Infer.Var
+
+/* @expect Hello, world! */
+
+func main() {
+  var hello = "Hello, ";
+  var world = "world!";
+
+  print(concat(hello, world))
+}

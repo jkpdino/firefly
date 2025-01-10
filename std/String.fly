@@ -1,0 +1,34 @@
+public struct String {
+    private pointer: RawPointer[UInt8]
+    private refs: UInt
+    private length: UInt
+}
+
+private struct StringInner {
+    private refs: UInt
+    private data: UnsizedArray[UInt8]
+}
+
+func main() {
+    let s = input[String]();
+
+    s.split(at = 0)
+    s.split(at: 0)
+
+    s.firstIndex(of: ' ')
+    s.firstIndex(of = ' ')
+
+    Row(gap = 4,
+        justify = .Stretch,
+        align = .Center)
+    {
+        Text("Hello, World!")
+    }
+
+    Row(gap: 4,
+        justify: .Stretch,
+        align: .Center)
+    {
+        Text("Hello, World!")
+    }
+}
