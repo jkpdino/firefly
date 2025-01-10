@@ -72,7 +72,8 @@ impl AstLowerer {
 
             AstStmt::Bind(name, ty, value) => {
                 let name = self.lower_name(name);
-                let value = self.lower_value(&value, parent.as_base(), symbol_table);
+                let value =
+                    self.lower_value(&value, parent.as_base(), symbol_table, Default::default());
                 let ty = ty
                     .as_ref()
                     .map(|ty| self.lower_ty(&ty, parent.as_base(), symbol_table))
