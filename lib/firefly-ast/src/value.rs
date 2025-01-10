@@ -1,8 +1,12 @@
 use firefly_span::Spanned;
 
-use crate::{stmt::CodeBlock, Name, Path, PathSegment};
+use crate::{
+    operator::{InfixOperator, PrefixOperator},
+    stmt::CodeBlock,
+    Name, Path, PathSegment,
+};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Value {
     Tuple(Vec<Spanned<Value>>),
     IntegerLiteral(Name),
@@ -18,23 +22,25 @@ pub enum Value {
     Assign(Box<Spanned<Value>>, Box<Spanned<Value>>),
     Member(Box<Spanned<Value>>, PathSegment),
     TupleMember(Box<Spanned<Value>>, Name),
+    Prefix(PrefixOperator, Box<Spanned<Value>>),
+    Infix(Box<Spanned<Value>>, InfixOperator, Box<Spanned<Value>>),
     Error,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IfStatement {
     pub condition: Spanned<Value>,
     pub positive: CodeBlock,
-    pub negative: Option<ElseStatement>
+    pub negative: Option<ElseStatement>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ElseStatement {
     Else(CodeBlock),
-    ElseIf(Box<IfStatement>)
+    ElseIf(Box<IfStatement>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WhileStatement {
     pub label: Option<Name>,
     pub condition: Spanned<Value>,
@@ -53,7 +59,7 @@ impl Value {
 
                 Value::Path(new_base)
             }
-            _ => Value::Member(parent, member)
+            _ => Value::Member(parent, member),
         }
     }
 }

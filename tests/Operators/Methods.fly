@@ -1,0 +1,17 @@
+module Test.Operators
+
+struct Int {
+  var inner: int
+
+  func add(other: Int) -> Int {
+    Int(add(self.inner, other.inner))
+  }
+
+  func fmt() -> string {
+    return format_int(self.inner)
+  }
+}
+
+func main() {
+  print(Int(1 + 5 * 5).fmt())
+}

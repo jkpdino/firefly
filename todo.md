@@ -2,25 +2,27 @@
 
 ## Highlight Features
 
-- [ ] Local variable inference
-    - [ ] Change parse to make type optional
-    - [ ] Copy the type from the value if needed
-- [ ] Operators
-    - [ ] Make a list of allowed operators
-    - [ ] Parse operators with precedence
-    - [ ] Allow methods for intrinsics
-    - [ ] Replace operators with method calls
+- [x] Local variable inference
+  - [x] Change parse to make type optional
+  - [x] Copy the type from the value if needed
+- [x] Operators
+  - [x] Make a list of allowed operators
+  - [x] Parse operators with precedence
+  - [x] Allow methods for intrinsics
+  - [x] Replace operators with method calls
+  - [x] Test method call operators
+  - [x] Add string operators
+  - [ ] Add errors for operators (ish)
 - [ ] Parameter Labels
-    - [ ] Parse parameter labels
-    - [ ] Add parameters to signatures
-    - [ ] Figure out whether to use = or :
-    - [ ] Parse argument labels
+  - [ ] Parse parameter labels
+  - [ ] Add parameters to signatures
+  - [ ] Figure out whether to use = or :
+  - [ ] Parse argument labels
 - [ ] Function overloading
-    - [ ] Error for more than one
-    - [ ] Select overloads from a path
-    - [ ] Select overloads in scope
+  - [ ] Error for more than one
+  - [ ] Select overloads from a path
+  - [ ] Select overloads in scope
 - [ ] Struct Initializers
-    - [ ] Add overload for initializers
+  - [ ] Add overload for initializers
 - [ ] Style guide
-    - [ ] Capitalization
-
+  - [ ] Capitalization

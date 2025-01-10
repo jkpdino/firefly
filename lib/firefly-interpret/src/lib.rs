@@ -3,25 +3,29 @@ use itertools::Itertools;
 use stack_frame::StackFrame;
 use value::{InnerValue, Value};
 
-use firefly_mir::{code::{BasicBlockId, Function, InstructionKind, TerminatorKind}, value::{BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, FloatBinaryOp, Immediate, ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp, UnaryIntrinsic}, Id, MirContext};
+use firefly_mir::{
+    code::{BasicBlockId, Function, InstructionKind, TerminatorKind},
+    value::{
+        BinaryIntrinsic, BooleanBinaryOp, Comparison, ConstantValue, FloatBinaryOp, Immediate,
+        ImmediateKind, IntegerBinaryOp, Place, PlaceKind, StringBinaryOp, UnaryIntrinsic,
+    },
+    Id, MirContext,
+};
 
-pub mod value;
-mod stack_frame;
 mod action;
+mod stack_frame;
+pub mod value;
 
 pub struct ExecutionEngine<'a> {
     context: &'a MirContext,
-    globals: StackFrame
+    globals: StackFrame,
 }
 
 impl<'a> ExecutionEngine<'a> {
     pub fn new(context: &'a MirContext) -> Self {
         let globals = StackFrame::new(context.globals().len(), Vec::new());
 
-        Self {
-            context,
-            globals
-        }
+        Self { context, globals }
     }
 
     pub fn execute(&mut self) {
@@ -78,9 +82,7 @@ impl<'a> ExecutionEngine<'a> {
             return Action::ReturnVoid;
         };
         match &terminator.kind {
-            TerminatorKind::Branch(bb) => {
-                Action::Jump(*bb)
-            }
+            TerminatorKind::Branch(bb) => Action::Jump(*bb),
             TerminatorKind::BranchIf(cond, then, otherwise) => {
                 let value = self.eval_immediate(cond, frame);
 
@@ -95,15 +97,12 @@ impl<'a> ExecutionEngine<'a> {
 
                 Action::Return(value)
             }
-            TerminatorKind::ReturnVoid => {
-                Action::ReturnVoid
-            }
+            TerminatorKind::ReturnVoid => Action::ReturnVoid,
         }
     }
 
     fn eval_immediate(&mut self, imm: &Immediate, frame: &mut StackFrame) -> Value {
-        let inner =
-        match imm.kind.as_ref() {
+        let inner = match imm.kind.as_ref() {
             ImmediateKind::Void => InnerValue::Void,
             ImmediateKind::Constant(ConstantValue::Integer(i)) => InnerValue::Integer(*i),
             ImmediateKind::Constant(ConstantValue::Bool(b)) => InnerValue::Boolean(*b),
@@ -111,7 +110,10 @@ impl<'a> ExecutionEngine<'a> {
             ImmediateKind::Constant(ConstantValue::Float(f)) => InnerValue::Float(*f),
 
             ImmediateKind::Tuple(items) | ImmediateKind::Struct(items) => {
-                let items = items.iter().map(|item| self.eval_immediate(item, frame)).collect_vec();
+                let items = items
+                    .iter()
+                    .map(|item| self.eval_immediate(item, frame))
+                    .collect_vec();
 
                 InnerValue::Struct(items)
             }
@@ -119,7 +121,10 @@ impl<'a> ExecutionEngine<'a> {
             ImmediateKind::Move(place) => return self.eval_place(place, frame).clone(),
 
             ImmediateKind::Call(func, args) => {
-                let args = args.iter().map(|arg| self.eval_immediate(arg, frame)).collect();
+                let args = args
+                    .iter()
+                    .map(|arg| self.eval_immediate(arg, frame))
+                    .collect();
                 let value = self.execute_function(*func, args);
                 return value;
             }
@@ -130,28 +135,36 @@ impl<'a> ExecutionEngine<'a> {
 
                 match op {
                     BinaryIntrinsic::Boolean(op) => {
-                        let (InnerValue::Boolean(left), InnerValue::Boolean(right)) = (left.as_ref(), right.as_ref()) else {
+                        let (InnerValue::Boolean(left), InnerValue::Boolean(right)) =
+                            (left.as_ref(), right.as_ref())
+                        else {
                             panic!();
                         };
 
                         return self.eval_bool_op(*op, *left, *right);
                     }
                     BinaryIntrinsic::Integer(op) => {
-                        let (InnerValue::Integer(left), InnerValue::Integer(right)) = (left.as_ref(), right.as_ref()) else {
+                        let (InnerValue::Integer(left), InnerValue::Integer(right)) =
+                            (left.as_ref(), right.as_ref())
+                        else {
                             panic!("{op}");
                         };
 
                         return self.eval_int_op(*op, *left, *right);
                     }
                     BinaryIntrinsic::Float(op) => {
-                        let (InnerValue::Float(left), InnerValue::Float(right)) = (left.as_ref(), right.as_ref()) else {
+                        let (InnerValue::Float(left), InnerValue::Float(right)) =
+                            (left.as_ref(), right.as_ref())
+                        else {
                             panic!("{op}");
                         };
 
                         return self.eval_float_op(*op, *left, *right);
                     }
                     BinaryIntrinsic::String(op) => {
-                        let (InnerValue::String(left), InnerValue::String(right)) = (left.as_ref(), right.as_ref()) else {
+                        let (InnerValue::String(left), InnerValue::String(right)) =
+                            (left.as_ref(), right.as_ref())
+                        else {
                             panic!();
                         };
 
@@ -172,15 +185,18 @@ impl<'a> ExecutionEngine<'a> {
                 }
             }
 
-            ImmediateKind::Unary(op, value) => {
-                self.eval_unary(value, frame, op)
-            }
+            ImmediateKind::Unary(op, value) => self.eval_unary(value, frame, op),
         };
 
         Box::new(inner)
     }
 
-    fn eval_unary(&mut self, value: &Immediate, frame: &mut StackFrame, op: &UnaryIntrinsic) -> InnerValue {
+    fn eval_unary(
+        &mut self,
+        value: &Immediate,
+        frame: &mut StackFrame,
+        op: &UnaryIntrinsic,
+    ) -> InnerValue {
         let operand = self.eval_immediate(value, frame);
 
         match (operand.as_ref(), op) {
@@ -206,15 +222,20 @@ impl<'a> ExecutionEngine<'a> {
             (InnerValue::Float(f), UnaryIntrinsic::Ceil) => InnerValue::Integer(f.ceil() as u64),
             (InnerValue::Float(f), UnaryIntrinsic::Floor) => InnerValue::Integer(f.floor() as u64),
 
-            _ => unreachable!("{op}")
+            (inner, UnaryIntrinsic::Identity) => inner.clone(),
+
+            (InnerValue::Float(f), UnaryIntrinsic::Negate) => InnerValue::Float(-f),
+            (InnerValue::Integer(i), UnaryIntrinsic::Negate) => {
+                InnerValue::Integer(i.wrapping_neg())
+            }
+
+            _ => unreachable!("{op}"),
         }
     }
-    
+
     fn eval_place<'b>(&'b mut self, place: &Place, frame: &'b mut StackFrame) -> &'b mut Value {
         match place.kind.as_ref() {
-            PlaceKind::Local(index) => {
-                return frame.get_value_mut(index.index())
-            }
+            PlaceKind::Local(index) => return frame.get_value_mut(index.index()),
             PlaceKind::Global(index) => {
                 return self.globals.get_value_mut(index.index());
             }
@@ -272,7 +293,7 @@ impl<'a> ExecutionEngine<'a> {
 
     fn eval_string_op(&mut self, string_op: StringBinaryOp, left: &str, right: &str) -> Value {
         let result = match string_op {
-            StringBinaryOp::Concat => format!("{left}{right}")
+            StringBinaryOp::Concat => format!("{left}{right}"),
         };
 
         Value::new(InnerValue::String(result))

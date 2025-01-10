@@ -18,8 +18,8 @@ pub enum Token<'a> {
     #[regex("(0[bB][01_]+)")]
     IntegerLiteral(&'a str),
 
-    #[regex("[+-]?[0-9][_0-9]*[eE][+-]?[0-9][_0-9]*")]
-    #[regex("[+-]?[0-9][_0-9]*[.]([0-9][_0-9]*)?([eE][+-]?[0-9][_0-9]*)?")]
+    #[regex("[0-9][_0-9]*[eE][+-]?[0-9][_0-9]*")]
+    #[regex("[0-9][_0-9]*[.]([0-9][_0-9]*)?([eE][+-]?[0-9][_0-9]*)?")]
     FloatLiteral(&'a str),
 
     #[regex(r#"raw""#, |lex| lex_string(lex, true))]
@@ -31,29 +31,46 @@ pub enum Token<'a> {
     LongStringLiteral(&'a str),
 
     // Keywords
-    #[token("public")] PublicKw,
-    #[token("internal")] InternalKw,
-    #[token("fileprivate")] FilePrivateKw,
-    #[token("private")] PrivateKw,
+    #[token("public")]
+    PublicKw,
+    #[token("internal")]
+    InternalKw,
+    #[token("fileprivate")]
+    FilePrivateKw,
+    #[token("private")]
+    PrivateKw,
 
-    #[token("module")] ModuleKw,
-    #[token("import")] ImportKw,
+    #[token("module")]
+    ModuleKw,
+    #[token("import")]
+    ImportKw,
 
-    #[token("as")] AsKw,
+    #[token("as")]
+    AsKw,
 
-    #[token("var")] VarKw,
-    #[token("func")] FuncKw,
-    #[token("struct")] StructKw,
+    #[token("var")]
+    VarKw,
+    #[token("func")]
+    FuncKw,
+    #[token("struct")]
+    StructKw,
 
-    #[token("static")] StaticKw,
+    #[token("static")]
+    StaticKw,
 
-    #[token("return")] ReturnKw,
-    #[token("break")] BreakKw,
-    #[token("continue")] ContinueKw,
+    #[token("return")]
+    ReturnKw,
+    #[token("break")]
+    BreakKw,
+    #[token("continue")]
+    ContinueKw,
 
-    #[token("if")] IfKw,
-    #[token("else")] ElseKw,
-    #[token("while")] WhileKw,
+    #[token("if")]
+    IfKw,
+    #[token("else")]
+    ElseKw,
+    #[token("while")]
+    WhileKw,
 
     // Symbols
     #[token("(")]
@@ -79,30 +96,95 @@ pub enum Token<'a> {
     #[token("=")]
     Equals,
 
+    #[token("!")]
+    Invert,
+    #[token("+")]
+    Plus,
+    #[token("-")]
+    Minus,
+    #[token("<<")]
+    ShiftLeft,
+    #[token(">>")]
+    ShiftRight,
+
+    #[token("*")]
+    Multiply,
+    #[token("/")]
+    Divide,
+    #[token("%")]
+    Modulo,
+    #[token("&")]
+    BitAnd,
+    #[token("|")]
+    BitOr,
+    #[token("^")]
+    BitXor,
+
+    #[token("<")]
+    LessThan,
+    #[token(">")]
+    GreaterThan,
+    #[token("<=")]
+    LessThanOrEqual,
+    #[token(">=")]
+    GreaterThanOrEqual,
+    #[token("==")]
+    EqualEqual,
+    #[token("!=")]
+    NotEquals,
+
+    #[token("&&")]
+    LogicalAnd,
+    #[token("||")]
+    LogicalOr,
+
+    #[token("+=")]
+    PlusEquals,
+    #[token("-=")]
+    MinusEquals,
+    #[token("*=")]
+    MultiplyEquals,
+    #[token("/=")]
+    DivideEquals,
+    #[token("%=")]
+    ModuloEquals,
+    #[token("&=")]
+    BitAndEquals,
+    #[token("|=")]
+    BitOrEquals,
+    #[token("^=")]
+    BitXorEquals,
+    #[token("<<=")]
+    ShiftLeftEquals,
+    #[token(">>=")]
+    ShiftRightEquals,
+
     #[regex("[\n\r\t ]", logos::skip)]
     Whitespace,
 
-    #[regex("//[^\n]*", logos::skip)]
     #[regex("/*", |lex| lex_long_comment(lex))]
+    #[regex("//[^\n]*", logos::skip)]
     Comment,
 }
 
-fn lex_string<'a>(lexer: &mut logos::Lexer<'a, Token<'a>>, raw: bool) -> Result<&'a str, LexerError> {
+fn lex_string<'a>(
+    lexer: &mut logos::Lexer<'a, Token<'a>>,
+    raw: bool,
+) -> Result<&'a str, LexerError> {
     let mut remaining = lexer.remainder().chars();
 
     while let Some(next) = remaining.next() {
         lexer.bump(next.len_utf8());
 
         match next {
-            '"' => {
-                return Ok(lexer.slice())
-            }
+            '"' => return Ok(lexer.slice()),
             '\n' => return Err(LexerError::NewlineInString),
             '\\' if !raw => match remaining.next() {
                 Some('x') => {
                     lexer.bump('x'.len_utf8());
 
-                    let num_digits = lexer.remainder()
+                    let num_digits = lexer
+                        .remainder()
                         .chars()
                         .take(4)
                         .take_while(char::is_ascii_hexdigit)
@@ -114,19 +196,20 @@ fn lex_string<'a>(lexer: &mut logos::Lexer<'a, Token<'a>>, raw: bool) -> Result<
 
                     lexer.bump(num_digits);
                 }
-                Some(c) => {
-                    lexer.bump(c.len_utf8())
-                }
+                Some(c) => lexer.bump(c.len_utf8()),
                 None => return Err(LexerError::UnclosedEscape),
             },
             _ => {}
         }
     }
 
-    return Err(LexerError::UnclosedString)
+    return Err(LexerError::UnclosedString);
 }
 
-fn lex_long_string<'a>(lexer: &mut logos::Lexer<'a, Token<'a>>, raw: bool) -> Result<&'a str, LexerError> {
+fn lex_long_string<'a>(
+    lexer: &mut logos::Lexer<'a, Token<'a>>,
+    raw: bool,
+) -> Result<&'a str, LexerError> {
     let num_of_quotes = lexer.remainder().chars().take_while(|c| *c == '"').count() + 3;
     lexer.bump('"'.len_utf8() * num_of_quotes);
 
@@ -140,7 +223,7 @@ fn lex_long_string<'a>(lexer: &mut logos::Lexer<'a, Token<'a>>, raw: bool) -> Re
             '"' => {
                 seen_quotes += 1;
                 if num_of_quotes == seen_quotes {
-                    return Ok(lexer.slice())
+                    return Ok(lexer.slice());
                 }
                 continue;
             }
@@ -148,22 +231,21 @@ fn lex_long_string<'a>(lexer: &mut logos::Lexer<'a, Token<'a>>, raw: bool) -> Re
                 Some('x') => {
                     lexer.bump('x'.len_utf8());
 
-                    let num_digits = lexer.remainder()
+                    let num_digits = lexer
+                        .remainder()
                         .chars()
                         .take(4)
                         .take_while(char::is_ascii_hexdigit)
                         .count();
 
-                        for _ in 0..num_digits {
-                            remaining.next();
-                        }
+                    for _ in 0..num_digits {
+                        remaining.next();
+                    }
 
                     lexer.bump(num_digits);
                 }
-                Some(c) => {
-                    lexer.bump(c.len_utf8())
-                }
-                None => return Err(LexerError::UnclosedEscape)
+                Some(c) => lexer.bump(c.len_utf8()),
+                None => return Err(LexerError::UnclosedEscape),
             },
             _ => {}
         }
@@ -171,9 +253,10 @@ fn lex_long_string<'a>(lexer: &mut logos::Lexer<'a, Token<'a>>, raw: bool) -> Re
         seen_quotes = 0;
     }
 
-    return Err(LexerError::UnclosedString)
+    return Err(LexerError::UnclosedString);
 }
 
+#[allow(unused)]
 fn lex_long_comment<'a>(lexer: &mut logos::Lexer<'a, Token<'a>>) -> FilterResult<(), LexerError> {
     let mut level_of_comments = 1;
 
@@ -201,13 +284,12 @@ fn lex_long_comment<'a>(lexer: &mut logos::Lexer<'a, Token<'a>>) -> FilterResult
         }
 
         if level_of_comments == 0 {
-            return FilterResult::Skip
+            return FilterResult::Skip;
         }
     }
 
-    return FilterResult::Error(LexerError::UnclosedComment)
+    return FilterResult::Error(LexerError::UnclosedComment);
 }
-
 
 impl<'a> Token<'a> {
     pub fn to_lalr_triple(

@@ -1,17 +1,17 @@
-use firefly_hir::{Id, stmt::CodeBlock as HirCodeBlock};
+use firefly_hir::{stmt::CodeBlock as HirCodeBlock, Id};
 use firefly_span::Spanned;
 
 use crate::{ty::Ty, value::Value, Name};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Stmt {
     Value(Spanned<Value>, bool),
     Bind(Name, Option<Spanned<Ty>>, Spanned<Value>),
     Semicolon,
-    Error
+    Error,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CodeBlock {
     pub id: Id<HirCodeBlock>,
     pub stmts: Vec<Spanned<Stmt>>,
@@ -23,7 +23,7 @@ impl CodeBlock {
         Self {
             id: Default::default(),
             stmts,
-            yields
+            yields,
         }
     }
 }

@@ -1,39 +1,65 @@
-use crate::{errors::{StringError, TypeError, ValueError}, labels::LoopLabel, AstLowerer};
-use firefly_ast::value::{ElseStatement, IfStatement, Value as AstValue};
-use firefly_hir::{resolve::SymbolTable, ty::{Ty, TyKind}, value::{ElseValue, IfValue, LiteralValue, Value as HirValue, ValueKind as HirValueKind, WhileValue}, Entity, Id};
+use crate::{
+    errors::{StringError, TypeError, ValueError},
+    labels::LoopLabel,
+    AstLowerer,
+};
+use firefly_ast::{
+    operator::InfixOperator,
+    value::{ElseStatement, IfStatement, Value as AstValue},
+    PathSegment,
+};
+use firefly_hir::{
+    resolve::SymbolTable,
+    ty::{Ty, TyKind},
+    value::{
+        ElseValue, IfValue, LiteralValue, Value as HirValue, ValueKind as HirValueKind, WhileValue,
+    },
+    Entity, Id,
+};
 use firefly_span::{Span, Spanned};
 use itertools::Itertools;
 
+#[derive(Copy, Clone)]
+pub struct LowerValueContext {
+    is_in_operator: bool,
+}
+
 impl AstLowerer {
-    pub fn lower_value(&mut self, value: &Spanned<AstValue>, parent: Id<Entity>, symbol_table: &mut SymbolTable) -> HirValue  {
+    pub fn lower_value(
+        &mut self,
+        value: &Spanned<AstValue>,
+        parent: Id<Entity>,
+        symbol_table: &mut SymbolTable,
+        context: LowerValueContext,
+    ) -> HirValue {
         let span = value.span;
         let (kind, ty) = match &value.item {
             AstValue::Tuple(items) if items.is_empty() => {
                 (HirValueKind::Unit, Ty::new(TyKind::Unit, span))
             }
             AstValue::Tuple(items) if items.len() == 1 => {
-                let HirValue { kind, ty, .. } = self.lower_value(&items[0], parent, symbol_table);
+                let HirValue { kind, ty, .. } =
+                    self.lower_value(&items[0], parent, symbol_table, context.reset());
 
                 (kind, ty)
             }
             AstValue::Tuple(items) => {
-                let items = items.iter()
-                    .map(|item| self.lower_value(item, parent, symbol_table))
+                let items = items
+                    .iter()
+                    .map(|item| self.lower_value(item, parent, symbol_table, context.reset()))
                     .collect_vec();
 
-                let types = items.iter()
-                    .map(|item| item.ty.clone())
-                    .collect_vec();
+                let types = items.iter().map(|item| item.ty.clone()).collect_vec();
 
                 let tuple_kind = HirValueKind::Tuple(items);
                 let tuple_type = Ty::new(TyKind::Tuple(types), span);
 
                 (tuple_kind, tuple_type)
-            },
+            }
             AstValue::IntegerLiteral(num) => {
                 // Remove the underscores
                 let santized_num = num.item.replace("_", "");
-                
+
                 let int_kind = HirValueKind::Literal(LiteralValue::Integer(santized_num));
                 let int_type = Ty::new(TyKind::Integer, span);
 
@@ -59,18 +85,20 @@ impl AstLowerer {
             }
 
             AstValue::Call(function, args) => {
-                let function_value = self.lower_value(function, parent, symbol_table);
+                let function_value =
+                    self.lower_value(function, parent, symbol_table, context.reset());
 
                 let TyKind::Func(_, return_ty) = &function_value.ty.kind else {
                     self.emit(TypeError::CantCall(function_value.span));
-                    
+
                     return HirValue::default();
                 };
                 let return_ty = return_ty.as_ref().clone();
 
-                let args = args.iter()
-                               .map(|arg| self.lower_value(arg, parent, symbol_table))
-                               .collect_vec();
+                let args = args
+                    .iter()
+                    .map(|arg| self.lower_value(arg, parent, symbol_table, context.reset()))
+                    .collect_vec();
 
                 let invoke = HirValueKind::Invoke(Box::new(function_value), args);
 
@@ -78,14 +106,17 @@ impl AstLowerer {
             }
 
             AstValue::Path(path) => match self.resolve_value(path, parent, symbol_table) {
-                Some(value) => { return value },
-                None => (HirValueKind::Unit, Ty::new(TyKind::Unit, span))
-            }
+                Some(value) => return value,
+                None => (HirValueKind::Unit, Ty::new(TyKind::Unit, span)),
+            },
 
             AstValue::Member(parent_val, member) => {
-                let parent_val = self.lower_value(parent_val, parent, symbol_table);
+                let parent_val =
+                    self.lower_value(parent_val, parent, symbol_table, context.reset());
 
-                if let Some(member) = self.resolve_instance_member(parent_val, member.clone(), parent) {
+                if let Some(member) =
+                    self.resolve_instance_member(parent_val, member.clone(), parent)
+                {
                     return member;
                 }
 
@@ -93,9 +124,13 @@ impl AstLowerer {
             }
 
             AstValue::TupleMember(parent_val, index) => {
-                let parent_val = self.lower_value(parent_val, parent, symbol_table);
+                let parent_val =
+                    self.lower_value(parent_val, parent, symbol_table, context.reset());
 
-                let index_num: usize = index.item.parse().expect("internal compiler error: digits aren't a number");
+                let index_num: usize = index
+                    .item
+                    .parse()
+                    .expect("internal compiler error: digits aren't a number");
 
                 let TyKind::Tuple(items) = &parent_val.ty.kind else {
                     // error
@@ -109,31 +144,50 @@ impl AstLowerer {
 
                 let ty = items[index_num].clone();
 
-                (HirValueKind::TupleMember(Box::new(parent_val), index_num), ty)
+                (
+                    HirValueKind::TupleMember(Box::new(parent_val), index_num),
+                    ty,
+                )
             }
 
             AstValue::Return(return_value) => {
                 let return_value = if let Some(return_value) = return_value {
-                    self.lower_value(return_value, parent, symbol_table)
+                    self.lower_value(return_value, parent, symbol_table, context.reset())
                 } else {
                     let span = value.span;
                     HirValue::new(HirValueKind::Unit, Ty::new(TyKind::Unit, span), span)
                 };
 
-                (HirValueKind::Return(Box::new(return_value)), Ty::new(TyKind::Never, value.span))
+                (
+                    HirValueKind::Return(Box::new(return_value)),
+                    Ty::new(TyKind::Never, value.span),
+                )
             }
 
             AstValue::If(if_statement) => {
-                let if_value = self.lower_if_statement(&if_statement, parent, symbol_table);
+                let if_value =
+                    self.lower_if_statement(&if_statement, parent, symbol_table, context);
 
-                (HirValueKind::If(Box::new(if_value)), Ty::new(TyKind::Unit, value.span))
+                (
+                    HirValueKind::If(Box::new(if_value)),
+                    Ty::new(TyKind::Unit, value.span),
+                )
             }
 
             AstValue::While(while_statement) => {
-                let label = while_statement.label.as_ref().map(|label| self.lower_name(label));
-                let condition = self.lower_value(&while_statement.condition, parent, symbol_table);
+                let label = while_statement
+                    .label
+                    .as_ref()
+                    .map(|label| self.lower_name(label));
+                let condition = self.lower_value(
+                    &while_statement.condition,
+                    parent,
+                    symbol_table,
+                    context.reset(),
+                );
 
-                self.label_stack.push(label.clone(), while_statement.body.id);
+                self.label_stack
+                    .push(label.clone(), while_statement.body.id);
                 let body = self.lower_code_block(&while_statement.body, parent, symbol_table);
                 self.label_stack.pop();
 
@@ -143,27 +197,28 @@ impl AstLowerer {
                     body,
                 };
 
-                (HirValueKind::While(Box::new(while_value)), Ty::new(TyKind::Unit, value.span))
+                (
+                    HirValueKind::While(Box::new(while_value)),
+                    Ty::new(TyKind::Unit, value.span),
+                )
             }
 
             AstValue::Break(label) => {
-                let found_label =
-                    if let Some(label) = label {
-                        self.label_stack.find(&label.item)
-                    }
-                    else {
-                        self.label_stack.last()
-                    };
+                let found_label = if let Some(label) = label {
+                    self.label_stack.find(&label.item)
+                } else {
+                    self.label_stack.last()
+                };
 
                 match found_label {
-                    Some(LoopLabel { code_block, .. }) => {
-                        (HirValueKind::Break(*code_block), Ty::new(TyKind::Never, value.span))
-                    }
+                    Some(LoopLabel { code_block, .. }) => (
+                        HirValueKind::Break(*code_block),
+                        Ty::new(TyKind::Never, value.span),
+                    ),
                     None => {
                         if let Some(label) = label {
                             self.emit(ValueError::UndefinedBreakLabel(label.clone()));
-                        }
-                        else {
+                        } else {
                             self.emit(ValueError::BreakOutsideLoop(value.span));
                         }
                         (HirValueKind::Unit, Ty::new(TyKind::Never, value.span))
@@ -172,23 +227,21 @@ impl AstLowerer {
             }
 
             AstValue::Continue(label) => {
-                let found_label =
-                    if let Some(label) = label {
-                        self.label_stack.find(&label.item)
-                    }
-                    else {
-                        self.label_stack.last()
-                    };
+                let found_label = if let Some(label) = label {
+                    self.label_stack.find(&label.item)
+                } else {
+                    self.label_stack.last()
+                };
 
                 match found_label {
-                    Some(LoopLabel { code_block, .. }) => {
-                        (HirValueKind::Continue(*code_block), Ty::new(TyKind::Never, value.span))
-                    }
+                    Some(LoopLabel { code_block, .. }) => (
+                        HirValueKind::Continue(*code_block),
+                        Ty::new(TyKind::Never, value.span),
+                    ),
                     None => {
                         if let Some(label) = label {
                             self.emit(ValueError::UndefinedContinueLabel(label.clone()));
-                        }
-                        else {
+                        } else {
                             self.emit(ValueError::ContinueOutsideLoop(value.span));
                         }
                         (HirValueKind::Unit, Ty::new(TyKind::Never, value.span))
@@ -197,36 +250,154 @@ impl AstLowerer {
             }
 
             AstValue::Assign(place, assignee) => {
-                let place = self.lower_value(place, parent, symbol_table);
-                let assignee = self.lower_value(assignee, parent, symbol_table);
+                let place = self.lower_value(place, parent, symbol_table, context.reset());
+                let assignee = self.lower_value(assignee, parent, symbol_table, context.reset());
 
                 if !place.is_mutable() {
                     self.emit(ValueError::NotMutable(place.span));
                 }
-                
-                (HirValueKind::Assign(Box::new(place), Box::new(assignee)), Ty::new(TyKind::Unit, value.span))
+
+                (
+                    HirValueKind::Assign(Box::new(place), Box::new(assignee)),
+                    Ty::new(TyKind::Unit, value.span),
+                )
             }
 
-            AstValue::Error => unreachable!()
+            AstValue::Prefix(op, value) => {
+                let unit = self.lower_value(value, parent, symbol_table, context.reset());
+
+                if let TyKind::Integer = unit.ty.kind {
+                    return self.get_integer_prefix_operator(&op, unit, span).unwrap();
+                } else if let TyKind::Float = unit.ty.kind {
+                    return self.get_float_prefix_operator(&op, unit, span).unwrap();
+                } else if let TyKind::Bool = unit.ty.kind {
+                    return self.get_boolean_prefix_operator(&op, unit, span).unwrap();
+                } else if let Some(operator_func) = self.resolve_instance_member(
+                    unit,
+                    PathSegment::new(Spanned::new(op.get_verb().into(), value.span)),
+                    parent,
+                ) {
+                    let return_type = match &operator_func.ty.kind {
+                        TyKind::Func(_, return_type) => return_type.as_ref().clone(),
+                        _ => operator_func.ty.clone(),
+                    };
+
+                    (
+                        HirValueKind::Invoke(Box::new(operator_func), vec![]),
+                        return_type,
+                    )
+                } else {
+                    todo!()
+                }
+            }
+
+            AstValue::Infix(lhs, op, rhs) => {
+                let (lhs, op, rhs) = self.reorganize(lhs, op, rhs, context.is_in_operator);
+
+                let left = self.lower_value(&lhs, parent, symbol_table, context.in_operator());
+                let right = self.lower_value(&rhs, parent, symbol_table, context.in_operator());
+
+                if let InfixOperator::Assign = op {
+                    return HirValue::new(
+                        HirValueKind::Assign(Box::new(left), Box::new(right)),
+                        Ty::new(TyKind::Unit, span),
+                        span,
+                    );
+                } else if let TyKind::Integer = left.ty.kind {
+                    return self.get_integer_operator(&op, left, right, span).unwrap();
+                } else if let TyKind::Float = left.ty.kind {
+                    return self.get_float_operator(&op, left, right, span).unwrap();
+                } else if let TyKind::Bool = left.ty.kind {
+                    return self.get_boolean_operator(&op, left, right, span).unwrap();
+                } else if let Some(operator_func) = self.resolve_instance_member(
+                    left,
+                    PathSegment::new(Spanned::new(op.get_verb().into(), span)),
+                    parent,
+                ) {
+                    let return_type = match &operator_func.ty.kind {
+                        TyKind::Func(_, return_type) => return_type.as_ref().clone(),
+                        _ => operator_func.ty.clone(),
+                    };
+
+                    return HirValue::new(
+                        HirValueKind::Invoke(Box::new(operator_func), vec![right]),
+                        return_type,
+                        span,
+                    );
+                } else {
+                    todo!()
+                }
+            }
+
+            AstValue::Error => unreachable!(),
         };
 
         HirValue::new(kind, ty, span)
     }
 
-    fn lower_if_statement(&mut self, if_stmt: &IfStatement, parent: Id<Entity>, symbol_table: &mut SymbolTable) -> IfValue {
-        let condition = self.lower_value(&if_stmt.condition, parent, symbol_table);
+    fn reorganize(
+        &self,
+        left: &Spanned<AstValue>,
+        op: &InfixOperator,
+        right: &Spanned<AstValue>,
+        is_in_operator: bool,
+    ) -> (Spanned<AstValue>, InfixOperator, Spanned<AstValue>) {
+        if is_in_operator {
+            return (left.clone(), op.clone(), right.clone());
+        }
+
+        match &left.item {
+            AstValue::Infix(inner_lhs, inner_op, inner_rhs) => {
+                let (inner_lhs, inner_op, inner_rhs) =
+                    self.reorganize(&inner_lhs, inner_op, &inner_rhs, is_in_operator);
+
+                if inner_op.precedence() >= op.precedence() {
+                    //println!("{inner_lhs:?} {inner_op:?} {inner_rhs:?}");
+                    return (inner_lhs, inner_op, inner_rhs);
+                } else {
+                    let new_left = inner_lhs;
+                    let new_right = Spanned::new(
+                        AstValue::Infix(Box::new(inner_rhs), op.clone(), Box::new(right.clone())),
+                        Span::DUMMY,
+                    );
+
+                    //println!("{new_left:?} {inner_op:?} {new_right:?}");
+
+                    return (new_left, inner_op, new_right);
+                }
+            }
+
+            _ => {
+                //println!("{left:?} {op:?} {right:?}");
+                return (left.clone(), op.clone(), right.clone());
+            }
+        }
+    }
+
+    fn lower_if_statement(
+        &mut self,
+        if_stmt: &IfStatement,
+        parent: Id<Entity>,
+        symbol_table: &mut SymbolTable,
+        context: LowerValueContext,
+    ) -> IfValue {
+        let condition = self.lower_value(&if_stmt.condition, parent, symbol_table, context);
 
         let positive = self.lower_code_block(&if_stmt.positive, parent, symbol_table);
         let negative = if_stmt.negative.as_ref().map(|negative| match negative {
             ElseStatement::Else(code_block) => {
                 ElseValue::Else(self.lower_code_block(code_block, parent, symbol_table))
             }
-            ElseStatement::ElseIf(negative) => {
-                ElseValue::ElseIf(Box::new(self.lower_if_statement(&negative, parent, symbol_table)))
-            }
+            ElseStatement::ElseIf(negative) => ElseValue::ElseIf(Box::new(
+                self.lower_if_statement(&negative, parent, symbol_table, context),
+            )),
         });
 
-        IfValue { condition, positive, negative }
+        IfValue {
+            condition,
+            positive,
+            negative,
+        }
     }
 
     fn sanitize_string(&self, s: &str, span: Span) -> String {
@@ -283,13 +454,16 @@ impl AstLowerer {
             return s.to_string();
         }
 
-        let unindented = s.lines().map(|line| {
-            if line.starts_with(unindent) {
-                &line[unindent.len()..]
-            } else {
-                line
-            }
-        }).join("\n");
+        let unindented = s
+            .lines()
+            .map(|line| {
+                if line.starts_with(unindent) {
+                    &line[unindent.len()..]
+                } else {
+                    line
+                }
+            })
+            .join("\n");
 
         return unindented;
     }
@@ -320,11 +494,11 @@ impl AstLowerer {
                             // take characters until we reach a non-hex character
                             let mut hex = String::new();
 
-                            let n_hex_digits =
-                                remaining.clone()
-                                         .take(4)
-                                         .take_while(char::is_ascii_hexdigit)
-                                         .count();
+                            let n_hex_digits = remaining
+                                .clone()
+                                .take(4)
+                                .take_while(char::is_ascii_hexdigit)
+                                .count();
 
                             for _ in 0..n_hex_digits {
                                 hex.push(remaining.next().unwrap());
@@ -351,11 +525,34 @@ impl AstLowerer {
 
                     unescaped.push(c)
                 }
-                c => unescaped.push(c)
+                c => unescaped.push(c),
             }
         }
 
         return unescaped;
     }
+}
 
+impl LowerValueContext {
+    pub fn in_operator(self) -> Self {
+        Self {
+            is_in_operator: true,
+            ..self
+        }
+    }
+
+    pub fn reset(self) -> Self {
+        Self {
+            is_in_operator: false,
+            ..self
+        }
+    }
+}
+
+impl Default for LowerValueContext {
+    fn default() -> Self {
+        Self {
+            is_in_operator: false,
+        }
+    }
 }
