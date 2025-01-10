@@ -205,7 +205,7 @@ ReturnType: Spanned<Ty> = {
 
 // Statements
 BindStmt: Stmt = {
-    "var" <name: Name> ":" <ty: Type> "=" <value: Value> ";" => Stmt::Bind(name, ty, value)
+    "var" <name: Name> <ty: ColonType?> "=" <value: Value> ";" => Stmt::Bind(name, ty, value)
 }
 
 Stmt = { Spanned<UnspannedStmt> }
@@ -390,6 +390,10 @@ LaterSegment: PathSegment = {
 
 PathSegment: PathSegment = {
     <i: Name> => PathSegment::new(i)
+}
+
+ColonType: Spanned<Ty> = {
+    ":" <ty: Type> => ty
 }
 
 Visibility = { Spanned<UnspannedVisibility> }

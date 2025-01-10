@@ -72,9 +72,11 @@ impl AstLowerer {
 
             AstStmt::Bind(name, ty, value) => {
                 let name = self.lower_name(name);
-                let ty = self.lower_ty(&ty, parent.as_base(), symbol_table);
-                let value =
-                    self.lower_value(&value, parent.as_base(), symbol_table, Default::default());
+                let value = self.lower_value(&value, parent.as_base(), symbol_table);
+                let ty = ty
+                    .as_ref()
+                    .map(|ty| self.lower_ty(&ty, parent.as_base(), symbol_table))
+                    .unwrap_or_else(|| value.ty.clone());
 
                 // Create a local so we can reference the symbol
                 let local = self.create_local(parent.as_base(), &name, &ty);
