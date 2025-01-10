@@ -7,9 +7,9 @@
   - [x] Copy the type from the value if needed
 - [x] Operators
   - [x] Make a list of allowed operators
-  - [ ] Parse operators with precedence
-  - [ ] Allow methods for intrinsics
-  - [ ] Replace operators with method calls
+  - [x] Parse operators with precedence
+  - [x] Allow methods for intrinsics
+  - [x] Replace operators with method calls
 - [ ] Parameter Labels
   - [ ] Parse parameter labels
   - [ ] Add parameters to signatures
