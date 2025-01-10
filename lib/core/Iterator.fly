@@ -1,0 +1,10 @@
+protocol Iterator {
+  associatedtype Item;
+  associatedtype Error = !;
+
+  func next() -> Item? throws Error;
+}
+
+protocol ExactSizeIterator {
+  func size() -> Int;
+}

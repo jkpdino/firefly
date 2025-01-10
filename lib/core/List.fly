@@ -1,8 +1,140 @@
 struct List[T] {
-    var count: UInt
-    var isEmpty: Bool
+    private var inner: RawPointer[T]
+    private var length: UInt
+    private var capacity: UInt   
 
-    func append(item: T)
-    func prepend(item: T)
-    func insert(item: T, at index: UInt)
+    var count: UInt {
+        get { length }
+    }
+    var isEmpty: Bool {
+        get { length == 0 }
+    }
+
+    init() {
+        inner = nil;
+        length = 0;
+        capacity = 0;
+    }
+
+    init(withCapacity capacity: UInt) {
+        inner = RawPointer.reserve(capacity: capacity)
+        length = 0;
+        self.capacity = capacity;
+    }
+
+    /// Internal function that ensures the list
+    /// has enough capacity for all the items
+    private func reserveCapacity(capacity: UInt) {
+        if capacity <= self.capacity {
+            return;
+        }
+
+        // Reserve the smallest power of 2 bigger than capacity
+        let newCapacity = smallestPowerOf2Over(capacity);
+
+        let newPointer = RawPointer.reserve(capacity: newCapacity);
+        newPointer.copyFrom(self.inner, length: self.count);
+        self.inner.deallocate();
+
+        self.inner = newPointer;
+        self.capacity = newCapacity;
+    }
+
+    /// Internal function that ensures the list
+    /// Doesn't take too much space
+    private func shrinkTo(newCapacity: UInt) throws ListError {
+        if capacity < self.count {
+            throw .OutOfRange
+        }
+
+        let newPointer = RawPointer.reserve(capacity: newCapacity);
+        newPointer.copyFrom(self.inner, length: self.count);
+        self.inner.deallocate();
+
+        self.inner = newPointer;
+        self.capacity = newCapacity;
+    }
+
+    /// Add a new item to the end of the list
+    func append(item: T) {
+        self.reserveCapacity(self.count + 1);
+
+        self.inner.set(self.count, item);
+
+        self.count += 1;
+    }
+
+    /// Add a new item to the end of the list
+    func prepend(item: T) {
+        self.insert(item, at: 0)
+    }
+
+    /// Insert an item at an arbitrary index
+    func insert(item: T, at index: UInt) throws ListError {
+        if index > self.count {
+            throw .OutOfRange
+        }
+
+        self.reserveCapacity(self.count + 1);
+
+        for i in (index..<self.count).reversed() {
+            self.inner.copyIndex(i, to: i + 1);
+        }
+    }
+
+    /// Pops an item from the end of the list,
+    /// throwing an error if it is empty
+    func pop() -> T? {
+        if self.isEmpty {
+            return nil
+        }
+
+        self.count -= 1;
+
+        return self.inner.get(self.count);
+    }
+
+    /// Pops an item at the beginning of the list
+    func popStart() -> T? {
+        if self.isEmpty {
+            return nil;
+        }
+
+        try! self.take(at: 0)
+    }
+
+    /// Take an item from the list, removing and returning it
+    func take(at index: Int) -> T throws ListError {
+        guard index < self.count else {
+            throw .OutOfRange
+        }
+
+        self.count -= 1;
+
+        let item = self.inner.get(index);
+
+        for i in index..<self.count {
+            self.inner.copyIndex(i + 1, to: i)
+        }
+
+        return item;
+    }
+
+    /// Shrink to the minimum size required by the list's items
+    func shrink_fit() {
+        try! self.shrinkTo(self.count)
+    }
+
+    /// Swaps an element into a list, returning the value that was already there
+    func swap(element: T, to index: UInt) -> T throws ListError {
+        if index >= self.count {
+            throw .OutOfRange
+        }
+
+        let item = self.inner.get(index);
+
+        self.inner.set(index, element);
+
+        return item;
+    }
 }
