@@ -1,14 +1,14 @@
 use firefly_span::{Span, Spanned};
 
-pub mod ty;
-pub mod stmt;
 pub mod func;
-pub mod item;
-pub mod value;
-pub mod module;
 pub mod import;
+pub mod item;
+pub mod module;
 pub mod operator;
+pub mod stmt;
 pub mod struct_def;
+pub mod ty;
+pub mod value;
 
 pub type Name = Spanned<String>;
 
@@ -22,18 +22,16 @@ pub enum Visibility {
 
 #[derive(Debug, Clone)]
 pub struct PathSegment {
-    pub name: Name
+    pub name: Name,
 }
 
 impl PathSegment {
     pub fn new(name: Name) -> Self {
-        Self {
-            name
-        }
+        Self { name }
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Path {
     pub segments: Vec<PathSegment>,
     pub span: Span,
@@ -41,9 +39,6 @@ pub struct Path {
 
 impl Path {
     pub fn new(segments: Vec<PathSegment>, span: Span) -> Self {
-        Self {
-            segments,
-            span,
-        }
+        Self { segments, span }
     }
 }

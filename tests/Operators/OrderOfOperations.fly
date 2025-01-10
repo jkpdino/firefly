@@ -1,0 +1,32 @@
+module Test.Operators
+
+func main() {
+    // Basic arithmetic precedence
+    var a: int = 5 + 5 * 5;
+    // @expect(30) - multiplication before addition
+    print(format_int(a));
+
+    
+    // Multiple operators with different precedence
+    var b: int = 10 + 20 * 2 / 4;
+    // @expect(20) - multiplication and division before addition
+    print(format_int(b));
+
+    
+    // Bitwise operations
+    var c: int = 5 | 3 & 2;
+    // @expect(7) - bitwise AND before OR
+    print(format_int(c));
+    
+
+    // Shift operations
+    var d: int = 8 + 2 << 1;
+    // @expect(12) - shift after addition
+    print(format_int(d));
+    
+
+    // Complex expression
+    var h: int = (5 + 3) * 2 >> 1 & 4 | 1;
+    // @expect(5) - parentheses, then multiplication, then shift, then AND, then OR
+    print(format_int(h));
+}

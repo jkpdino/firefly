@@ -1,5 +1,9 @@
 use firefly_hir::{
-    items::{Constant, Module, TypeAlias}, resolve::{Import, Symbol}, ty::{Ty, TyKind}, value::{HasValue, LiteralValue, Value, ValueKind}, AccessComponent, BaseComponent, Component, HirContext, Id, Name, Visibility
+    items::{Constant, Module, TypeAlias},
+    resolve::{Import, Symbol},
+    ty::{Ty, TyKind},
+    value::{HasValue, LiteralValue, Value, ValueKind},
+    AccessComponent, BaseComponent, Component, HirContext, Id, Name, Visibility,
 };
 use firefly_span::Span;
 
@@ -19,76 +23,187 @@ pub fn create_lang_module(context: &mut HirContext) {
     create("float", typealias(TyKind::Float), lang_id, context);
 
     const INT_OPERATORS: &[&str] = &[
-        "add", "sub", "mul", "div", "rem",
-        "left_shift", "right_shift",
-        "bitand", "bitor", "bitxor",
+        "add",
+        "sub",
+        "mul",
+        "div",
+        "rem",
+        "left_shift",
+        "right_shift",
+        "bitand",
+        "bitor",
+        "bitxor",
     ];
 
     const INT_COMPARES: &[&str] = &[
-        "eq_int", "neq_int",
-        "gt_int", "geq_int",
-        "lt_int", "leq_int"
+        "eq_int", "neq_int", "gt_int", "geq_int", "lt_int", "leq_int",
     ];
 
-    const FLOAT_OPERATORS: &[&str] = &[
-        "fadd", "fsub", "fmul", "fdiv", "frem", "fpow",
-    ];
+    const FLOAT_OPERATORS: &[&str] = &["fadd", "fsub", "fmul", "fdiv", "frem", "fpow"];
 
     const FLOAT_COMPARES: &[&str] = &[
-        "eq_float", "neq_float",
-        "gt_float", "geq_float",
-        "lt_float", "leq_float"
+        "eq_float",
+        "neq_float",
+        "gt_float",
+        "geq_float",
+        "lt_float",
+        "leq_float",
     ];
 
-    const BOOL_OPERATORS: &[&str] = &[
-        "and", "or", "xor",
-        "eq_bool", "neq_bool"
-    ];
+    const BOOL_OPERATORS: &[&str] = &["and", "or", "eq_bool", "neq_bool"];
 
     for name in INT_OPERATORS {
-        create_func(name, &[TyKind::Integer, TyKind::Integer], TyKind::Integer, lang_id, context)
+        create_func(
+            name,
+            &[TyKind::Integer, TyKind::Integer],
+            TyKind::Integer,
+            lang_id,
+            context,
+        )
     }
 
-    create_func("bitnot", &[TyKind::Integer], TyKind::Integer, lang_id, context);
+    create_func(
+        "bitnot",
+        &[TyKind::Integer],
+        TyKind::Integer,
+        lang_id,
+        context,
+    );
 
     for name in INT_COMPARES {
-        create_func(name, &[TyKind::Integer, TyKind::Integer], TyKind::Bool, lang_id, context)
+        create_func(
+            name,
+            &[TyKind::Integer, TyKind::Integer],
+            TyKind::Bool,
+            lang_id,
+            context,
+        )
     }
 
-    create_func("parse_int", &[TyKind::String], TyKind::Integer, lang_id, context);
-    create_func("format_int", &[TyKind::Integer], TyKind::String, lang_id, context);
+    create_func(
+        "parse_int",
+        &[TyKind::String],
+        TyKind::Integer,
+        lang_id,
+        context,
+    );
+    create_func(
+        "format_int",
+        &[TyKind::Integer],
+        TyKind::String,
+        lang_id,
+        context,
+    );
 
     for name in FLOAT_OPERATORS {
-        create_func(name, &[TyKind::Float, TyKind::Float], TyKind::Float, lang_id, context)
+        create_func(
+            name,
+            &[TyKind::Float, TyKind::Float],
+            TyKind::Float,
+            lang_id,
+            context,
+        )
     }
 
     for name in FLOAT_COMPARES {
-        create_func(name, &[TyKind::Float, TyKind::Float], TyKind::Bool, lang_id, context)
+        create_func(
+            name,
+            &[TyKind::Float, TyKind::Float],
+            TyKind::Bool,
+            lang_id,
+            context,
+        )
     }
 
     create_func("floor", &[TyKind::Float], TyKind::Integer, lang_id, context);
     create_func("ceil", &[TyKind::Float], TyKind::Integer, lang_id, context);
-    create_func("to_float", &[TyKind::Integer], TyKind::Float, lang_id, context);
+    create_func(
+        "to_float",
+        &[TyKind::Integer],
+        TyKind::Float,
+        lang_id,
+        context,
+    );
 
-    create_func("parse_float", &[TyKind::String], TyKind::Float, lang_id, context);
-    create_func("format_float", &[TyKind::Float], TyKind::String, lang_id, context);
+    create_func(
+        "parse_float",
+        &[TyKind::String],
+        TyKind::Float,
+        lang_id,
+        context,
+    );
+    create_func(
+        "format_float",
+        &[TyKind::Float],
+        TyKind::String,
+        lang_id,
+        context,
+    );
 
     for name in BOOL_OPERATORS {
-        create_func(name, &[TyKind::Bool, TyKind::Bool], TyKind::Bool, lang_id, context);
+        create_func(
+            name,
+            &[TyKind::Bool, TyKind::Bool],
+            TyKind::Bool,
+            lang_id,
+            context,
+        );
     }
 
     create_func("not", &[TyKind::Bool], TyKind::Bool, lang_id, context);
-    create_func("parse_bool", &[TyKind::String], TyKind::Bool, lang_id, context);
-    create_func("format_bool", &[TyKind::Bool], TyKind::String, lang_id, context);
+    create_func(
+        "parse_bool",
+        &[TyKind::String],
+        TyKind::Bool,
+        lang_id,
+        context,
+    );
+    create_func(
+        "format_bool",
+        &[TyKind::Bool],
+        TyKind::String,
+        lang_id,
+        context,
+    );
 
     create_func("print", &[TyKind::String], TyKind::Unit, lang_id, context);
-    create_func("concat", &[TyKind::String, TyKind::String], TyKind::String, lang_id, context);
+    create_func(
+        "concat",
+        &[TyKind::String, TyKind::String],
+        TyKind::String,
+        lang_id,
+        context,
+    );
     create_func("len", &[TyKind::String], TyKind::Integer, lang_id, context);
-    create_func("eq_str", &[TyKind::String, TyKind::String], TyKind::Bool, lang_id, context);
-    create_func("neq_str", &[TyKind::String, TyKind::String], TyKind::Bool, lang_id, context);
+    create_func(
+        "eq_str",
+        &[TyKind::String, TyKind::String],
+        TyKind::Bool,
+        lang_id,
+        context,
+    );
+    create_func(
+        "neq_str",
+        &[TyKind::String, TyKind::String],
+        TyKind::Bool,
+        lang_id,
+        context,
+    );
 
-    create_literal("true", ValueKind::Literal(LiteralValue::Boolean(true)), TyKind::Bool, lang_id, context);
-    create_literal("false", ValueKind::Literal(LiteralValue::Boolean(false)), TyKind::Bool, lang_id, context);
+    create_literal(
+        "true",
+        ValueKind::Literal(LiteralValue::Boolean(true)),
+        TyKind::Bool,
+        lang_id,
+        context,
+    );
+    create_literal(
+        "false",
+        ValueKind::Literal(LiteralValue::Boolean(false)),
+        TyKind::Bool,
+        lang_id,
+        context,
+    );
 
     let root = context.root();
     let import_id = context.create(Import::import(Default::default(), lang_id.as_base()));
@@ -127,27 +242,24 @@ fn create_literal(
     value_kind: ValueKind,
     ty_kind: TyKind,
     parent: Id<impl Component>,
-    context: &mut HirContext)
-{
+    context: &mut HirContext,
+) {
     let ty = Ty::new_unspanned(ty_kind);
 
-    let value = Value::new(
-        value_kind,
-        ty,
-        Span::default()
-    );
+    let value = Value::new(value_kind, ty, Span::default());
 
-    context.create_with_parent(parent, (
-        Constant::default(),
-        Symbol {
-            name: Name::internal(name),
-            visibility: Visibility::Public,
-            is_static: true,
-        },
-        HasValue {
-            value
-        }
-    ));
+    context.create_with_parent(
+        parent,
+        (
+            Constant::default(),
+            Symbol {
+                name: Name::internal(name),
+                visibility: Visibility::Public,
+                is_static: true,
+            },
+            HasValue { value },
+        ),
+    );
 }
 
 fn create_func(
@@ -155,28 +267,28 @@ fn create_func(
     params: &[TyKind],
     return_ty: TyKind,
     parent: Id<impl Component>,
-    context: &mut HirContext
+    context: &mut HirContext,
 ) {
-    let params = params.iter().map(|p| Ty::new_unspanned(p.clone())).collect();
+    let params = params
+        .iter()
+        .map(|p| Ty::new_unspanned(p.clone()))
+        .collect();
     let return_ty = Box::new(Ty::new_unspanned(return_ty));
 
     let ty = Ty::new_unspanned(TyKind::Func(params, return_ty));
 
-    let value = Value::new(
-        ValueKind::BuiltinFunc(name),
-        ty,
-        Span::default()
-    );
+    let value = Value::new(ValueKind::BuiltinFunc(name), ty, Span::default());
 
-    context.create_with_parent(parent, (
-        Constant::default(),
-        Symbol {
-            name: Name::internal(name),
-            visibility: Visibility::Public,
-            is_static: true,
-        },
-        HasValue {
-            value
-        }
-    ));
+    context.create_with_parent(
+        parent,
+        (
+            Constant::default(),
+            Symbol {
+                name: Name::internal(name),
+                visibility: Visibility::Public,
+                is_static: true,
+            },
+            HasValue { value },
+        ),
+    );
 }
