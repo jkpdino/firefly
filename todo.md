@@ -10,8 +10,8 @@
   - [x] Parse operators with precedence
   - [x] Allow methods for intrinsics
   - [x] Replace operators with method calls
-  - [ ] Test method call operators
-  - [ ] Add string operators
+  - [x] Test method call operators
+  - [x] Add string operators
   - [ ] Add errors for operators (ish)
 - [ ] Parameter Labels
   - [ ] Parse parameter labels
