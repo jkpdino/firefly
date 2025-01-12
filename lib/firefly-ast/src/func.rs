@@ -5,14 +5,15 @@ use crate::{stmt::CodeBlock, ty::Ty, Name, Visibility};
 
 #[derive(Debug)]
 pub struct FuncParam {
+    pub label: Option<Name>,
     pub name: Name,
     pub ty: Spanned<Ty>,
 }
 
 #[derive(Debug)]
 pub struct FuncSignature {
-    pub params:     Vec<Spanned<FuncParam>>,
-    pub return_ty:  Option<Spanned<Ty>>,
+    pub params: Vec<Spanned<FuncParam>>,
+    pub return_ty: Option<Spanned<Ty>>,
 }
 
 #[derive(Debug)]
@@ -46,7 +47,7 @@ impl Func {
 }
 
 impl FuncParam {
-    pub fn new(name: Name, ty: Spanned<Ty>) -> Self {
-        Self { name, ty }
+    pub fn new(label: Option<Name>, name: Name, ty: Spanned<Ty>) -> Self {
+        Self { label, name, ty }
     }
 }

@@ -97,7 +97,7 @@ impl AstLowerer {
 
                 let args = args
                     .iter()
-                    .map(|arg| self.lower_value(arg, parent, symbol_table, context.reset()))
+                    .map(|arg| self.lower_value(&arg.value, parent, symbol_table, context.reset()))
                     .collect_vec();
 
                 let invoke = HirValueKind::Invoke(Box::new(function_value), args);

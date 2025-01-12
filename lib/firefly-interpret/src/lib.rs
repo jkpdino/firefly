@@ -147,7 +147,7 @@ impl<'a> ExecutionEngine<'a> {
                         let (InnerValue::Integer(left), InnerValue::Integer(right)) =
                             (left.as_ref(), right.as_ref())
                         else {
-                            panic!("{op}");
+                            panic!("{op} {left:?} {right:?}");
                         };
 
                         return self.eval_int_op(*op, *left, *right);

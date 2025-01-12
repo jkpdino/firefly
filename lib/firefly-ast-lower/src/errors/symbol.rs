@@ -18,7 +18,7 @@ pub enum SymbolError {
 }
 
 impl IntoDiagnostic for SymbolError {
-    fn into_diagnostic(&self, context: &HirContext) -> firefly_errors::diagnostic::Diagnostic {
+    fn into_diagnostic(&self, _context: &HirContext) -> firefly_errors::diagnostic::Diagnostic {
         match self {
             SymbolError::NotFound(name) => Diagnostic::new(
                 Level::Error,
