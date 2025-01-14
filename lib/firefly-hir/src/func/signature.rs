@@ -10,6 +10,7 @@ use crate::{
 /// for calling the symbol
 #[derive(Debug, Clone)]
 pub struct Callable {
+    pub labels: Vec<Option<Name>>,
     pub params: Vec<FuncParam>,
     pub return_ty: Ty,
     pub receiver: Option<Ty>,

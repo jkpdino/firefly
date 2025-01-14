@@ -85,8 +85,10 @@ impl AstLowerer {
             }
 
             AstValue::Call(function, args) => {
+                let labels = args.iter().map(|arg| arg.label.clone()).collect_vec();
+
                 let function_value =
-                    self.lower_value(function, parent, symbol_table, context.reset());
+                    self.lower_func_value(function, parent, symbol_table, labels, context.reset());
 
                 let TyKind::Func(_, return_ty) = &function_value.ty.kind else {
                     self.emit(TypeError::CantCall(function_value.span));
@@ -333,6 +335,43 @@ impl AstLowerer {
         };
 
         HirValue::new(kind, ty, span)
+    }
+
+    fn lower_func_value(
+        &mut self,
+        value: &Spanned<AstValue>,
+        parent: Id<Entity>,
+        symbol_table: &mut SymbolTable,
+        labels: Vec<Option<Spanned<String>>>,
+        context: LowerValueContext,
+    ) -> HirValue {
+        let span = value.span;
+
+        match &value.item {
+            AstValue::Path(path) => match self.resolve_value(path, parent, symbol_table) {
+                Some(value) => return value,
+                None => {
+                    return HirValue::new(HirValueKind::Unit, Ty::new(TyKind::Unit, span), span);
+                }
+            },
+
+            AstValue::Member(parent_val, member) => {
+                let parent_val =
+                    self.lower_value(parent_val, parent, symbol_table, context.reset());
+
+                if let Some(member) =
+                    self.resolve_instance_member(parent_val, member.clone(), parent)
+                {
+                    return member;
+                }
+
+                return HirValue::default();
+            }
+
+            _ => {
+                return self.lower_value(value, parent, symbol_table, context);
+            }
+        }
     }
 
     fn reorganize(
