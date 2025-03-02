@@ -435,6 +435,91 @@ impl AstLowerer {
         return None;
     }
 
+    pub fn resolve_instance_member_with(
+        &mut self,
+        value: Value,
+        segment: PathSegment,
+        from: Id<Entity>,
+        condition: impl ResolveCondition,
+    ) -> Option<Value> {
+        let Some(instance) = value.ty.defined_by() else {
+            self.emit(SymbolError::NoMembersOf(value.clone()));
+            return None;
+        };
+
+        let instance_member_table = self
+            .context
+            .try_get_computed::<InstanceMemberTable>(instance)
+            .expect("internal compiler error: type doesn't have an instance member table");
+
+        let Some(symbol_collection) = instance_member_table.lookup(&segment.name.item) else {
+            self.emit(SymbolError::NoMemberOn(segment.name.clone(), value.clone()));
+            return None;
+        };
+
+        let filtered_symbols =
+            symbol_collection.symbols_matching(|id| condition.matches(id, &self.context));
+
+        let symbol = match (filtered_symbols.single(), symbol_collection.single()) {
+            (Some(value_node), _) => value_node,
+            (None, Some(value_node)) => value_node,
+            (None, None) => {
+                let condition_format = condition.format_for_error();
+
+                if filtered_symbols.is_empty() {
+                    let symbol_collection_spans = symbol_collection
+                        .symbols
+                        .iter()
+                        .map(|sym| self.context().get(*sym).name.span)
+                        .collect_vec();
+
+                    self.emit(SymbolError::NoMatchingSymbol(
+                        condition_format,
+                        symbol_collection_spans,
+                    ));
+                } else {
+                    let filtered_symbol_spans = filtered_symbols
+                        .symbols
+                        .iter()
+                        .map(|sym| self.context().get(*sym).name.span)
+                        .collect_vec();
+
+                    self.emit(SymbolError::AmbiguousSymbol(
+                        condition_format,
+                        filtered_symbol_spans,
+                    ));
+                }
+
+                return None;
+            }
+        };
+
+        // Handle the single case
+        let Some(VisibleWithin(scope)) = self.context.try_get_computed(symbol).cloned() else {
+            panic!("internal compiler error: can't calculate visibility")
+        };
+
+        if !self.has_ancestor(from, scope) {
+            let symbol_name = self.context.get(symbol).name.span;
+            self.emit(SymbolError::NotVisible(segment.name.clone(), symbol_name));
+            return None;
+        }
+
+        let Some(value_in) = self.context().try_get::<HasValueIn>(symbol) else {
+            let symbol_name = self.context.get(symbol).name.span;
+
+            self.emit(SymbolError::MemberNotAValue(
+                segment.name.clone(),
+                symbol_name,
+            ));
+            return None;
+        };
+
+        let span = value.span.to(segment.name.span);
+
+        return Some(self.get_member_of(value, span, value_in));
+    }
+
     pub fn resolve_type(
         &mut self,
         path: &Path,
