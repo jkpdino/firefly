@@ -6,11 +6,16 @@ use firefly_hir::{
     },
     ty::{HasType, Ty, TyKind},
     value::{HasValue, HasValueIn, Value, ValueKind},
-    Entity, HirContext, Id,
+    Entity, Id,
 };
 use firefly_span::Span;
+use itertools::Itertools;
 
-use crate::{errors::SymbolError, AstLowerer};
+use crate::{
+    errors::SymbolError,
+    resolve_condition::{ResolveCondition, UnconditionalResolveCondition},
+    AstLowerer,
+};
 use firefly_ast::{
     operator::{InfixOperator, PrefixOperator},
     Path, PathSegment,
@@ -23,7 +28,7 @@ impl AstLowerer {
         from: Id<Entity>,
         symbol_table: &SymbolTable,
     ) -> Option<Value> {
-        self.resolve_value_with(path, from, symbol_table, |_, _| true)
+        self.resolve_value_with(path, from, symbol_table, UnconditionalResolveCondition)
     }
 
     pub fn resolve_value_with(
@@ -31,49 +36,74 @@ impl AstLowerer {
         path: &Path,
         from: Id<Entity>,
         symbol_table: &SymbolTable,
-        predicate: impl Fn(Id<Symbol>, &HirContext) -> bool,
+        condition: impl ResolveCondition,
     ) -> Option<Value> {
         let (symbol_collection, member_segments) = self.resolve_path(path, from, symbol_table)?;
 
         let filtered_symbols =
-            symbol_collection.symbols_matching(|id| predicate(id, &self.context));
+            symbol_collection.symbols_matching(|id| condition.matches(id, &self.context));
 
-        if let Some(value_node) = filtered_symbols.single() {
-            let mut value = if let Some(has_value) = self.context.try_get::<HasValue>(value_node) {
-                Value {
-                    span: path.span,
-                    ..has_value.value.clone()
+        let value_node = match (filtered_symbols.single(), symbol_collection.single()) {
+            (Some(value_node), _) => value_node,
+            (None, Some(value_node)) => value_node,
+            (None, None) => {
+                let condition_format = condition.format_for_error();
+
+                if filtered_symbols.is_empty() {
+                    let symbol_collection_spans = symbol_collection
+                        .symbols
+                        .iter()
+                        .map(|sym| self.context().get(*sym).name.span)
+                        .collect_vec();
+
+                    self.emit(SymbolError::NoMatchingSymbol(
+                        condition_format,
+                        symbol_collection_spans,
+                    ));
+                } else {
+                    let filtered_symbol_spans = filtered_symbols
+                        .symbols
+                        .iter()
+                        .map(|sym| self.context().get(*sym).name.span)
+                        .collect_vec();
+
+                    self.emit(SymbolError::AmbiguousSymbol(
+                        condition_format,
+                        filtered_symbol_spans,
+                    ));
                 }
-            } else if let Some(has_value_in) = self.context.try_get::<HasValueIn>(value_node) {
-                let self_value = self.self_value.clone().unwrap(); // todo: error
-
-                self.get_member_of(self_value, path.span, has_value_in)
-            } else {
-                let symbol_name_span = self
-                    .context
-                    .try_get::<Symbol>(value_node)
-                    .expect("internal compiler error: doesn't have a symbol")
-                    .name
-                    .span;
-
-                self.emit(SymbolError::NotAValue(path.span, symbol_name_span));
                 return None;
-            };
-
-            for segment in member_segments {
-                let child = self.resolve_instance_member(value, segment, from)?;
-
-                value = child;
             }
+        };
 
-            return Some(value);
-        } else if filtered_symbols.is_empty() {
-            // todo: throw a no matching value error
+        let mut value = if let Some(has_value) = self.context.try_get::<HasValue>(value_node) {
+            Value {
+                span: path.span,
+                ..has_value.value.clone()
+            }
+        } else if let Some(has_value_in) = self.context.try_get::<HasValueIn>(value_node) {
+            let self_value = self.self_value.clone().unwrap(); // todo: error
+
+            self.get_member_of(self_value, path.span, has_value_in)
         } else {
-            // todo: throw an ambiguous value error
+            let symbol_name_span = self
+                .context
+                .try_get::<Symbol>(value_node)
+                .expect("internal compiler error: doesn't have a symbol")
+                .name
+                .span;
+
+            self.emit(SymbolError::NotAValue(path.span, symbol_name_span));
+            return None;
+        };
+
+        for segment in member_segments {
+            let child = self.resolve_instance_member(value, segment, from)?;
+
+            value = child;
         }
 
-        return None;
+        return Some(value);
     }
 
     pub fn get_integer_prefix_operator(
