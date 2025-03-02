@@ -1,4 +1,4 @@
-use crate::{ty::HasType, HirContext, Id};
+use crate::Id;
 
 use super::Symbol;
 
@@ -25,6 +25,9 @@ impl SymbolCollection {
     }
 
     pub fn add(&mut self, symbol: Id<Symbol>) {
+        if self.symbols.contains(&symbol) {
+            return;
+        }
         self.symbols.push(symbol);
     }
 

@@ -9,12 +9,13 @@ use firefly_ast::{
     PathSegment,
 };
 use firefly_hir::{
-    resolve::SymbolTable,
+    func::Callable,
+    resolve::{Symbol, SymbolTable},
     ty::{Ty, TyKind},
     value::{
         ElseValue, IfValue, LiteralValue, Value as HirValue, ValueKind as HirValueKind, WhileValue,
     },
-    Entity, Id,
+    AccessComponent, Entity, HirContext, Id,
 };
 use firefly_span::{Span, Spanned};
 use itertools::Itertools;
@@ -348,12 +349,42 @@ impl AstLowerer {
         let span = value.span;
 
         match &value.item {
-            AstValue::Path(path) => match self.resolve_value(path, parent, symbol_table) {
-                Some(value) => return value,
-                None => {
-                    return HirValue::new(HirValueKind::Unit, Ty::new(TyKind::Unit, span), span);
+            AstValue::Path(path) => {
+                let predicate = |id: Id<Symbol>, context: &HirContext| {
+                    let Some(symbol) = context.try_get::<Callable>(id) else {
+                        return false;
+                    };
+
+                    if symbol.labels.len() != labels.len() {
+                        return false;
+                    }
+
+                    for (label, expected_label) in symbol.labels.iter().zip(labels.iter()) {
+                        match (label, expected_label) {
+                            (Some(label), Some(expected_label))
+                                if label.name == expected_label.item => {}
+                            (None, None) => {}
+                            _ => return false,
+                        }
+                    }
+
+                    return true;
+                };
+
+                match self.resolve_value_with(path, parent, symbol_table, predicate) {
+                    Some(value) => return value,
+                    None => match self.resolve_value(path, parent, &symbol_table) {
+                        Some(value) => return value,
+                        None => {
+                            return HirValue::new(
+                                HirValueKind::Unit,
+                                Ty::new(TyKind::Unit, span),
+                                span,
+                            );
+                        }
+                    },
                 }
-            },
+            }
 
             AstValue::Member(parent_val, member) => {
                 let parent_val =

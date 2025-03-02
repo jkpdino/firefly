@@ -6,7 +6,7 @@ use firefly_hir::{
     },
     ty::{HasType, Ty, TyKind},
     value::{HasValue, HasValueIn, Value, ValueKind},
-    Entity, Id,
+    Entity, HirContext, Id,
 };
 use firefly_span::Span;
 
@@ -23,9 +23,22 @@ impl AstLowerer {
         from: Id<Entity>,
         symbol_table: &SymbolTable,
     ) -> Option<Value> {
+        self.resolve_value_with(path, from, symbol_table, |_, _| true)
+    }
+
+    pub fn resolve_value_with(
+        &mut self,
+        path: &Path,
+        from: Id<Entity>,
+        symbol_table: &SymbolTable,
+        predicate: impl Fn(Id<Symbol>, &HirContext) -> bool,
+    ) -> Option<Value> {
         let (symbol_collection, member_segments) = self.resolve_path(path, from, symbol_table)?;
 
-        if let Some(value_node) = symbol_collection.single() {
+        let filtered_symbols =
+            symbol_collection.symbols_matching(|id| predicate(id, &self.context));
+
+        if let Some(value_node) = filtered_symbols.single() {
             let mut value = if let Some(has_value) = self.context.try_get::<HasValue>(value_node) {
                 Value {
                     span: path.span,
@@ -54,10 +67,13 @@ impl AstLowerer {
             }
 
             return Some(value);
+        } else if filtered_symbols.is_empty() {
+            // todo: throw a no matching value error
+        } else {
+            // todo: throw an ambiguous value error
         }
 
-        // todo: handle the multiple case
-        todo!();
+        return None;
     }
 
     pub fn get_integer_prefix_operator(
