@@ -1,0 +1,20 @@
+module Test.Overloading
+
+func main() {
+  var logger = Logger();
+  
+  logger.log(number: 1);
+  logger.log(text: "Hello")
+}
+
+
+
+public struct Logger {
+  func log(number a: int) {
+    print(format_int(a))
+  }
+
+  func log(text a: string) {
+    print(a)
+  }
+}

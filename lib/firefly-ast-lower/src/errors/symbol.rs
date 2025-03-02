@@ -15,10 +15,13 @@ pub enum SymbolError {
     NoMembersOf(Value),
     NoMemberOn(Name, Value),
     MemberNotAValue(Name, Span),
+
+    NoMatchingSymbol(String, Vec<Span>),
+    AmbiguousSymbol(String, Vec<Span>),
 }
 
 impl IntoDiagnostic for SymbolError {
-    fn into_diagnostic(&self, context: &HirContext) -> firefly_errors::diagnostic::Diagnostic {
+    fn into_diagnostic(&self, _context: &HirContext) -> firefly_errors::diagnostic::Diagnostic {
         match self {
             SymbolError::NotFound(name) => Diagnostic::new(
                 Level::Error,
@@ -76,6 +79,18 @@ impl IntoDiagnostic for SymbolError {
             .with_error_code(DiagnosticId::new("E0122"))
             .with_source(name.span)
             .with_source(*decl),
+            SymbolError::NoMatchingSymbol(predicate, spans) => Diagnostic::new(
+                Level::Error,
+                DiagnosticMessage::Str(format!("no option found matching {}", predicate)),
+            )
+            .with_error_code(DiagnosticId::new("E0123"))
+            .with_sources(spans),
+            SymbolError::AmbiguousSymbol(predicate, spans) => Diagnostic::new(
+                Level::Error,
+                DiagnosticMessage::Str(format!("ambiguous option found matching {}", predicate)),
+            )
+            .with_error_code(DiagnosticId::new("E0124"))
+            .with_sources(spans),
         }
     }
 }

@@ -1,0 +1,9 @@
+module Test.Overloading
+
+func main() {
+  print(format_int(addition(left: 3, right: 2)))
+}
+
+func addition(left a: int, right b: int) -> int {
+  return a + b
+}

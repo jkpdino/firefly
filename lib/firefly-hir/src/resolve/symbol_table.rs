@@ -4,59 +4,72 @@ use itertools::Itertools;
 
 use crate::{ComputedComponent, Entity, HirContext, Id, ImportError};
 
-use super::{Import, ImportRequest, Namespace, Symbol, VisibleWithin};
+use super::{Import, ImportRequest, Namespace, Symbol, SymbolCollection, VisibleWithin};
 
-/// Stores a delta so that scopes can quickly be restored
+/// Represents a single scope level in the symbol table.
+/// Stores the previous state of symbols before they were shadowed,
+/// enabling proper restoration when the scope is popped.
 #[derive(Clone, Debug)]
 struct Scope {
-    old_symbols: HashMap<String, Option<Id<Symbol>>>,
+    old_symbols: HashMap<String, Option<SymbolCollection>>,
 }
 
-/// Associates symbols with names, provides for
-/// quick lookup
+/// A SymbolTable manages name resolution and scoping in the compiler.
+/// It maintains maps symbol names to their corresponding IDs.
 #[derive(Clone, Debug)]
 pub struct SymbolTable {
-    symbols: HashMap<String, Id<Symbol>>,
+    symbols: HashMap<String, SymbolCollection>,
     scopes: Vec<Scope>,
 }
 
 impl SymbolTable {
-    /// Pushes a new scope onto the symbol table
+    /// Creates a new nested scope level.
+    /// This allows for symbol shadowing while preserving outer scope symbols.
     pub fn push_scope(&mut self) {
         self.scopes.push(Default::default());
     }
 
-    /// Pops a scope, returning the symbol table
-    /// to what it was before.
-    ///
-    /// Panics if no scope is on the stack
+    /// Restores the symbol table to its state before the current scope was created.
+    /// All symbols defined in the current scope are removed, and shadowed symbols
+    /// from outer scopes are restored.
     pub fn pop_scope(&mut self) {
         let Some(scope) = self.scopes.pop() else {
             panic!("Popped a scope that wasn't pushed");
         };
 
-        for (name, symbol) in scope.old_symbols {
-            if let Some(symbol) = symbol {
-                self.symbols.insert(name, symbol);
-            } else {
-                self.symbols.remove(&name);
+        for (name, symbols) in scope.old_symbols {
+            match symbols {
+                Some(symbols) => {
+                    self.symbols.insert(name, symbols);
+                }
+                None => {
+                    self.symbols.remove(&name);
+                }
             }
         }
     }
 
-    /// Inserts a symbol into the current scope,
-    /// overwriting any existing symbol with the same name
+    /// Adds or updates a symbol in the current scope.
+    /// If the symbol already exists, it will be shadowed and the old value
+    /// will be restored when the current scope is popped.
     pub fn insert(&mut self, name: String, symbol: Id<Symbol>) {
-        let old = self.symbols.insert(name.clone(), symbol);
+        let symbols = self.symbols.entry(name.clone()).or_default();
+        symbols.add(symbol);
 
         if let Some(scope) = self.scopes.last_mut() {
-            scope.old_symbols.insert(name, old);
+            // Store the previous state before modification
+            if !scope.old_symbols.contains_key(&name) {
+                scope
+                    .old_symbols
+                    .insert(name.clone(), self.symbols.get(&name).cloned());
+            }
         }
     }
 
-    /// Retrieves a symbol from the symbol table
-    pub fn get(&self, name: &str) -> Option<Id<Symbol>> {
-        self.symbols.get(name).cloned()
+    /// Looks up a symbol by name in the current scope and all outer scopes.
+    /// Returns None if the symbol is not found in any accessible scope.
+    pub fn get(&self, name: &str) -> Option<&SymbolCollection> {
+        self.symbols.get(name)
     }
 }
 
@@ -64,12 +77,12 @@ component!(symbol_tables: SymbolTable);
 
 impl ComputedComponent for SymbolTable {
     fn compute(entity: Id<crate::Entity>, context: &mut HirContext) -> Option<Self> {
-        let mut symbol_table =
-            context.parent(entity)
-                   .and_then(|parent| context.try_get_computed::<SymbolTable>(parent))
-                   .cloned()
-                   .unwrap_or_default();
-        
+        let mut symbol_table = context
+            .parent(entity)
+            .and_then(|parent| context.try_get_computed::<SymbolTable>(parent))
+            .cloned()
+            .unwrap_or_default();
+
         symbol_table.push_scope();
 
         let namespace = context.try_get_computed::<Namespace>(entity)?;
@@ -83,7 +96,8 @@ impl ComputedComponent for SymbolTable {
         // We support shadowing, so we don't need to check for duplicates
         for symbol_id in symbols.into_iter() {
             // Where is the symbol visible from?
-            let Some(VisibleWithin(scope)) = context.try_get_computed::<VisibleWithin>(symbol_id) else {
+            let Some(VisibleWithin(scope)) = context.try_get_computed::<VisibleWithin>(symbol_id)
+            else {
                 panic!("internal compiler error: couldn't calculate visibility");
             };
 
@@ -100,7 +114,8 @@ impl ComputedComponent for SymbolTable {
         }
 
         // Go through imports and add them to the symbol table
-        let imports = context.children(entity)
+        let imports = context
+            .children(entity)
             .iter()
             .cloned()
             .filter_map(|id| context.cast_id::<Import>(id))
@@ -115,6 +130,8 @@ impl ComputedComponent for SymbolTable {
 }
 
 impl SymbolTable {
+    /// Processes an import declaration and adds the imported symbols
+    /// to the symbol table according to the import rules.
     fn import(import: Id<Import>, symbol_table: &mut SymbolTable, context: &mut HirContext) {
         let import = context.get(import);
         let namespace_id = import.namespace;
@@ -126,8 +143,7 @@ impl SymbolTable {
                 panic!("internal compiler error: module has no symbol");
             };
             symbol_table.insert(alias.name.clone(), symbol);
-        }
-        else if symbols.is_none() {
+        } else if symbols.is_none() {
             Self::add_all_symbols(namespace_id, symbol_table, context);
         }
 
@@ -136,7 +152,12 @@ impl SymbolTable {
         }
     }
 
-    fn add_all_symbols(namespace_id: Id<Entity>, symbol_table: &mut SymbolTable, context: &mut HirContext) {
+    /// Imports all visible symbols from a namespace into the current scope.
+    fn add_all_symbols(
+        namespace_id: Id<Entity>,
+        symbol_table: &mut SymbolTable,
+        context: &mut HirContext,
+    ) {
         let Some(namespace) = context.try_get_computed::<Namespace>(namespace_id) else {
             panic!("internal compiler error: no namespace for import")
         };
@@ -150,7 +171,8 @@ impl SymbolTable {
         // We support shadowing, so we don't need to check for duplicates
         for symbol_id in symbols.into_iter() {
             // Where is the symbol visible from?
-            let Some(VisibleWithin(scope)) = context.try_get_computed::<VisibleWithin>(symbol_id) else {
+            let Some(VisibleWithin(scope)) = context.try_get_computed::<VisibleWithin>(symbol_id)
+            else {
                 panic!("internal compiler error: couldn't calculate visibility");
             };
 
@@ -167,14 +189,24 @@ impl SymbolTable {
         }
     }
 
-    fn add_specific_symbols(namespace_id: Id<Entity>, symbols: Vec<ImportRequest>, symbol_table: &mut SymbolTable, context: &mut HirContext) {
+    /// Imports specific requested symbols from a namespace, handling aliases
+    /// and visibility checks.
+    fn add_specific_symbols(
+        namespace_id: Id<Entity>,
+        symbols: Vec<ImportRequest>,
+        symbol_table: &mut SymbolTable,
+        context: &mut HirContext,
+    ) {
         // We need to match symbols to their import symbols
         // Create a map to do this on O(n) time
         let mut symbol_map = HashMap::<String, ImportRequest>::new();
 
         for symbol in symbols {
             if let Some(original) = symbol_map.get(&symbol.name.name) {
-                context.emit(ImportError::MultipleImports(original.name.clone(), symbol.name.clone()));
+                context.emit(ImportError::MultipleImports(
+                    original.name.clone(),
+                    symbol.name.clone(),
+                ));
             }
 
             symbol_map.insert(symbol.name.name.clone(), symbol);
@@ -207,7 +239,8 @@ impl SymbolTable {
             }
 
             // Where is the symbol visible from?
-            let Some(VisibleWithin(scope)) = context.try_get_computed::<VisibleWithin>(symbol_id) else {
+            let Some(VisibleWithin(scope)) = context.try_get_computed::<VisibleWithin>(symbol_id)
+            else {
                 panic!("internal compiler error: couldn't calculate visibility");
             };
 

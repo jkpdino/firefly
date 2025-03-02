@@ -6,15 +6,16 @@ use firefly_hir::{ty::Ty, value::Value, Entity, HirContext, Id, IntoDiagnostic};
 use firefly_span::{Span, Spanned};
 use labels::LabelStack;
 
+pub mod errors;
 mod items;
+mod labels;
 mod link;
 mod resolve;
+mod resolve_condition;
+mod stmt;
 mod ty;
 mod util;
-mod stmt;
 mod value;
-pub mod errors;
-mod labels;
 
 pub struct AstLowerer {
     context: HirContext,
@@ -27,7 +28,11 @@ impl AstLowerer {
         let mut context = HirContext::new(&emitter);
         firefly_lang::create_lang_module(&mut context);
 
-        let mut lowerer = Self { context, self_value: None, label_stack: LabelStack::new() };
+        let mut lowerer = Self {
+            context,
+            self_value: None,
+            label_stack: LabelStack::new(),
+        };
 
         lowerer.resolve_type_aliases();
 
@@ -54,10 +59,8 @@ impl AstLowerer {
             Item::StructDef(Spanned { item, .. }) => {
                 self.lower_item_defs(&item.items);
                 item
-            },
-            Item::Module(_) => {
-                return
             }
+            Item::Module(_) => return,
             Item::Error => return,
         };
 
@@ -75,10 +78,8 @@ impl AstLowerer {
             Item::StructDef(Spanned { item, .. }) => {
                 self.lower_item_codes(&item.items);
                 item
-            },
-            Item::Module(_) => {
-                return
             }
+            Item::Module(_) => return,
             Item::Error => return,
         };
 
@@ -109,7 +110,9 @@ pub trait Lower {
     fn get_symbol(&self) -> Option<SymbolDesc>;
 
     /// Add HasType or HasValue to a node
-    fn get_type(&self) -> Option<Ty> { None }
+    fn get_type(&self) -> Option<Ty> {
+        None
+    }
 
     /// Lowers definitions
     fn lower_def(&self, parent: Id<Entity>, lowerer: &mut AstLowerer);

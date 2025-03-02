@@ -13,7 +13,7 @@ pub enum Value {
     FloatLiteral(Name),
     StringLiteral(Name),
     Path(Path),
-    Call(Box<Spanned<Value>>, Vec<Spanned<Value>>),
+    Call(Box<Spanned<Value>>, Vec<CallArg>),
     Return(Option<Box<Spanned<Value>>>),
     If(Box<IfStatement>),
     While(Box<WhileStatement>),
@@ -25,6 +25,12 @@ pub enum Value {
     Prefix(PrefixOperator, Box<Spanned<Value>>),
     Infix(Box<Spanned<Value>>, InfixOperator, Box<Spanned<Value>>),
     Error,
+}
+
+#[derive(Debug, Clone)]
+pub struct CallArg {
+    pub label: Option<Name>,
+    pub value: Spanned<Value>,
 }
 
 #[derive(Debug, Clone)]

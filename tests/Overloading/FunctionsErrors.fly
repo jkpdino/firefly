@@ -1,0 +1,15 @@
+module Test.Overloading
+
+func main() {
+  log(number: 1);
+  log(text: "Hello");
+  log(number: 1, text: "Hello")
+}
+
+func log(number a: int) {
+  print(format_int(a))
+}
+
+func log(text a: string) {
+  print(a)
+}

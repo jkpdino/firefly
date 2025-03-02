@@ -2,7 +2,7 @@ use firefly_ast::{
     Visibility,
     Path, PathSegment,
     ty::Ty,
-    value::{Value, IfStatement, ElseStatement, WhileStatement},
+    value::{Value, IfStatement, ElseStatement, WhileStatement, CallArg},
     stmt::{Stmt, CodeBlock},
     func::{Func, FuncParam},
     item::Item,
@@ -184,7 +184,7 @@ EqualsValue: Spanned<Value> = {
 
 // Function
 FuncParam: Spanned<FuncParam> = {
-    <l: @L> <name: Name> ":" <ty: Type> <r: @R> => Spanned::new(FuncParam::new(name, ty), Span::new(l, r))
+    <l: @L> <label: Name?> <name: Name> ":" <ty: Type> <r: @R> => Spanned::new(FuncParam::new(label, name, ty), Span::new(l, r))
 }
 
 Function = { Spanned<UnspannedFunction> }
@@ -254,9 +254,17 @@ PrefixedValue<L>: Value = {
     <op: PrefixOperator> <rhs: Spanned<PrefixedValue<L>>> => Value::Prefix(op, Box::new(rhs)),
 }
 
+
+FunctionArgLabel: Spanned<String> = {
+    <name: Name> ":" => name,
+}
+FunctionArg: CallArg = {
+    <label: FunctionArgLabel?> <value: NonStatementLikeValue> => CallArg { label, value }
+}
+
 SuffixedValue<L>: Value = {
     AtomValue<L> => <>,
-    <func: Spanned<SuffixedValue<L>>> "(" <args: CommaList<Value>> ")" => Value::Call(Box::new(func), args),
+    <func: Spanned<SuffixedValue<L>>> "(" <args: CommaList<FunctionArg>> ")" => Value::Call(Box::new(func), args),
     <parent: Spanned<SuffixedValue<L>>> "." <member: PathSegment> => Value::member(Box::new(parent), member),
     <parent: Spanned<SuffixedValue<L>>> "." <index: Spanned<Number>> => Value::TupleMember(Box::new(parent), index),
 }

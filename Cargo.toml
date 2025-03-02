@@ -13,7 +13,7 @@ firefly-lang = { path = "lib/firefly-lang" }
 firefly-errors = { path = "lib/firefly-errors" }
 firefly-driver = { path = "lib/firefly-driver" }
 firefly-mangle = { path = "lib/firefly-mangle" }
-itertools = "0.13.0"
+itertools = "0.14.0"
 
 [workspace]
 members = [

@@ -1,6 +1,7 @@
 use crate::{
     errors::{StringError, TypeError, ValueError},
     labels::LoopLabel,
+    resolve_condition::CallableResolveCondition,
     AstLowerer,
 };
 use firefly_ast::{
@@ -85,8 +86,10 @@ impl AstLowerer {
             }
 
             AstValue::Call(function, args) => {
+                let labels = args.iter().map(|arg| arg.label.clone()).collect_vec();
+
                 let function_value =
-                    self.lower_value(function, parent, symbol_table, context.reset());
+                    self.lower_func_value(function, parent, symbol_table, labels, context.reset());
 
                 let TyKind::Func(_, return_ty) = &function_value.ty.kind else {
                     self.emit(TypeError::CantCall(function_value.span));
@@ -97,7 +100,7 @@ impl AstLowerer {
 
                 let args = args
                     .iter()
-                    .map(|arg| self.lower_value(arg, parent, symbol_table, context.reset()))
+                    .map(|arg| self.lower_value(&arg.value, parent, symbol_table, context.reset()))
                     .collect_vec();
 
                 let invoke = HirValueKind::Invoke(Box::new(function_value), args);
@@ -333,6 +336,51 @@ impl AstLowerer {
         };
 
         HirValue::new(kind, ty, span)
+    }
+
+    fn lower_func_value(
+        &mut self,
+        value: &Spanned<AstValue>,
+        parent: Id<Entity>,
+        symbol_table: &mut SymbolTable,
+        labels: Vec<Option<Spanned<String>>>,
+        context: LowerValueContext,
+    ) -> HirValue {
+        let span = value.span;
+
+        let condition = CallableResolveCondition { labels };
+
+        match &value.item {
+            AstValue::Path(path) => {
+                match self.resolve_value_with(path, parent, symbol_table, condition) {
+                    Some(value) => return value,
+                    None => {
+                        return HirValue::new(
+                            HirValueKind::Unit,
+                            Ty::new(TyKind::Unit, span),
+                            span,
+                        );
+                    }
+                }
+            }
+
+            AstValue::Member(parent_val, member) => {
+                let parent_val =
+                    self.lower_value(parent_val, parent, symbol_table, context.reset());
+
+                if let Some(member) =
+                    self.resolve_instance_member_with(parent_val, member.clone(), parent, condition)
+                {
+                    return member;
+                }
+
+                return HirValue::default();
+            }
+
+            _ => {
+                return self.lower_value(value, parent, symbol_table, context);
+            }
+        }
     }
 
     fn reorganize(

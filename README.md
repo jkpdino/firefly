@@ -10,18 +10,18 @@ In its current state, firefly can be used for basic mathematical functions.
 module Fibonacci
 
 func fibonacci(n: int) -> int {
-    var i: int = 1;
+    var i = 1;
 
-    var n1: int = 1;
-    var n2: int = 1;
+    var n1 = 1;
+    var n2 = 1;
 
-    while lt_int(i, n) {
-        var n3: int = add(n1, n2);
+    while i < n {
+        var n3 = n1 + n2;
 
         n1 = n2;
         n2 = n3;
 
-        i = add(i, 1);
+        i = i + 1;
     }
 
     return n2;
@@ -30,4 +30,4 @@ func fibonacci(n: int) -> int {
 
 ## Running
 
-To run firefly, use the CLI with the list of files to compile as arguments. The `--print-hir` flag dumps the hir tree to the console.
+To run firefly, use the CLI with the list of files to compile as arguments. Your program will run in an interpreter. The `--print-hir` flag dumps the hir tree to the console, and `--print-mir` dumps mir.
