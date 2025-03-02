@@ -6,34 +6,34 @@
 - All values are mutable
 - Global variables
 - Modules
-    - Every file must have a module declaration
+  - Every file must have a module declaration
 - Imports
-    - An import takes all the symbols from one namespace and brings them to another
-    - An import can also specify symbols or rename them with the as keyword
+  - An import takes all the symbols from one namespace and brings them to another
+  - An import can also specify symbols or rename them with the as keyword
 - Functions
-    - No overloading
-    - No parameter labels
-    - Return types
+  - No overloading
+  - No parameter labels
+  - Return types
 - Structs
-    - Have fields with visibilities
-    - Have an initializer
-    - Static methods
-    - Instance methods
-    - Static variables
+  - Have fields with visibilities
+  - Have an initializer
+  - Static methods
+  - Instance methods
+  - Static variables
 - Control Flow
-    - Loop/Repeat
-    - If
-    - While
+  - Loop/Repeat
+  - If
+  - While
 
 # Version 0 Profile 2
 
 - Structs
-    - Initializers
+  - Initializers
 - Functions
-    - Parameter labels
-    - Overloading
+  - Parameter labels
+  - Overloading
 - Inference
-    - Local bindings don't need an explicit type
+  - Local bindings don't need an explicit type
 - Operators
 
 # Version 0 Profile 3
@@ -54,12 +54,10 @@
 - Pattern matching
 - For and Match
 
-# Version 1
+# Version 0 Profile 6
 
 - New lang library
 - Full type inference
-- Immutable values
-
 
 Example code
 
