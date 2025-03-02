@@ -23,6 +23,7 @@
   - [x] Select overloads from a path
   - [x] Select overloads in scope
 - [ ] Struct Initializers
+  - [ ] Add parsing for initializers
   - [ ] Add overload for initializers
 - [ ] Style guide
   - [ ] Capitalization

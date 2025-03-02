@@ -1,0 +1,15 @@
+module tests.Init;
+
+func main() {
+  var person = Person("John");
+}
+
+public struct Person {
+  var name: string;
+  var age: int;
+
+  init(name: string) {
+    self.name = name;
+    self.age = 0;
+  }
+}
