@@ -8,6 +8,7 @@ pub trait ResolveCondition {
     fn format_for_error(&self) -> String;
 }
 
+#[derive(Debug, Clone)]
 pub struct CallableResolveCondition {
     pub labels: Vec<Option<Spanned<String>>>,
 }
@@ -44,6 +45,7 @@ impl ResolveCondition for CallableResolveCondition {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct UnconditionalResolveCondition;
 
 impl ResolveCondition for UnconditionalResolveCondition {
@@ -52,6 +54,6 @@ impl ResolveCondition for UnconditionalResolveCondition {
     }
 
     fn format_for_error(&self) -> String {
-        unreachable!()
+        return "blank".into();
     }
 }

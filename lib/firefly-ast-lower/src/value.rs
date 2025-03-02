@@ -348,10 +348,10 @@ impl AstLowerer {
     ) -> HirValue {
         let span = value.span;
 
+        let condition = CallableResolveCondition { labels };
+
         match &value.item {
             AstValue::Path(path) => {
-                let condition = CallableResolveCondition { labels };
-
                 match self.resolve_value_with(path, parent, symbol_table, condition) {
                     Some(value) => return value,
                     None => {
@@ -369,7 +369,7 @@ impl AstLowerer {
                     self.lower_value(parent_val, parent, symbol_table, context.reset());
 
                 if let Some(member) =
-                    self.resolve_instance_member(parent_val, member.clone(), parent)
+                    self.resolve_instance_member_with(parent_val, member.clone(), parent, condition)
                 {
                     return member;
                 }

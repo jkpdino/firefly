@@ -36,7 +36,7 @@ impl AstLowerer {
         path: &Path,
         from: Id<Entity>,
         symbol_table: &SymbolTable,
-        condition: impl ResolveCondition,
+        condition: impl ResolveCondition + Clone,
     ) -> Option<Value> {
         let (symbol_collection, member_segments) = self.resolve_path(path, from, symbol_table)?;
 
@@ -98,7 +98,8 @@ impl AstLowerer {
         };
 
         for segment in member_segments {
-            let child = self.resolve_instance_member(value, segment, from)?;
+            let child =
+                self.resolve_instance_member_with(value, segment, from, condition.clone())?;
 
             value = child;
         }
@@ -387,52 +388,12 @@ impl AstLowerer {
         segment: PathSegment,
         from: Id<Entity>,
     ) -> Option<Value> {
-        let Some(instance) = value.ty.defined_by() else {
-            self.emit(SymbolError::NoMembersOf(value.clone()));
-            return None;
-        };
-
-        let instance_member_table = self
-            .context
-            .try_get_computed::<InstanceMemberTable>(instance)
-            .expect("internal compiler error: type doesn't have an instance member table");
-
-        let Some(symbol_collection) = instance_member_table.lookup(&segment.name.item) else {
-            self.emit(SymbolError::NoMemberOn(segment.name.clone(), value.clone()));
-            return None;
-        };
-
-        // Handle the single case
-        if let Some(symbol) = symbol_collection.single() {
-            let Some(VisibleWithin(scope)) = self.context.try_get_computed(symbol).cloned() else {
-                panic!("internal compiler error: can't calculate visibility")
-            };
-
-            if !self.has_ancestor(from, scope) {
-                let symbol_name = self.context.get(symbol).name.span;
-                self.emit(SymbolError::NotVisible(segment.name.clone(), symbol_name));
-                return None;
-            }
-
-            let Some(value_in) = self.context().try_get::<HasValueIn>(symbol) else {
-                let symbol_name = self.context.get(symbol).name.span;
-
-                self.emit(SymbolError::MemberNotAValue(
-                    segment.name.clone(),
-                    symbol_name,
-                ));
-                return None;
-            };
-
-            let span = value.span.to(segment.name.span);
-
-            return Some(self.get_member_of(value, span, value_in));
-        }
-
-        // todo: Handle the multiple case
-        // We have to filter the symbols by the context
-        // For example, if we have call arguments, we should only return matching functions
-        return None;
+        return self.resolve_instance_member_with(
+            value,
+            segment,
+            from,
+            UnconditionalResolveCondition,
+        );
     }
 
     pub fn resolve_instance_member_with(
