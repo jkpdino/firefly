@@ -1,6 +1,9 @@
 use firefly_hir::{
     func::Callable,
-    resolve::{InstanceMemberTable, StaticMemberTable, Symbol, SymbolTable, VisibleWithin},
+    resolve::{
+        InstanceMemberTable, StaticMemberTable, Symbol, SymbolCollection, SymbolTable,
+        VisibleWithin,
+    },
     ty::{HasType, Ty, TyKind},
     value::{HasValue, HasValueIn, Value, ValueKind},
     Entity, Id,
@@ -20,36 +23,41 @@ impl AstLowerer {
         from: Id<Entity>,
         symbol_table: &SymbolTable,
     ) -> Option<Value> {
-        let (value_node, member_segments) = self.resolve_path(path, from, symbol_table)?;
+        let (symbol_collection, member_segments) = self.resolve_path(path, from, symbol_table)?;
 
-        let mut value = if let Some(has_value) = self.context.try_get::<HasValue>(value_node) {
-            Value {
-                span: path.span,
-                ..has_value.value.clone()
+        if let Some(value_node) = symbol_collection.single() {
+            let mut value = if let Some(has_value) = self.context.try_get::<HasValue>(value_node) {
+                Value {
+                    span: path.span,
+                    ..has_value.value.clone()
+                }
+            } else if let Some(has_value_in) = self.context.try_get::<HasValueIn>(value_node) {
+                let self_value = self.self_value.clone().unwrap(); // todo: error
+
+                self.get_member_of(self_value, path.span, has_value_in)
+            } else {
+                let symbol_name_span = self
+                    .context
+                    .try_get::<Symbol>(value_node)
+                    .expect("internal compiler error: doesn't have a symbol")
+                    .name
+                    .span;
+
+                self.emit(SymbolError::NotAValue(path.span, symbol_name_span));
+                return None;
+            };
+
+            for segment in member_segments {
+                let child = self.resolve_instance_member(value, segment, from)?;
+
+                value = child;
             }
-        } else if let Some(has_value_in) = self.context.try_get::<HasValueIn>(value_node) {
-            let self_value = self.self_value.clone().unwrap(); // todo: error
 
-            self.get_member_of(self_value, path.span, has_value_in)
-        } else {
-            let symbol_name_span = self
-                .context
-                .try_get::<Symbol>(value_node)
-                .expect("internal compiler error: doesn't have a symbol")
-                .name
-                .span;
-
-            self.emit(SymbolError::NotAValue(path.span, symbol_name_span));
-            return None;
-        };
-
-        for segment in member_segments {
-            let child = self.resolve_instance_member(value, segment, from)?;
-
-            value = child;
+            return Some(value);
         }
 
-        return Some(value);
+        // todo: handle the multiple case
+        todo!();
     }
 
     pub fn get_integer_prefix_operator(
@@ -343,34 +351,42 @@ impl AstLowerer {
             .try_get_computed::<InstanceMemberTable>(instance)
             .expect("internal compiler error: type doesn't have an instance member table");
 
-        let Some(symbol) = instance_member_table.lookup(&segment.name.item) else {
+        let Some(symbol_collection) = instance_member_table.lookup(&segment.name.item) else {
             self.emit(SymbolError::NoMemberOn(segment.name.clone(), value.clone()));
             return None;
         };
 
-        let Some(VisibleWithin(scope)) = self.context.try_get_computed(symbol).cloned() else {
-            panic!("internal compiler error: can't calculate visibility")
-        };
+        // Handle the single case
+        if let Some(symbol) = symbol_collection.single() {
+            let Some(VisibleWithin(scope)) = self.context.try_get_computed(symbol).cloned() else {
+                panic!("internal compiler error: can't calculate visibility")
+            };
 
-        if !self.has_ancestor(from, scope) {
-            let symbol_name = self.context.get(symbol).name.span;
-            self.emit(SymbolError::NotVisible(segment.name.clone(), symbol_name));
-            return None;
+            if !self.has_ancestor(from, scope) {
+                let symbol_name = self.context.get(symbol).name.span;
+                self.emit(SymbolError::NotVisible(segment.name.clone(), symbol_name));
+                return None;
+            }
+
+            let Some(value_in) = self.context().try_get::<HasValueIn>(symbol) else {
+                let symbol_name = self.context.get(symbol).name.span;
+
+                self.emit(SymbolError::MemberNotAValue(
+                    segment.name.clone(),
+                    symbol_name,
+                ));
+                return None;
+            };
+
+            let span = value.span.to(segment.name.span);
+
+            return Some(self.get_member_of(value, span, value_in));
         }
 
-        let Some(value_in) = self.context().try_get::<HasValueIn>(symbol) else {
-            let symbol_name = self.context.get(symbol).name.span;
-
-            self.emit(SymbolError::MemberNotAValue(
-                segment.name.clone(),
-                symbol_name,
-            ));
-            return None;
-        };
-
-        let span = value.span.to(segment.name.span);
-
-        return Some(self.get_member_of(value, span, value_in));
+        // todo: Handle the multiple case
+        // We have to filter the symbols by the context
+        // For example, if we have call arguments, we should only return matching functions
+        return None;
     }
 
     pub fn resolve_type(
@@ -379,13 +395,22 @@ impl AstLowerer {
         from: Id<Entity>,
         symbol_table: &SymbolTable,
     ) -> Option<Ty> {
-        let (type_node, member_segments) = self.resolve_path(path, from, symbol_table)?;
+        let (symbol_collection, member_segments) = self.resolve_path(path, from, symbol_table)?;
+
+        // filter the symbols to only include types
+        let type_symbols =
+            symbol_collection.symbols_matching(|id| self.context().has::<HasType>(id));
 
         // todo: handle member_segments
         if !member_segments.is_empty() {
+            let non_type_symbol = symbol_collection
+                .symbols
+                .first()
+                .expect("internal compiler error: doesn't have a symbol");
+
             let current_symbol = self
                 .context
-                .try_get::<Symbol>(type_node)
+                .try_get::<Symbol>(*non_type_symbol)
                 .expect("internal compiler error: doesn't have a symbol");
             let symbol_name_span = current_symbol.name.span;
 
@@ -395,64 +420,120 @@ impl AstLowerer {
             ));
         }
 
-        let Some(has_ty) = self.context.try_get::<HasType>(type_node) else {
+        if let Some(type_node) = type_symbols.single() {
+            let has_type = self
+                .context
+                .try_get::<HasType>(type_node)
+                .expect("internal compiler error: doesn't have a type");
+
+            let mut ty = has_type.ty.clone();
+            ty.span = path.span;
+            return Some(ty);
+        }
+        // handle the zero case
+        else if type_symbols.is_empty() {
+            let non_type_symbol = symbol_collection
+                .single()
+                .expect("internal compiler error: doesn't have a symbol");
+
             let symbol_name_span = self
                 .context
-                .try_get::<Symbol>(type_node)
+                .try_get::<Symbol>(non_type_symbol)
                 .expect("internal compiler error: doesn't have a symbol")
                 .name
                 .span;
 
             self.emit(SymbolError::NotAType(path.span, symbol_name_span));
             return None;
-        };
-
-        let mut ty = has_ty.ty.clone();
-        ty.span = path.span;
-        return Some(ty);
+        }
+        // handle the ambiguous case
+        else {
+            // todo: throw an ambiguous type error
+            todo!();
+        }
     }
 
+    /// Resolves a path to a symbol collection and any remaining path segments.
+    ///
+    /// This function takes a path (like `a.b.c`), a starting entity, and a symbol table,
+    /// and attempts to resolve as much of the path as possible. It returns:
+    /// - The collection of symbols that match the resolved part of the path
+    /// - Any remaining path segments that couldn't be resolved (for member access)
+    ///
+    /// The resolution process works by:
+    /// 1. Looking up the first segment in the symbol table
+    /// 2. For each subsequent segment, looking it up in the static member table of the previous entity
+    /// 3. Checking visibility of each symbol to ensure it's accessible from the 'from' entity
+    ///
+    /// If resolution fails at any point, appropriate errors are emitted.
     pub fn resolve_path(
         &mut self,
         path: &Path,
         from: Id<Entity>,
         symbol_table: &SymbolTable,
-    ) -> Option<(Id<Entity>, Vec<PathSegment>)> {
+    ) -> Option<(SymbolCollection, Vec<PathSegment>)> {
+        // Get the first segment of the path
         let first_segment = path.segments.first()?;
 
-        let Some(mut current_entity) = symbol_table.get(&first_segment.name.item) else {
+        // Get the symbol for the first segment from the symbol table
+        let Some(mut current_entity) = symbol_table.get(&first_segment.name.item).cloned() else {
+            // Emit an error if the first segment can't be found in the symbol table
             self.emit(SymbolError::NotFound(first_segment.name.clone()));
-
             return None;
         };
 
+        // Process each subsequent segment in the path
         for (i, segment) in path.segments.iter().enumerate().skip(1) {
+            // We need a single entity to look up members in
+            let Some(single_entity) = current_entity.single() else {
+                break;
+            };
+
+            // Get the static member table for the current entity
             let Some(static_member_table) = self
                 .context
-                .try_get_computed::<StaticMemberTable>(current_entity)
+                .try_get_computed::<StaticMemberTable>(single_entity)
             else {
                 todo!();
             };
 
+            // Look up the current segment in the static member table
             let Some(symbol) = static_member_table.lookup(&segment.name.item) else {
-                return Some((current_entity.as_base(), path.segments[i..].to_vec()));
+                // If the segment isn't found, return the current entity and the remaining segments
+                // This allows for partial resolution where the rest might be instance members
+                return Some((
+                    SymbolCollection::new_single(single_entity),
+                    path.segments[i..].to_vec(),
+                ));
             };
 
-            let Some(VisibleWithin(scope)) = self.context.try_get_computed(symbol).cloned() else {
+            // We need a single symbol to continue resolution
+            let Some(single_symbol) = symbol.single() else {
+                // Handle ambiguous symbols
+                todo!();
+            };
+
+            // Check if the symbol is visible from the 'from' entity
+            let Some(VisibleWithin(scope)) = self.context.try_get_computed(single_symbol).cloned()
+            else {
                 panic!("internal compiler error: can't calculate visibility")
             };
 
+            // Check if 'from' is within the visibility scope of the symbol
             // todo: if it becomes a performance concern, cache ancestors
             if !self.has_ancestor(from, scope) {
-                let symbol_name = self.context.get(symbol).name.span;
+                let symbol_name = self.context.get(single_symbol).name.span;
                 self.emit(SymbolError::NotVisible(segment.name.clone(), symbol_name));
                 return None;
             }
 
+            // Update current_entity to continue resolution
             current_entity = symbol;
         }
 
-        return Some((current_entity.as_base(), vec![]));
+        // Convert the final symbol collection to the expected return format
+        // Each symbol is returned with an empty list of remaining segments
+        return Some((current_entity, vec![]));
     }
 
     fn get_member_of(&self, value: Value, span: Span, value_in: &HasValueIn) -> Value {

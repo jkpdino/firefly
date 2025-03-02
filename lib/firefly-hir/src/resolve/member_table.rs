@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{ComputedComponent, Id};
 
-use super::{Namespace, Symbol};
+use super::{Namespace, SymbolCollection};
 
 /// The StaticMemberTable provides a list of symbols
 /// available from outside the entity. For example,
@@ -11,11 +11,11 @@ use super::{Namespace, Symbol};
 /// but not in it's member table
 #[derive(Clone, Debug)]
 pub struct StaticMemberTable {
-    members: HashMap<String, Id<Symbol>>,
+    members: HashMap<String, SymbolCollection>,
 }
 
 impl StaticMemberTable {
-    pub fn lookup(&self, name: &str) -> Option<Id<Symbol>> {
+    pub fn lookup(&self, name: &str) -> Option<SymbolCollection> {
         self.members.get(name).cloned()
     }
 }
@@ -31,11 +31,17 @@ impl ComputedComponent for StaticMemberTable {
         let namespace = context.try_get_computed::<Namespace>(entity)?;
         let symbols = namespace.symbols.clone();
 
-        let members = symbols.into_iter()
+        let members = symbols
+            .into_iter()
             .map(|id| (id, context.get(id)))
             .filter(|(_, sym)| sym.is_static)
-            .map(|(id, sym)| (sym.name.name.clone(), id))
-            .collect::<HashMap<_, _>>();
+            .fold(
+                HashMap::<String, SymbolCollection>::new(),
+                |mut map, (id, sym)| {
+                    map.entry(sym.name.name.clone()).or_default().add(id);
+                    map
+                },
+            );
 
         return Some(StaticMemberTable { members });
     }
@@ -48,11 +54,11 @@ impl ComputedComponent for StaticMemberTable {
 /// member table.
 #[derive(Clone, Debug)]
 pub struct InstanceMemberTable {
-    members: HashMap<String, Id<Symbol>>,
+    members: HashMap<String, SymbolCollection>,
 }
 
 impl InstanceMemberTable {
-    pub fn lookup(&self, name: &str) -> Option<Id<Symbol>> {
+    pub fn lookup(&self, name: &str) -> Option<SymbolCollection> {
         self.members.get(name).cloned()
     }
 }
@@ -68,11 +74,17 @@ impl ComputedComponent for InstanceMemberTable {
         let namespace = context.try_get_computed::<Namespace>(entity)?;
         let symbols = namespace.symbols.clone();
 
-        let members = symbols.into_iter()
+        let members = symbols
+            .into_iter()
             .map(|id| (id, context.get(id)))
             .filter(|(_, sym)| !sym.is_static)
-            .map(|(id, sym)| (sym.name.name.clone(), id))
-            .collect::<HashMap<_, _>>();
+            .fold(
+                HashMap::<String, SymbolCollection>::new(),
+                |mut map, (id, sym)| {
+                    map.entry(sym.name.name.clone()).or_default().add(id);
+                    map
+                },
+            );
 
         return Some(InstanceMemberTable { members });
     }
