@@ -13,15 +13,15 @@
   - [x] Test method call operators
   - [x] Add string operators
   - [ ] Add errors for operators (ish)
-- [ ] Parameter Labels
-  - [ ] Parse parameter labels
-  - [ ] Add parameters to signatures
-  - [ ] Figure out whether to use = or :
-  - [ ] Parse argument labels
-- [ ] Function overloading
-  - [ ] Error for more than one
-  - [ ] Select overloads from a path
-  - [ ] Select overloads in scope
+- [x] Parameter Labels
+  - [x] Parse parameter labels
+  - [x] Add parameters to signatures
+  - [x] Figure out whether to use = or :
+  - [x] Parse argument labels
+- [x] Function overloading
+  - [x] Error for more than one
+  - [x] Select overloads from a path
+  - [x] Select overloads in scope
 - [ ] Struct Initializers
   - [ ] Add overload for initializers
 - [ ] Style guide
