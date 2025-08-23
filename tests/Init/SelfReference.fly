@@ -1,0 +1,104 @@
+module tests.Init.SelfReference;
+
+func main() {
+  print("Testing initializers with computed field values");
+  
+  // Test rectangle that computes area and perimeter
+  var rect = Rectangle(5, 10);
+  rect.display();
+  
+  // Test circle that computes area (simplified without π)
+  var circle = Circle(7);
+  circle.display();
+  
+  // Test product with computed values
+  var product = Product("Laptop", 999, 10);
+  product.display();
+}
+
+public struct Rectangle {
+  var width: int;
+  var height: int;
+  var area: int;
+  var perimeter: int;
+
+  init(_width: int, _height: int) {
+    self.width = _width;
+    self.height = _height;
+    
+    // Compute derived values
+    self.area = _width * _height;
+    self.perimeter = 2 * (_width + _height);
+  }
+
+  func display() {
+    print("Rectangle:");
+    print("Width:");
+    print(format_int(self.width));
+    print("Height:");
+    print(format_int(self.height));
+    print("Area:");
+    print(format_int(self.area));
+    print("Perimeter:");
+    print(format_int(self.perimeter));
+  }
+}
+
+public struct Circle {
+  var radius: int;
+  var diameter: int;
+  var circumference: int;
+  var area: int;
+
+  init(_radius: int) {
+    self.radius = _radius;
+    
+    // Compute derived values (simplified without π)
+    self.diameter = 2 * _radius;
+    self.circumference = 6 * _radius; // Approximation: 2πr ≈ 6r
+    self.area = 3 * _radius * _radius; // Approximation: πr² ≈ 3r²
+  }
+
+  func display() {
+    print("Circle:");
+    print("Radius:");
+    print(format_int(self.radius));
+    print("Diameter:");
+    print(format_int(self.diameter));
+    print("Circumference (approx):");
+    print(format_int(self.circumference));
+    print("Area (approx):");
+    print(format_int(self.area));
+  }
+}
+
+public struct Product {
+  var name: string;
+  var price: int;
+  var discountPercent: int;
+  var discountedPrice: int;
+  var savings: int;
+
+  init(_name: string, _price: int, _discount: int) {
+    self.name = _name;
+    self.price = _price;
+    self.discountPercent = _discount;
+    
+    // Compute discounted price and savings
+    self.savings = (_price * _discount) / 100;
+    self.discountedPrice = _price - self.savings;
+  }
+
+  func display() {
+    print("Product:");
+    print(self.name);
+    print("Original Price:");
+    print(format_int(self.price));
+    print("Discount:");
+    print(format_int(self.discountPercent));
+    print("Savings:");
+    print(format_int(self.savings));
+    print("Final Price:");
+    print(format_int(self.discountedPrice));
+  }
+}

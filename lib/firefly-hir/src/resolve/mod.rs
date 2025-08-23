@@ -1,4 +1,5 @@
 mod collection;
+pub mod delegate;
 mod import;
 mod member_table;
 mod namespace;

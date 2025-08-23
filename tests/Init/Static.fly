@@ -1,0 +1,53 @@
+module tests.Init.Static;
+
+func main() {
+  print("Testing initializers with basic employee management");
+  
+  // Create employees using initializers
+  print("Creating employees:");
+  var emp1 = Employee("Alice", "Engineer", 1);
+  emp1.display();
+  
+  var emp2 = Employee("Bob", "Manager", 2);
+  emp2.display();
+  
+  var intern = Employee("Charlie", "Intern", 3);
+  intern.display();
+  
+  // Test different initialization patterns
+  print("Creating employee with default role:");
+  var emp3 = Employee("Diana");
+  emp3.display();
+}
+
+public struct Employee {
+  var name: string;
+  var role: string;
+  var id: int;
+
+  init(_name: string, _role: string, _id: int) {
+    self.name = _name;
+    self.role = _role;
+    self.id = _id;
+  }
+
+  // Constructor with default role
+  init(_name: string) {
+    self.name = _name;
+    self.role = "Employee";
+    self.id = 0;
+  }
+
+  func display() {
+    print("Employee Info:");
+    print(self.name);
+    print(self.role);
+    print("ID:");
+    print(format_int(self.id));
+  }
+
+  func promote(_newRole: string) {
+    self.role = _newRole;
+    print("Employee promoted!");
+  }
+}

@@ -7,6 +7,7 @@ use firefly_ast::{
     func::{Func, FuncParam},
     item::Item,
     struct_def::{StructDef, Field},
+    init::Init,
     module::Module,
     import::{Import, ImportSymbolList, ImportSymbol},
     operator::{PrefixOperator, InfixOperator}
@@ -46,6 +47,7 @@ extern {
         "var" => Token::VarKw,
         "struct" => Token::StructKw,
         "func" => Token::FuncKw,
+        "init" => Token::InitKw,
 
         "static" => Token::StaticKw,
 
@@ -122,7 +124,7 @@ Item: Item = {
     <Field> => Item::Field(<>),
     <Module> => Item::Module(<>),
     <Import> => Item::Import(<>),
-
+    <Init> => Item::Init(<>),
     ExpectItem => Item::Error
 }
 
@@ -195,6 +197,15 @@ UnspannedFunction: Func = {
         name,
         params,
         return_ty,
+        body,
+    )
+}
+
+Init = { Spanned<UnspannedInit> }
+UnspannedInit: Init = {
+    <visibility: Visibility?> "init" "(" <params: CommaList<FuncParam>> ")" <body: CodeBlock> => Init::new(
+        visibility,
+        params,
         body,
     )
 }

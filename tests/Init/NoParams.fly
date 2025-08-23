@@ -1,0 +1,54 @@
+module tests.Init.NoParams;
+
+func main() {
+  print("Testing parameterless initializers");
+  
+  // Test initialization without parameters
+  var counter = Counter();
+  counter.display();
+  
+  var logger = Logger();
+  logger.info();
+  logger.display();
+}
+
+public struct Counter {
+  var value: int;
+  var initialized: bool;
+
+  init() {
+    self.value = 0;
+    self.initialized = true;
+  }
+
+  func display() {
+    if (self.initialized) {
+      print("Counter initialized");
+      print(format_int(self.value));
+    } else {
+      print("Counter not initialized");
+    }
+  }
+}
+
+public struct Logger {
+  var ready: bool;
+  var name: string;
+
+  init() {
+    self.ready = true;
+    self.name = "DefaultLogger";
+  }
+
+  func info() {
+    if (self.ready) {
+      print("Logger is ready");
+    } else {
+      print("Logger is not ready");
+    }
+  }
+
+  func display() {
+    print(self.name);
+  }
+}

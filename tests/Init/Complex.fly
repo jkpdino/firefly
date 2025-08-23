@@ -1,0 +1,303 @@
+module tests.Init.Complex;
+
+func main() {
+  print("Testing complex initializer scenarios");
+  
+  // Test game system with multiple interconnected structs
+  print("=== Creating Game World ===");
+  
+  // Create game stats
+  var stats = GameStats();
+  stats.display();
+  
+  // Create player with equipment
+  var weapon = Weapon("Sword of Power", 50, 85);
+  var armor = Armor("Dragon Scale", 30, 90);
+  var player = Player("Hero", 100, weapon, armor);
+  player.display();
+  
+  // Create enemy
+  var enemyWeapon = Weapon("Dark Blade", 40, 80);
+  var enemy = Enemy("Shadow Beast", 80, enemyWeapon);
+  enemy.display();
+  
+  // Create battle system
+  var battle = Battle(player, enemy, stats);
+  battle.start();
+  
+  print("=== Final Stats ===");
+  stats.display();
+}
+
+public struct GameStats {
+  var battlesWon: int;
+  var battlesLost: int;
+  var totalDamageDealt: int;
+  var totalDamageTaken: int;
+  var winRate: int;
+
+  init() {
+    self.battlesWon = 0;
+    self.battlesLost = 0;
+    self.totalDamageDealt = 0;
+    self.totalDamageTaken = 0;
+    self.winRate = 0;
+  }
+
+  func recordWin(_damage: int) {
+    self.battlesWon = self.battlesWon + 1;
+    self.totalDamageDealt = self.totalDamageDealt + _damage;
+    self.updateWinRate();
+  }
+
+  func recordLoss(_damageTaken: int) {
+    self.battlesLost = self.battlesLost + 1;
+    self.totalDamageTaken = self.totalDamageTaken + _damageTaken;
+    self.updateWinRate();
+  }
+
+  func updateWinRate() {
+    var total = self.battlesWon + self.battlesLost;
+    if (total > 0) {
+      self.winRate = (self.battlesWon * 100) / total;
+    }
+  }
+
+  func display() {
+    print("Game Statistics:");
+    print("Battles Won:");
+    print(format_int(self.battlesWon));
+    print("Battles Lost:");
+    print(format_int(self.battlesLost));
+    print("Win Rate:");
+    print(format_int(self.winRate));
+  }
+}
+
+public struct Weapon {
+  var name: string;
+  var damage: int;
+  var durability: int;
+  var isUsable: bool;
+
+  init(_name: string, _damage: int, _durability: int) {
+    self.name = _name;
+    self.damage = _damage;
+    self.durability = _durability;
+    self.isUsable = _durability > 0;
+  }
+
+  func attack() {
+    if (self.isUsable) {
+      self.durability = self.durability - 1;
+      if (self.durability <= 0) {
+        self.isUsable = false;
+      }
+      return self.damage;
+    }
+    return 0;
+  }
+
+  func display() {
+    print("Weapon:");
+    print(self.name);
+    print("Damage:");
+    print(format_int(self.damage));
+    print("Durability:");
+    print(format_int(self.durability));
+  }
+}
+
+public struct Armor {
+  var name: string;
+  var defense: int;
+  var durability: int;
+  var isUsable: bool;
+
+  init(_name: string, _defense: int, _durability: int) {
+    self.name = _name;
+    self.defense = _defense;
+    self.durability = _durability;
+    self.isUsable = _durability > 0;
+  }
+
+  func defend(_incomingDamage: int) {
+    if (self.isUsable) {
+      self.durability = self.durability - 1;
+      if (self.durability <= 0) {
+        self.isUsable = false;
+      }
+      
+      var reducedDamage = _incomingDamage - self.defense;
+      if (reducedDamage < 0) {
+        return 0;
+      }
+      return reducedDamage;
+    }
+    return _incomingDamage;
+  }
+
+  func display() {
+    print("Armor:");
+    print(self.name);
+    print("Defense:");
+    print(format_int(self.defense));
+    print("Durability:");
+    print(format_int(self.durability));
+  }
+}
+
+public struct Player {
+  var name: string;
+  var health: int;
+  var maxHealth: int;
+  var weapon: Weapon;
+  var armor: Armor;
+  var isAlive: bool;
+
+  init(_name: string, _health: int, _weapon: Weapon, _armor: Armor) {
+    self.name = _name;
+    self.health = _health;
+    self.maxHealth = _health;
+    self.weapon = _weapon;
+    self.armor = _armor;
+    self.isAlive = _health > 0;
+  }
+
+  func attack() {
+    if (self.isAlive) {
+      return self.weapon.attack();
+    }
+    return 0;
+  }
+
+  func takeDamage(_damage: int) {
+    if (self.isAlive) {
+      var actualDamage = self.armor.defend(_damage);
+      self.health = self.health - actualDamage;
+      
+      if (self.health <= 0) {
+        self.health = 0;
+        self.isAlive = false;
+      }
+      
+      return actualDamage;
+    }
+    return 0;
+  }
+
+  func display() {
+    print("Player:");
+    print(self.name);
+    print("Health:");
+    print(format_int(self.health));
+    if (self.isAlive) {
+      print("Status: Alive");
+    } else {
+      print("Status: Defeated");
+    }
+    self.weapon.display();
+    self.armor.display();
+  }
+}
+
+public struct Enemy {
+  var name: string;
+  var health: int;
+  var weapon: Weapon;
+  var isAlive: bool;
+
+  init(_name: string, _health: int, _weapon: Weapon) {
+    self.name = _name;
+    self.health = _health;
+    self.weapon = _weapon;
+    self.isAlive = _health > 0;
+  }
+
+  func attack() {
+    if (self.isAlive) {
+      return self.weapon.attack();
+    }
+    return 0;
+  }
+
+  func takeDamage(_damage: int) {
+    if (self.isAlive) {
+      self.health = self.health - _damage;
+      
+      if (self.health <= 0) {
+        self.health = 0;
+        self.isAlive = false;
+      }
+      
+      return _damage;
+    }
+    return 0;
+  }
+
+  func display() {
+    print("Enemy:");
+    print(self.name);
+    print("Health:");
+    print(format_int(self.health));
+    if (self.isAlive) {
+      print("Status: Alive");
+    } else {
+      print("Status: Defeated");
+    }
+    self.weapon.display();
+  }
+}
+
+public struct Battle {
+  var player: Player;
+  var enemy: Enemy;
+  var stats: GameStats;
+  var isActive: bool;
+
+  init(_player: Player, _enemy: Enemy, _stats: GameStats) {
+    self.player = _player;
+    self.enemy = _enemy;
+    self.stats = _stats;
+    self.isActive = _player.isAlive && _enemy.isAlive;
+  }
+
+  func start() {
+    print("Battle begins!");
+    
+    if (!self.isActive) {
+      print("Battle cannot start - invalid participants");
+      return;
+    }
+    
+    // Simulate a simple battle
+    var playerDamage = self.player.attack();
+    var enemyDamageReceived = self.enemy.takeDamage(playerDamage);
+    
+    print("Player attacks for:");
+    print(format_int(playerDamage));
+    
+    if (self.enemy.isAlive) {
+      var enemyDamage = self.enemy.attack();
+      var playerDamageReceived = self.player.takeDamage(enemyDamage);
+      
+      print("Enemy attacks for:");
+      print(format_int(enemyDamage));
+      print("Player takes:");
+      print(format_int(playerDamageReceived));
+    }
+    
+    // Determine outcome
+    if (!self.enemy.isAlive) {
+      print("Player wins!");
+      self.stats.recordWin(playerDamage);
+    } else if (!self.player.isAlive) {
+      print("Enemy wins!");
+      self.stats.recordLoss(0);
+    } else {
+      print("Battle continues...");
+    }
+    
+    self.isActive = self.player.isAlive && self.enemy.isAlive;
+  }
+}

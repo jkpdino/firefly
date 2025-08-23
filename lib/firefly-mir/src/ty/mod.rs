@@ -9,7 +9,7 @@ use crate::util::{DisplayInContext, UniqueId};
 
 use super::MirContext;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum TyKind {
     Integer,
     String,
@@ -24,15 +24,15 @@ pub enum TyKind {
     Func(Vec<Ty>, Ty),
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Ty {
-    kind: Box<TyKind>,
+    pub kind: Box<TyKind>,
 }
 
 impl Ty {
     pub fn new(kind: TyKind) -> Self {
         Self {
-            kind: Box::new(kind)
+            kind: Box::new(kind),
         }
     }
 }
@@ -44,7 +44,7 @@ impl DisplayInContext for TyKind {
             TyKind::String => write!(f, "string"),
             TyKind::Float => write!(f, "float"),
             TyKind::Bool => write!(f, "bool"),
-            
+
             TyKind::Void => write!(f, "void"),
 
             TyKind::Struct(id) => {
@@ -53,8 +53,17 @@ impl DisplayInContext for TyKind {
                 write!(f, "struct {}", struct_def.name)
             }
 
-            TyKind::Tuple(items) => write!(f, "({})", items.iter().map(|item| context.display(item)).format(", ")),
-            TyKind::Func(params, return_ty) => write!(f, "func ({}) -> {}", params.iter().map(|item| context.display(item)).format(", "), context.display(return_ty))
+            TyKind::Tuple(items) => write!(
+                f,
+                "({})",
+                items.iter().map(|item| context.display(item)).format(", ")
+            ),
+            TyKind::Func(params, return_ty) => write!(
+                f,
+                "func ({}) -> {}",
+                params.iter().map(|item| context.display(item)).format(", "),
+                context.display(return_ty)
+            ),
         }
     }
 }

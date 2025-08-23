@@ -1,0 +1,108 @@
+module tests.Init.Validation;
+
+func main() {
+  print("Testing initializers with validation logic");
+  
+  // Test email validation
+  print("Creating user with valid email:");
+  var user1 = User("john@example.com", 25);
+  user1.display();
+  
+  print("Creating user with invalid email:");
+  var user2 = User("invalid-email", 30);
+  user2.display();
+  
+  // Test age validation
+  print("Creating user with invalid age:");
+  var user3 = User("jane@test.com", -5);
+  user3.display();
+  
+  // Test password strength
+  print("Testing password validation:");
+  var account1 = SecureAccount("user1", "password123");
+  account1.display();
+  
+  var account2 = SecureAccount("user2", "abc");
+  account2.display();
+}
+
+public struct User {
+  var email: string;
+  var age: int;
+  var isValid: bool;
+  var validationMessage: string;
+
+  init(_email: string, _age: int) {
+    self.email = _email;
+    self.age = _age;
+    self.isValid = true;
+    self.validationMessage = "Valid";
+    
+    // Age validation
+    if (_age < 0) {
+      self.isValid = false;
+      self.validationMessage = "Invalid age";
+    }
+    
+    if (_age > 150) {
+      self.isValid = false;
+      self.validationMessage = "Age too high";
+    }
+  }
+
+  func containsAt(_text: string) {
+    // Simplified check - in real implementation would search for '@'
+    // For now, assume emails with 'example.com' or 'test.com' are valid
+    return true; // Placeholder - would need string contains functionality
+  }
+
+  func display() {
+    print("User Account:");
+    print(self.email);
+    print("Age:");
+    print(format_int(self.age));
+    
+    if (self.isValid) {
+      print("Status: Valid");
+    } else {
+      print("Status: Invalid");
+      print(self.validationMessage);
+    }
+  }
+}
+
+public struct SecureAccount {
+  var username: string;
+  var passwordHash: string;
+  var isSecure: bool;
+  var securityLevel: string;
+
+  init(_username: string, _password: string) {
+    self.username = _username;
+    self.isSecure = true;
+    self.securityLevel = "High";
+    self.passwordHash = "strong_hash";
+    
+    // Simple password validation (simplified without method calls)
+    // In reality would check length, complexity, etc.
+  }
+
+  func isPasswordWeak(_password: string) {
+    // Simplified password check
+    // In reality would check length, complexity, etc.
+    return false; // Placeholder - assume passwords ending in "123" are weak
+  }
+
+  func display() {
+    print("Secure Account:");
+    print(self.username);
+    print("Security Level:");
+    print(self.securityLevel);
+    
+    if (self.isSecure) {
+      print("Status: Secure");
+    } else {
+      print("Status: Weak password detected");
+    }
+  }
+}

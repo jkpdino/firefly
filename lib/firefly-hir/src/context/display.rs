@@ -1,6 +1,17 @@
 use std::fmt::Display;
 
-use crate::{func::{Callable, Func}, items::{mangle::MangledName, Constant, Field, Global, Module, StructDef, TypeAlias}, resolve::{Import, InstanceMemberTable, Namespace, Passthrough, StaticMemberTable, Symbol, VisibleWithin}, stmt::CodeBlock, ty::{HasType, Ty}, value::{HasSelf, HasValue, HasValueIn}, Entity, Id, Root};
+use crate::{
+    func::{Callable, Func, Init},
+    items::{mangle::MangledName, Constant, Field, Global, Module, StructDef, TypeAlias},
+    resolve::{
+        delegate::StaticDelegate, Import, InstanceMemberTable, Namespace, Passthrough,
+        StaticMemberTable, Symbol, VisibleWithin,
+    },
+    stmt::CodeBlock,
+    ty::{HasType, Ty},
+    value::{HasSelf, HasValue, HasValueIn},
+    Entity, Id, Root,
+};
 
 use super::HirContext;
 
@@ -31,7 +42,7 @@ impl Display for DisplayContext<'_> {
         for_each_component!(
             com in self.node,
             self.context,
-            (Root, Func, Module, Global, StructDef, Field, TypeAlias, Constant, Ty, CodeBlock, MangledName, HasType, HasValue, HasValueIn, HasSelf, Callable, Symbol, VisibleWithin, Passthrough, Import, Namespace, StaticMemberTable, InstanceMemberTable),
+            (Root, Func, Init, Module, Global, StructDef, Field, TypeAlias, Constant, Ty, CodeBlock, MangledName, HasType, HasValue, HasValueIn, HasSelf, Callable, Symbol, VisibleWithin, Passthrough, Import, Namespace, StaticDelegate, StaticMemberTable, InstanceMemberTable),
             {
                 let com = format!("{com:?}").replace("\n", &newline_prefix);
                 println!("  {prefix}{com}");
@@ -39,14 +50,11 @@ impl Display for DisplayContext<'_> {
         );
 
         let children = self.context.children(self.node);
-        let display_children = children.iter()
-            .map(|child| {
-                DisplayContext {
-                    context: self.context,
-                    node: *child,
-                    level: self.level + 1
-                }
-            });
+        let display_children = children.iter().map(|child| DisplayContext {
+            context: self.context,
+            node: *child,
+            level: self.level + 1,
+        });
 
         for child in display_children {
             write!(f, "{child}")?;

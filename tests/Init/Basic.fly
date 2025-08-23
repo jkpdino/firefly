@@ -1,0 +1,22 @@
+module tests.Init;
+
+func main() {
+  print("Hello");
+  var person = Person("John", 10);
+
+  person.display();
+}
+
+public struct Person {
+  var name: string;
+  var age: int;
+
+  init(_name: string, _age: int) {
+    self.name = _name;
+    self.age = _age;
+  }
+
+  func display() {
+    print(self.name);
+  }
+}

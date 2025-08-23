@@ -2,6 +2,7 @@ use firefly_span::{Span, Spanned};
 
 pub mod func;
 pub mod import;
+pub mod init;
 pub mod item;
 pub mod module;
 pub mod operator;

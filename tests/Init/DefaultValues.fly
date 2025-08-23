@@ -1,0 +1,54 @@
+module tests.Init.DefaultValues;
+
+func main() {
+  print("Testing initializers with partial field initialization");
+  
+  // Test initialization with only some fields set
+  var user = User("Alice");
+  user.display();
+  
+  print("Creating admin user:");
+  var admin = User("Admin", true);
+  admin.display();
+}
+
+public struct User {
+  var name: string;
+  var isActive: bool;
+  var loginCount: int;
+  var lastLogin: string;
+
+  // Initialize only name, leave other fields with defaults
+  init(_name: string) {
+    self.name = _name;
+    self.isActive = false;
+    self.loginCount = 0;
+    self.lastLogin = "Never";
+  }
+
+  // Initialize name and active status
+  init(_name: string, _active: bool) {
+    self.name = _name;
+    self.isActive = _active;
+    self.loginCount = 0;
+    if (_active) {
+      self.lastLogin = "Today";
+    } else {
+      self.lastLogin = "Never";
+    }
+  }
+
+  func display() {
+    print("User Profile:");
+    print(self.name);
+    
+    if (self.isActive) {
+      print("Status: Active");
+    } else {
+      print("Status: Inactive");
+    }
+    
+    print(format_int(self.loginCount));
+    print(self.lastLogin);
+  }
+}

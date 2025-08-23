@@ -1,19 +1,26 @@
-use super::value::{InnerValue, Value};
+use firefly_mir::{ty::Ty, MirContext};
+
+use crate::value::default_for_ty;
+
+use super::value::Value;
 
 pub struct StackFrame {
     frame: Vec<Value>,
 }
 
 impl StackFrame {
-    pub fn new(size: usize, params: Vec<Value>) -> Self {
+    pub fn new(types: Vec<Ty>, params: Vec<Value>, context: &MirContext) -> Self {
+        let size = types.len();
         assert!(size >= params.len());
 
         let param_len = params.len();
 
         let mut frame = params;
 
-        for _ in 0..size - param_len {
-            frame.push(Value::new(InnerValue::Undefined));
+        for i in param_len..size {
+            let ty = &types[i];
+
+            frame.push(default_for_ty(ty, context));
         }
 
         Self { frame }

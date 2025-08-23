@@ -54,6 +54,8 @@ pub enum Token<'a> {
     FuncKw,
     #[token("struct")]
     StructKw,
+    #[token("init")]
+    InitKw,
 
     #[token("static")]
     StaticKw,

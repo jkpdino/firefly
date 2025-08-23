@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
+use itertools::Itertools;
+
 use crate::{ComputedComponent, Id};
 
-use super::{Namespace, SymbolCollection};
+use super::{delegate::StaticDelegate, Namespace, Symbol, SymbolCollection};
 
 /// The StaticMemberTable provides a list of symbols
 /// available from outside the entity. For example,
@@ -31,7 +33,7 @@ impl ComputedComponent for StaticMemberTable {
         let namespace = context.try_get_computed::<Namespace>(entity)?;
         let symbols = namespace.symbols.clone();
 
-        let members = symbols
+        let mut members = symbols
             .into_iter()
             .map(|id| (id, context.get(id)))
             .filter(|(_, sym)| sym.is_static)
@@ -42,6 +44,25 @@ impl ComputedComponent for StaticMemberTable {
                     map
                 },
             );
+
+        // todo: add static delegate symbols
+        members.values_mut().for_each(|symbols| {
+            // Get all the children of the entity which have a static delegate
+            let static_delegate_children = symbols
+                .symbols
+                .iter()
+                .flat_map(|symbol| context.children(symbol.as_base()))
+                .filter_map(|id| {
+                    if !context.has::<StaticDelegate>(*id) {
+                        return None;
+                    }
+
+                    return context.cast_id::<Symbol>(*id);
+                })
+                .collect_vec();
+
+            symbols.symbols.extend(static_delegate_children);
+        });
 
         return Some(StaticMemberTable { members });
     }

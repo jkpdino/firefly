@@ -35,7 +35,7 @@ component!(base(EntityKind::Module) modules: Module);
 
 #[derive(Clone, Debug, Default)]
 pub struct SourceFile {
-    pub id: Id<SourceFile>
+    pub id: Id<SourceFile>,
 }
 
 component!(base(EntityKind::SourceFile) source_files: SourceFile);
@@ -44,7 +44,7 @@ component!(base(EntityKind::SourceFile) source_files: SourceFile);
 pub struct Global {
     pub id: Id<Global>,
     pub ty: Ty,
-    pub default_value: Value
+    pub default_value: Value,
 }
 
 component!(base(EntityKind::Global) globals: Global);

@@ -1,12 +1,26 @@
-mod iter;
 mod display;
+mod iter;
 
 use std::{collections::HashMap, fmt::Debug};
 
 use display::DisplayContext;
 
 use crate::{
-    component::{BaseComponent, Component}, entity::Id, func::{Callable, Func}, items::{mangle::MangledName, Constant, Field, Global, Module, SourceFile, StructDef, TypeAlias}, resolve::{Import, InstanceMemberTable, Namespace, Passthrough, StaticMemberTable, Symbol, SymbolTable, VisibleWithin}, stmt::{CodeBlock, Local}, ty::{HasType, Ty}, util::Root, value::{HasSelf, HasValue, HasValueIn}, AccessComponent, ComponentConstructor, ComputedComponent, Entity, EntityKind
+    component::{BaseComponent, Component},
+    entity::Id,
+    func::{Callable, Func, Init},
+    items::{
+        mangle::MangledName, Constant, Field, Global, Module, SourceFile, StructDef, TypeAlias,
+    },
+    resolve::{
+        delegate::StaticDelegate, Import, InstanceMemberTable, Namespace, Passthrough,
+        StaticMemberTable, Symbol, SymbolTable, VisibleWithin,
+    },
+    stmt::{CodeBlock, Local},
+    ty::{HasType, Ty},
+    util::Root,
+    value::{HasSelf, HasValue, HasValueIn},
+    AccessComponent, ComponentConstructor, ComputedComponent, Entity, EntityKind,
 };
 
 // The HirContext keeps track of every entity in the system,
@@ -19,6 +33,7 @@ ecs! {
         // Base items
         roots: Root,
         funcs: Func,
+        inits: Init,
         fields: Field,
         globals: Global,
         modules: Module,
@@ -47,6 +62,7 @@ ecs! {
         passthroughs: Passthrough,
         symbol_tables: SymbolTable,
         visible_withins: VisibleWithin,
+        static_delegates: StaticDelegate,
         static_member_tables: StaticMemberTable,
         instance_member_tables: InstanceMemberTable
     }
@@ -99,9 +115,13 @@ impl HirContext {
     /// with that type.
     ///
     /// Panics if the entity already exists
-    pub fn create_with_parent<C: ComponentConstructor>(&mut self, parent: Id<impl Component>, component: C) -> Id<C::Base>
-    where 
-        Self: AccessComponent<C::Base>
+    pub fn create_with_parent<C: ComponentConstructor>(
+        &mut self,
+        parent: Id<impl Component>,
+        component: C,
+    ) -> Id<C::Base>
+    where
+        Self: AccessComponent<C::Base>,
     {
         let component_id = self.create(component);
         self.link(parent, component_id);
@@ -177,7 +197,7 @@ impl HirContext {
     pub fn try_get_computed<C: ComputedComponent>(&mut self, id: Id<impl Component>) -> Option<&C>
     where
         Self: AccessComponent<C>,
-        C: Debug
+        C: Debug,
     {
         // todo!: this code is really hacky, but
         // its the only way I could get the borrow tracker to work
@@ -275,9 +295,11 @@ impl HirContext {
 
     /// Iterates over all entities in the hir that have a certain component
     pub fn entities_with<C: Component>(&self) -> impl Iterator<Item = Id<C>> + '_
-        where Self: AccessComponent<C>
+    where
+        Self: AccessComponent<C>,
     {
-        self.entities().filter_map(|entity_id| self.cast_id::<C>(entity_id))
+        self.entities()
+            .filter_map(|entity_id| self.cast_id::<C>(entity_id))
     }
 
     /// Returns this entity's parent
@@ -297,6 +319,10 @@ impl HirContext {
 
     /// Displays the HirContext as a tree
     pub fn display(&self) -> DisplayContext {
-        DisplayContext { context: self, node: self.root.as_base(), level: 0 }
+        DisplayContext {
+            context: self,
+            node: self.root.as_base(),
+            level: 0,
+        }
     }
 }
