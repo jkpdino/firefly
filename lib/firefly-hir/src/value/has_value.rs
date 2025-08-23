@@ -1,12 +1,18 @@
 use std::fmt::Debug;
 
-use crate::{func::Func, items::Field, stmt::Local, ty::Ty, Id};
+use crate::{
+    func::{Func, Init},
+    items::Field,
+    stmt::Local,
+    ty::Ty,
+    Entity, Id,
+};
 
 use super::Value;
 
 #[derive(Debug, Clone)]
 pub struct HasValue {
-    pub value: Value
+    pub value: Value,
 }
 
 component!(has_values: HasValue);

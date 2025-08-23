@@ -1,10 +1,17 @@
-pub mod loops;
-mod literals;
 mod builtins;
 mod conditional;
+mod literals;
+pub mod loops;
 
-use firefly_hir::{ty::TyKind, value::{LiteralValue, Value, ValueKind}};
-use firefly_mir::{ty::{Ty as MirTy, TyKind as MirTyKind}, code::Terminator, value::{Immediate, ImmediateKind, Place, PlaceKind}};
+use firefly_hir::{
+    ty::TyKind,
+    value::{LiteralValue, Value, ValueKind},
+};
+use firefly_mir::{
+    code::Terminator,
+    ty::{Ty as MirTy, TyKind as MirTyKind},
+    value::{Immediate, ImmediateKind, Place, PlaceKind},
+};
 use itertools::Itertools;
 
 use crate::HirLowerer;
@@ -13,8 +20,12 @@ impl HirLowerer<'_> {
     pub fn lower_immediate(&mut self, value: &Value) -> Immediate {
         match &value.kind {
             ValueKind::Literal(LiteralValue::Integer(num)) => self.lower_integer(num, value.span),
-            ValueKind::Literal(LiteralValue::String(string)) => self.lower_string(string, value.span),
-            ValueKind::Literal(LiteralValue::Boolean(boolean)) => self.lower_bool(*boolean, value.span),
+            ValueKind::Literal(LiteralValue::String(string)) => {
+                self.lower_string(string, value.span)
+            }
+            ValueKind::Literal(LiteralValue::Boolean(boolean)) => {
+                self.lower_bool(*boolean, value.span)
+            }
             ValueKind::Literal(LiteralValue::Float(float)) => self.lower_float(float, value.span),
 
             ValueKind::Tuple(items) => self.lower_tuple(items, value.span),
@@ -32,7 +43,10 @@ impl HirLowerer<'_> {
 
             ValueKind::While(while_value) => self.lower_while(while_value),
 
-            ValueKind::StaticFunc(_) | ValueKind::InitFor(_) | ValueKind::InstanceFunc(..) | ValueKind::BuiltinFunc(_) => {
+            ValueKind::StaticFunc(_)
+            | ValueKind::DefaultInit(_)
+            | ValueKind::InstanceFunc(..)
+            | ValueKind::BuiltinFunc(_) => {
                 panic!("internal compiler error: first-class functions are not supported yet");
             }
 
@@ -61,7 +75,7 @@ impl HirLowerer<'_> {
                 Place {
                     kind: Box::new(PlaceKind::Global(mir_global)),
                     ty: self.lower_ty(&global.ty),
-                    span: value.span
+                    span: value.span,
                 }
             }
 
@@ -91,7 +105,10 @@ impl HirLowerer<'_> {
     }
 
     pub fn lower_call(&mut self, func: &Value, args: &Vec<Value>) -> Immediate {
-        let mut args = args.iter().map(|arg| self.lower_immediate(arg)).collect_vec();
+        let mut args = args
+            .iter()
+            .map(|arg| self.lower_immediate(arg))
+            .collect_vec();
 
         let TyKind::Func(_, return_ty) = &func.ty.kind else {
             panic!();
@@ -112,17 +129,20 @@ impl HirLowerer<'_> {
             ValueKind::InstanceFunc(receiver, instance_func) => {
                 let instance_func = self.func_map[instance_func];
 
-                let receiver = self.lower_immediate(&receiver);
+                // For methods, pass a copy of the receiver instead of moving it
+                // The method will return the modified struct
+                let receiver_place = self.lower_place(&receiver);
+                let receiver_copy = receiver_place.clone().move_out();
 
-                args.insert(0, receiver);
+                args.insert(0, receiver_copy);
 
                 Immediate {
                     kind: Box::new(ImmediateKind::Call(instance_func, args)),
-                    ty: return_ty,
+                    ty: receiver_place.ty.clone(), // Return type is the struct type
                     span: func.span,
                 }
             }
-            ValueKind::InitFor(struct_def) => {
+            ValueKind::DefaultInit(struct_def) => {
                 let struct_def = self.struct_map[struct_def];
                 let ty = MirTy::new(MirTyKind::Struct(struct_def));
 
@@ -132,7 +152,21 @@ impl HirLowerer<'_> {
                     span: func.span,
                 }
             }
-            ValueKind::BuiltinFunc(builtin_name) => self.lower_builtin(builtin_name, args, func.span),
+            ValueKind::Init(ty, init) => {
+                let ty = self.lower_ty(ty);
+                
+                // Call the initializer function with the arguments and return the result directly
+                let instance_func = self.init_map[init];
+
+                Immediate {
+                    kind: Box::new(ImmediateKind::Call(instance_func, args)),
+                    ty,
+                    span: func.span,
+                }
+            }
+            ValueKind::BuiltinFunc(builtin_name) => {
+                self.lower_builtin(builtin_name, args, func.span)
+            }
 
             _ => unreachable!(),
         }
@@ -152,11 +186,9 @@ impl HirLowerer<'_> {
 
         if let ImmediateKind::Void = imm.kind.as_ref() {
             self.mir.build_terminator(Terminator::returns_void());
-        }
-        else {
+        } else {
             self.mir.build_terminator(Terminator::returns(imm));
         }
-
 
         Immediate::void()
     }

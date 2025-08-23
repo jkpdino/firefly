@@ -14,3 +14,12 @@ pub struct Func {
 }
 
 component!(base(EntityKind::Func) funcs: Func);
+
+/// Represents an initializer in the HIR.
+#[derive(Debug, Clone)]
+pub struct Init {
+    pub id: Id<Init>,
+    //signature: FuncSignature,
+}
+
+component!(base(EntityKind::Init) inits: Init);

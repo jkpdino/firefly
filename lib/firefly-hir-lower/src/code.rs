@@ -26,7 +26,7 @@ impl HirLowerer<'_> {
             self.mir.build_eval(imm);
         }
     }
-    fn lower_code_block_inner(&mut self, code_block: Id<CodeBlock>) -> Option<Immediate> {
+    pub fn lower_code_block_inner(&mut self, code_block: Id<CodeBlock>) -> Option<Immediate> {
         let code_block = self.hir.get(code_block).clone();
 
         for stmt in &code_block.stmts {
@@ -48,6 +48,21 @@ impl HirLowerer<'_> {
     pub fn lower_stmt(&mut self, stmt: &Stmt) {
         match &stmt.kind {
             StmtKind::Value(value) => {
+                use firefly_hir::value::ValueKind;
+                
+                // Check if this is a method call that needs to assign back to receiver
+                if let ValueKind::Invoke(func, _args) = &value.kind {
+                    if let ValueKind::InstanceFunc(receiver, _method_id) = &func.kind {
+                        // This is a method call - we need to assign the result back to the receiver
+                        let receiver_place = self.lower_place(receiver);
+                        let method_result = self.lower_immediate(value);
+                        
+                        // Assign the method result back to the receiver
+                        self.mir.build_assign(receiver_place, method_result);
+                        return;
+                    }
+                }
+
                 let imm = self.lower_immediate(value);
 
                 if let ImmediateKind::Void = imm.kind.as_ref() {

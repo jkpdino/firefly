@@ -14,7 +14,7 @@ use firefly_span::{Span, Spanned};
 use itertools::Itertools;
 
 impl AstLowerer {
-    fn lower_signature(
+    pub(super) fn lower_signature(
         &mut self,
         signature: &AstFuncSignature,
         parent: Id<Entity>,

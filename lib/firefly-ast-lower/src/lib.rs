@@ -60,7 +60,7 @@ impl AstLowerer {
                 self.lower_item_defs(&item.items);
                 item
             }
-            Item::Init(Spanned { item, .. }) => todo!(),
+            Item::Init(Spanned { item, .. }) => item,
             Item::Module(_) => return,
             Item::Error => return,
         };
@@ -80,7 +80,7 @@ impl AstLowerer {
                 self.lower_item_codes(&item.items);
                 item
             }
-            Item::Init(Spanned { item, .. }) => todo!(),
+            Item::Init(Spanned { item, .. }) => item,
             Item::Module(_) => return,
             Item::Error => return,
         };

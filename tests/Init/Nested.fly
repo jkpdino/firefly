@@ -1,0 +1,76 @@
+module tests.Init.Nested;
+
+func main() {
+  print("Testing nested struct concepts");
+  
+  // Create separate structures
+  print("Creating address:");
+  var address = Address("123 Main St", "Springfield", 12345);
+  address.display();
+  
+  print("Creating person:");
+  var person = Person("John Doe", 30, "456 Oak Ave");
+  person.display();
+  
+  print("Creating another person:");
+  var person2 = Person("Jane Smith", 25, "789 Pine St");
+  person2.display();
+  
+  // Test updating address information
+  print("Updating person's address:");
+  person.updateAddress("999 Elm Street", "Newtown", 54321);
+  person.display();
+}
+
+public struct Address {
+  var street: string;
+  var city: string;
+  var zipCode: int;
+
+  init(_street: string, _city: string, _zip: int) {
+    self.street = _street;
+    self.city = _city;
+    self.zipCode = _zip;
+  }
+
+  func display() {
+    print("Address:");
+    print(self.street);
+    print(self.city);
+    print(format_int(self.zipCode));
+  }
+}
+
+public struct Person {
+  var name: string;
+  var age: int;
+  var street: string;
+  var city: string;
+  var zipCode: int;
+
+  init(_name: string, _age: int, _street: string) {
+    self.name = _name;
+    self.age = _age;
+    self.street = _street;
+    self.city = "Unknown";
+    self.zipCode = 0;
+  }
+
+  func display() {
+    print("Person Details:");
+    print(self.name);
+    print("Age:");
+    print(format_int(self.age));
+    print("Address:");
+    print(self.street);
+    print(self.city);
+    print(format_int(self.zipCode));
+  }
+
+  func updateAddress(_street: string, _city: string, _zip: int) {
+    self.street = _street;
+    self.city = _city;
+    self.zipCode = _zip;
+    print("Address updated");
+  }
+}

@@ -12,7 +12,7 @@ pub struct Init {
     pub visibility: Option<Spanned<Visibility>>,
     pub signature: FuncSignature,
     pub body: CodeBlock,
-    pub id: Id<firefly_hir::func::Func>,
+    pub id: Id<firefly_hir::func::Init>,
 }
 
 impl Init {

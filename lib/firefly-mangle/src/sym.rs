@@ -7,14 +7,16 @@ pub enum SymbolName {
     Func(Path),
     Struct(Path),
     Var(Path),
+    Init(Path),
 
-    Custom(String)
+    Custom(String),
 }
 
 impl Display for SymbolName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             SymbolName::Func(path) => write!(f, "_F{}", path),
+            SymbolName::Init(path) => write!(f, "_i{}", path),
             SymbolName::Struct(path) => write!(f, "_S{}", path),
             SymbolName::Var(path) => write!(f, "_V{}", path),
             SymbolName::Custom(name) => write!(f, "{}", name),

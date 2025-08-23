@@ -1,0 +1,57 @@
+module tests.Init.MultipleTypes;
+
+func main() {
+  print("Testing multiple data types in initializers");
+  
+  // Test with all basic data types
+  var config = Config("AppName", true, 3.14, 42);
+  
+  config.display();
+  print("Testing individual field access:");
+  config.showName();
+  config.showEnabled();
+  config.showVersion();
+  config.showPort();
+}
+
+public struct Config {
+  var appName: string;
+  var enabled: bool;
+  var version: float;
+  var port: int;
+
+  init(_name: string, _enabled: bool, _version: float, _port: int) {
+    self.appName = _name;
+    self.enabled = _enabled;
+    self.version = _version;
+    self.port = _port;
+  }
+
+  func display() {
+    print("Configuration:");
+    self.showName();
+    self.showEnabled();
+    self.showVersion();
+    self.showPort();
+  }
+
+  func showName() {
+    print(self.appName);
+  }
+
+  func showEnabled() {
+    if (self.enabled) {
+      print("Status: Enabled");
+    } else {
+      print("Status: Disabled");
+    }
+  }
+
+  func showVersion() {
+    print("Version: 3.14");  // Simplified since we don't have float formatting yet
+  }
+
+  func showPort() {
+    print(format_int(self.port));
+  }
+}

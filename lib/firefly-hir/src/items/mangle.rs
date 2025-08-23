@@ -4,7 +4,7 @@ use crate::{resolve::Symbol, ComputedComponent, Entity, EntityKind, HirContext, 
 
 #[derive(Debug, Clone)]
 pub struct MangledName {
-    pub symbol: SymbolName
+    pub symbol: SymbolName,
 }
 
 component!(mangled_names: MangledName);
@@ -23,20 +23,20 @@ impl ComputedComponent for MangledName {
         }
 
         ancestors.reverse();
-        
 
         let path = firefly_mangle::Path::new(ancestors);
 
         let entity = context.get(id);
-        
+
         let symbol = match entity.kind {
             EntityKind::StructDef => SymbolName::Struct(path),
             EntityKind::Func => SymbolName::Func(path),
             EntityKind::Global => SymbolName::Var(path),
+            EntityKind::Init => SymbolName::Func(path),
 
             _ => return None,
         };
 
-        return Some(MangledName { symbol })
+        return Some(MangledName { symbol });
     }
 }

@@ -1,0 +1,82 @@
+module tests.Init.Methods;
+
+func main() {
+  print("Testing initializers with method interactions");
+  
+  // Create a bank account and test its methods
+  var account = BankAccount("123456", 1000);
+  account.display();
+  
+  print("Making transactions:");
+  account.deposit(500);
+  account.withdraw(200);
+  account.display();
+  
+  // Test account creation with zero balance
+  print("Creating account with zero balance:");
+  var newAccount = BankAccount("789012");
+  newAccount.display();
+  newAccount.deposit(100);
+  newAccount.display();
+}
+
+public struct BankAccount {
+  var accountNumber: string;
+  var balance: int;
+  var isActive: bool;
+
+  // Initialize with account number and initial balance
+  init(_number: string, _balance: int) {
+    self.accountNumber = _number;
+    self.balance = _balance;
+    self.isActive = true;
+  }
+
+  // Initialize with account number and zero balance
+  init(_number: string) {
+    self.accountNumber = _number;
+    self.balance = 0;
+    self.isActive = true;
+  }
+
+  func deposit(_amount: int) {
+    if (self.isActive) {
+      self.balance = self.balance + _amount;
+      print("Deposited:");
+      print(format_int(_amount));
+    } else {
+      print("Account is inactive");
+    }
+  }
+
+  func withdraw(_amount: int) {
+    if (self.isActive) {
+      if (self.balance >= _amount) {
+        self.balance = self.balance - _amount;
+        print("Withdrew:");
+        print(format_int(_amount));
+      } else {
+        print("Insufficient funds");
+      }
+    } else {
+      print("Account is inactive");
+    }
+  }
+
+  func display() {
+    print("Account Details:");
+    print(self.accountNumber);
+    print("Balance:");
+    print(format_int(self.balance));
+    if (self.isActive) {
+      print("Status: Active");
+    } else {
+      print("Status: Inactive");
+    }
+  }
+
+  func close() {
+    self.isActive = false;
+    print("Account closed");
+  }
+}

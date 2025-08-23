@@ -24,6 +24,8 @@
   - [x] Select overloads in scope
 - [ ] Struct Initializers
   - [ ] Add parsing for initializers
+  - [ ] Add static delegate component
+  - [ ] Add privacy checks for static delegate
   - [ ] Add overload for initializers
 - [ ] Style guide
   - [ ] Capitalization

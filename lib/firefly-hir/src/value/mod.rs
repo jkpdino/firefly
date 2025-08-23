@@ -1,11 +1,16 @@
 mod has_value;
 
-use std::fmt::Debug;
-use firefly_span::Span;
 use crate::{
-    entity::Id, func::Func, items::{Field, Global, StructDef}, stmt::{CodeBlock, Local}, ty::Ty, Name
+    entity::Id,
+    func::{Func, Init},
+    items::{Field, Global, StructDef},
+    stmt::{CodeBlock, Local},
+    ty::Ty,
+    Name,
 };
+use firefly_span::Span;
 pub use has_value::*;
+use std::fmt::Debug;
 
 #[derive(Debug, Clone)]
 pub enum LiteralValue {
@@ -19,7 +24,7 @@ pub enum LiteralValue {
 pub struct IfValue {
     pub condition: Value,
     pub positive: Id<CodeBlock>,
-    pub negative: Option<ElseValue>
+    pub negative: Option<ElseValue>,
 }
 
 #[derive(Debug, Clone)]
@@ -30,9 +35,9 @@ pub enum ElseValue {
 
 #[derive(Debug, Clone)]
 pub struct WhileValue {
-    pub label:     Option<Name>,
+    pub label: Option<Name>,
     pub condition: Value,
-    pub body:      Id<CodeBlock>,
+    pub body: Id<CodeBlock>,
 }
 
 #[derive(Debug, Clone)]
@@ -48,7 +53,8 @@ pub enum ValueKind {
 
     StaticFunc(Id<Func>),
     InstanceFunc(Box<Value>, Id<Func>),
-    InitFor(Id<StructDef>),
+    DefaultInit(Id<StructDef>),
+    Init(Ty, Id<Init>),
     BuiltinFunc(&'static str),
 
     Return(Box<Value>),
@@ -73,15 +79,11 @@ pub struct Value {
 
 impl Value {
     pub fn new(kind: ValueKind, ty: Ty, span: Span) -> Value {
-        Value {
-            kind,
-            ty,
-            span
-        }
+        Value { kind, ty, span }
     }
 
     /// Returns whether a value is mutable or not
-    /// 
+    ///
     /// Local and global variables are mutable, as well
     /// as fields of mutable values
     pub fn is_mutable(&self) -> bool {
@@ -90,7 +92,7 @@ impl Value {
             ValueKind::Local(_) => true,
             ValueKind::Global(_) => true,
 
-            _ => false
+            _ => false,
         }
     }
 }
@@ -103,6 +105,10 @@ impl Debug for Value {
 
 impl Default for Value {
     fn default() -> Self {
-        Self { kind: ValueKind::Unit, ty: Ty::new_unspanned(crate::ty::TyKind::Unit), span: Default::default() }
+        Self {
+            kind: ValueKind::Unit,
+            ty: Ty::new_unspanned(crate::ty::TyKind::Unit),
+            span: Default::default(),
+        }
     }
 }

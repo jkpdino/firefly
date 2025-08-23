@@ -4,7 +4,10 @@ use itertools::Itertools;
 
 use crate::{ComputedComponent, Entity, HirContext, Id, ImportError};
 
-use super::{Import, ImportRequest, Namespace, Symbol, SymbolCollection, VisibleWithin};
+use super::{
+    delegate::StaticDelegate, Import, ImportRequest, Namespace, Symbol, SymbolCollection,
+    VisibleWithin,
+};
 
 /// Represents a single scope level in the symbol table.
 /// Stores the previous state of symbols before they were shadowed,
@@ -124,6 +127,24 @@ impl ComputedComponent for SymbolTable {
         for import in imports {
             Self::import(import, &mut symbol_table, context)
         }
+
+        symbol_table.symbols.values_mut().for_each(|symbols| {
+            // Get all the children of the entity which have a static delegate
+            let static_delegate_children = symbols
+                .symbols
+                .iter()
+                .flat_map(|symbol| context.children(symbol.as_base()))
+                .filter_map(|id| {
+                    if !context.has::<StaticDelegate>(*id) {
+                        return None;
+                    }
+
+                    return context.cast_id::<Symbol>(*id);
+                })
+                .collect_vec();
+
+            symbols.symbols.extend(static_delegate_children);
+        });
 
         return Some(symbol_table);
     }

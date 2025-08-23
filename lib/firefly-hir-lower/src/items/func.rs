@@ -16,12 +16,16 @@ impl HirLowerer<'_> {
 
         // create the function
         let mut mir_params = params.iter().map(|p| self.lower_ty(&p.ty)).collect_vec();
-        let return_ty = self.lower_ty(return_ty);
+        let mut return_ty = self.lower_ty(return_ty);
 
         if let Some(HasSelf { ty, .. }) = self.hir.try_get::<HasSelf>(func) {
-            let ty = self.lower_ty(ty);
+            let self_ty = self.lower_ty(ty);
 
-            mir_params.insert(0, ty);
+            mir_params.insert(0, self_ty.clone());
+            
+            // If this is a method (has self parameter), make it return the self type
+            // so that mutations can be persisted by returning the modified struct
+            return_ty = self_ty;
         }
 
         let mir_id = self.mir.context_mut().create_function(&symbol, mir_params, return_ty);
@@ -55,6 +59,24 @@ impl HirLowerer<'_> {
         // Lower the code
         let bb0 = self.mir.append_basic_block();
         self.mir.select_basic_block(bb0);
-        self.lower_code_block_func(code_block);
+
+        // Check if this is a method (has self parameter)
+        let has_self = self.hir.try_get::<HasSelf>(func);
+        
+        if let Some(HasSelf { local, .. }) = has_self {
+            // For methods, use lower_code_block_inner and add explicit return of self
+            let self_local = self.local_map[&local];
+            let _code_result = self.lower_code_block_inner(code_block);
+
+            use firefly_mir::code::Terminator;
+            
+            let self_place = self.mir.get_local(self_local).place_unspanned();
+            let return_value = self_place.move_out();
+            
+            self.mir.build_terminator(Terminator::returns(return_value));
+        } else {
+            // For regular functions, use the normal flow
+            self.lower_code_block_func(code_block);
+        }
     }
 }

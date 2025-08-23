@@ -16,12 +16,13 @@ pub enum EntityKind {
     TypeAlias,
     Import,
     Global,
+    Init,
 
     Ty,
     Value,
     Stmt,
     CodeBlock,
-    
+
     Constant,
 
     SourceFile,

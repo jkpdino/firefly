@@ -46,8 +46,7 @@ impl<T: BaseComponent> ComponentConstructor for T {
     }
 }
 
-impl<B: BaseComponent> ComponentConstructor for (B, )
-{
+impl<B: BaseComponent> ComponentConstructor for (B,) {
     type Base = B;
 
     fn base_id(&self) -> Id<Self::Base> {
@@ -55,12 +54,13 @@ impl<B: BaseComponent> ComponentConstructor for (B, )
     }
 
     fn create(self, _: &mut HirContext) -> Self::Base {
-        return self.0
+        return self.0;
     }
 }
 
 impl<B: BaseComponent, C1: Component> ComponentConstructor for (B, C1)
-    where HirContext: AccessComponent<C1>
+where
+    HirContext: AccessComponent<C1>,
 {
     type Base = B;
 
@@ -73,13 +73,14 @@ impl<B: BaseComponent, C1: Component> ComponentConstructor for (B, C1)
 
         context.add_component(id, self.1);
 
-        return self.0
+        return self.0;
     }
 }
 
 impl<B: BaseComponent, C1: Component, C2: Component> ComponentConstructor for (B, C1, C2)
-    where HirContext: AccessComponent<C1>,
-          HirContext: AccessComponent<C2>
+where
+    HirContext: AccessComponent<C1>,
+    HirContext: AccessComponent<C2>,
 {
     type Base = B;
 
@@ -93,14 +94,16 @@ impl<B: BaseComponent, C1: Component, C2: Component> ComponentConstructor for (B
         context.add_component(id, self.1);
         context.add_component(id, self.2);
 
-        return self.0
+        return self.0;
     }
 }
 
-impl<B: BaseComponent, C1: Component, C2: Component, C3: Component> ComponentConstructor for (B, C1, C2, C3)
-    where HirContext: AccessComponent<C1>,
-          HirContext: AccessComponent<C2>,
-          HirContext: AccessComponent<C3>
+impl<B: BaseComponent, C1: Component, C2: Component, C3: Component> ComponentConstructor
+    for (B, C1, C2, C3)
+where
+    HirContext: AccessComponent<C1>,
+    HirContext: AccessComponent<C2>,
+    HirContext: AccessComponent<C3>,
 {
     type Base = B;
 
@@ -115,6 +118,32 @@ impl<B: BaseComponent, C1: Component, C2: Component, C3: Component> ComponentCon
         context.add_component(id, self.2);
         context.add_component(id, self.3);
 
-        return self.0
+        return self.0;
+    }
+}
+
+impl<B: BaseComponent, C1: Component, C2: Component, C3: Component, C4: Component>
+    ComponentConstructor for (B, C1, C2, C3, C4)
+where
+    HirContext: AccessComponent<C1>,
+    HirContext: AccessComponent<C2>,
+    HirContext: AccessComponent<C3>,
+    HirContext: AccessComponent<C4>,
+{
+    type Base = B;
+
+    fn base_id(&self) -> Id<Self::Base> {
+        self.0.id()
+    }
+
+    fn create(self, context: &mut HirContext) -> Self::Base {
+        let id = self.0.id();
+
+        context.add_component(id, self.1);
+        context.add_component(id, self.2);
+        context.add_component(id, self.3);
+        context.add_component(id, self.4);
+
+        return self.0;
     }
 }

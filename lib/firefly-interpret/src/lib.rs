@@ -23,7 +23,12 @@ pub struct ExecutionEngine<'a> {
 
 impl<'a> ExecutionEngine<'a> {
     pub fn new(context: &'a MirContext) -> Self {
-        let globals = StackFrame::new(context.globals().len(), Vec::new());
+        let global_types = context
+            .globals()
+            .iter()
+            .map(|global| global.place_unspanned().ty.clone())
+            .collect_vec();
+        let globals = StackFrame::new(global_types, Vec::new(), context);
 
         Self { context, globals }
     }
@@ -39,7 +44,15 @@ impl<'a> ExecutionEngine<'a> {
         // create the stack frame
         let function = self.context.get_function(id);
 
-        let mut stack_frame = StackFrame::new(function.locals().len(), args);
+        let mut stack_frame = StackFrame::new(
+            function
+                .locals()
+                .iter()
+                .map(|local| local.place_unspanned().ty.clone())
+                .collect_vec(),
+            args,
+            &self.context,
+        );
         let mut current_bb = function.basic_blocks().first().cloned();
 
         while let Some(bb) = current_bb {
@@ -117,6 +130,9 @@ impl<'a> ExecutionEngine<'a> {
 
                 InnerValue::Struct(items)
             }
+
+            // todo:
+            ImmediateKind::EmptyStruct => InnerValue::Struct(vec![]),
 
             ImmediateKind::Move(place) => return self.eval_place(place, frame).clone(),
 
@@ -218,6 +234,11 @@ impl<'a> ExecutionEngine<'a> {
                 return InnerValue::Void;
             }
 
+            (InnerValue::Undefined, UnaryIntrinsic::Print) => {
+                println!("<undefined>");
+                return InnerValue::Void;
+            }
+
             (InnerValue::Integer(i), UnaryIntrinsic::ToFloat) => InnerValue::Float(*i as f64),
             (InnerValue::Float(f), UnaryIntrinsic::Ceil) => InnerValue::Integer(f.ceil() as u64),
             (InnerValue::Float(f), UnaryIntrinsic::Floor) => InnerValue::Integer(f.floor() as u64),
@@ -229,7 +250,7 @@ impl<'a> ExecutionEngine<'a> {
                 InnerValue::Integer(i.wrapping_neg())
             }
 
-            _ => unreachable!("{op}"),
+            _ => unreachable!("{op} {:?}", operand),
         }
     }
 
