@@ -1,4 +1,4 @@
-module tests.Init.Nested;
+module Tests.Init.Nested;
 
 func main() {
   print("Testing nested struct concepts");

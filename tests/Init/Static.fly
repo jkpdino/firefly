@@ -1,4 +1,4 @@
-module tests.Init.Static;
+module Tests.Init.Static;
 
 func main() {
   print("Testing initializers with basic employee management");

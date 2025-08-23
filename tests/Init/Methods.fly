@@ -1,4 +1,4 @@
-module tests.Init.Methods;
+module Tests.Init.Methods;
 
 func main() {
   print("Testing initializers with method interactions");

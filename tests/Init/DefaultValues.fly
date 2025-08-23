@@ -1,4 +1,4 @@
-module tests.Init.DefaultValues;
+module Tests.Init.DefaultValues;
 
 func main() {
   print("Testing initializers with partial field initialization");

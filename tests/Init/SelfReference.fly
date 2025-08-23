@@ -1,4 +1,4 @@
-module tests.Init.SelfReference;
+module Tests.Init.SelfReference;
 
 func main() {
   print("Testing initializers with computed field values");

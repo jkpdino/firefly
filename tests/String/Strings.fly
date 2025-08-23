@@ -1,19 +1,19 @@
 module Test
 
 func main() {
-    var single_line: string = "Hello, World";
-    var raw_single_line: string = raw"Hello, World";
-    var multi_line: string = """
+    var singleLine: string = "Hello, World";
+    var rawSingleLine: string = raw"Hello, World";
+    var multiLine: string = """
         Hello, World
         Hello, World 2
     """;
-    var raw_multi_line: string = raw"""
+    var rawMultiLine: string = raw"""
         Hello, World
         Hello, World 2
     """;
-    var escape_codes: string = "\0\"\'\n\r\t\x0\x00\x000\x000\"";
-    var raw_escape_codes: string = raw"\0\\'\n\r\t\x\x0\x00\x000\x0000\";
-    var multi_line_escape_codes: string = """
+    var escapeCodes: string = "\0\"\'\n\r\t\x0\x00\x000\x000\"";
+    var rawEscapeCodes: string = raw"\0\\'\n\r\t\x\x0\x00\x000\x0000\";
+    var multiLineEscapeCodes: string = """
         \0\"\'\n\r\t\x0\x00\x000\x000\""" """;
-    var raw_multi_line_escape_codes: string = raw"""\0\\'\n\r\t\x\x0\x00\x000\x0000\""";
+    var rawMultiLineEscapeCodes: string = raw"""\0\\'\n\r\t\x\x0\x00\x000\x0000\""";
 }

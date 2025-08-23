@@ -1,4 +1,4 @@
-module tests.Init;
+module Tests.Init;
 
 func main() {
   print("Hello");

@@ -1,4 +1,4 @@
-module tests.Init.Complex;
+module Tests.Init.Complex;
 
 func main() {
   print("Testing complex initializer scenarios");

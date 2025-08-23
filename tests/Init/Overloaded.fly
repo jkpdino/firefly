@@ -1,4 +1,4 @@
-module tests.Init.Overloaded;
+module Tests.Init.Overloaded;
 
 func main() {
   print("Testing overloaded initializers");

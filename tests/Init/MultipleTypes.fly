@@ -1,4 +1,4 @@
-module tests.Init.MultipleTypes;
+module Tests.Init.MultipleTypes;
 
 func main() {
   print("Testing multiple data types in initializers");

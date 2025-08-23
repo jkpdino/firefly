@@ -1,4 +1,4 @@
-module tests.Init.NoParams;
+module Tests.Init.NoParams;
 
 func main() {
   print("Testing parameterless initializers");

@@ -1,4 +1,4 @@
-module tests.Init.Validation;
+module Tests.Init.Validation;
 
 func main() {
   print("Testing initializers with validation logic");

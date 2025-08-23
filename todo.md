@@ -22,10 +22,19 @@
   - [x] Error for more than one
   - [x] Select overloads from a path
   - [x] Select overloads in scope
-- [ ] Struct Initializers
-  - [ ] Add parsing for initializers
-  - [ ] Add static delegate component
+- [x] Struct Initializers
+  - [x] Add parsing for initializers
+  - [x] Add static delegate component
+  - [x] Add AST lowering for initializers
+  - [x] Add HIR lowering for initializers
+  - [x] Add MIR generation with proper struct initialization
+  - [x] Add basic test case
   - [ ] Add privacy checks for static delegate
   - [ ] Add overload for initializers
-- [ ] Style guide
-  - [ ] Capitalization
+- [x] Style guide
+  - [x] Capitalization
+  - [x] Naming conventions
+  - [x] Code organization
+  - [x] Formatting rules
+  - [x] Struct design guidelines
+  - [x] Import organization
